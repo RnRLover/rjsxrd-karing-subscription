@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-10-02T05:16:10Z",
+  "generated_at_utc": "2026-10-02T05:30:05Z",
   "source": "https://raw.githubusercontent.com/whoahaow/rjsxrd/main/githubmirror/bypass/bypass-all.txt",
   "source_sha256": "989b964220d251d3dbeb1beef661d35e55d559c2e2883dac79b0613c79712d92",
   "counts": {
@@ -7,9 +7,9 @@
     "russian_label": 53,
     "unsupported_or_invalid": 103,
     "duplicate": 37,
-    "russian_or_unresolved_endpoint": 100
+    "russian_or_unresolved_endpoint": 111
   },
-  "eligible": 311,
+  "eligible": 300,
   "selected": 24,
   "xray_validated": true,
   "actual_egress_checked": true,
@@ -78,8 +78,8 @@
   "excluded_country": "RU",
   "exclusion_basis": "source label, resolved endpoint IP, and (when enabled) actual HTTPS egress IP against Karing RU CIDRs",
   "selected_protocols": {
-    "shadowsocks": 7,
-    "vless": 16,
+    "shadowsocks": 8,
+    "vless": 15,
     "trojan": 1
   }
 }
