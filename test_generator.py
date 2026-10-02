@@ -46,12 +46,21 @@ class SubscriptionTests(unittest.TestCase):
         self.assertEqual(config["routing"]["domainStrategy"], "IPOnDemand")
         self.assertEqual(rules[0]["outboundTag"], "block")
         self.assertEqual(rules[0]["domain"], ["domain:ads.example.ru"])
-        self.assertEqual([r["outboundTag"] for r in rules[1:-1]], ["direct"] * 3)
-        self.assertEqual(rules[3]["ip"], ["geoip:ru"])
+        self.assertEqual([rules[i]["outboundTag"] for i in (1, 3, 4)], ["direct"] * 3)
+        self.assertEqual(rules[4]["ip"], ["geoip:ru"])
         self.assertEqual(rules[-1], {"type": "field", "network": "tcp,udp", "balancerTag": "auto"})
         self.assertFalse(any("port" in r or "protocol" in r for r in rules))
         config["routing"]["rules"].clear()
-        self.assertEqual(len(ROUTING["rules"]), 5)
+        self.assertEqual(len(ROUTING["rules"]), 6)
+
+    def test_gemini_and_google_api_proxy_rule_precedes_ru_ip_direct(self):
+        rules = policy(["domain:google.com"], ["domain:ads.test"], ["5.0.0.0/8"], ["domain:gemini.google.com"])["rules"]
+        self.assertEqual(rules[2]["balancerTag"], "auto")
+        for domain in ("domain:google.com", "domain:googleapis.com", "domain:gstatic.com", "domain:googleusercontent.com", "domain:gemini.google.com"):
+            self.assertIn(domain, rules[2]["domain"])
+        self.assertEqual(rules[3]["outboundTag"], "direct")
+        self.assertEqual(rules[4]["ip"], ["geoip:ru"])
+        self.assertEqual(rules[0]["outboundTag"], "block")
 
     def test_geosite_conversion_preserves_matching_semantics(self):
         converted = domains({"version": 2, "rules": [{"domain": ["exact.test"], "domain_suffix": [".suffix.test"], "domain_regex": [r"^ad[0-9]+\.test$"], "domain_keyword": ["advert"]}]})

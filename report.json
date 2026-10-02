@@ -25,7 +25,7 @@
     "shadowsocks": 15,
     "vless": 9
   },
-  "routing_policy": "ads block; local/RU direct; everything else proxy",
+  "routing_policy": "ads block; local direct; Gemini/Google proxy before RU direct; everything else proxy",
   "geosite_sources": [
     {
       "category": "category-ru",
@@ -38,9 +38,16 @@
       "url": "https://raw.githubusercontent.com/KaringX/karing-ruleset/sing/geo/geosite/category-ads-all.json",
       "sha256": "1f05b8ae9c975ab9c70b53aff9c05630c82605f64b5940c8a24909962ba9f8ff",
       "entries": 911
+    },
+    {
+      "category": "google-gemini",
+      "url": "https://raw.githubusercontent.com/KaringX/karing-ruleset/sing/geo/geosite/google-gemini.json",
+      "sha256": "aa03dacc19b6a190ca2216481e06f918314874caafe3df0e403a865b42ec1fe7",
+      "entries": 46
     }
   ],
   "client_geoip": "geoip:ru from INCY installed geoip.dat; updated by INCY, not this JSON",
-  "config_utf16_bytes": 114746,
-  "config_utf8_bytes": 57373
+  "config_utf16_bytes": 118004,
+  "config_utf8_bytes": 59002,
+  "routing_updated_at_utc": "2026-10-02T11:36:55Z"
 }

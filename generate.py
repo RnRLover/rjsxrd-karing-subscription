@@ -225,7 +225,7 @@ def main():
         data = read("geo/geosite/" + name + ".json", url)
         categories[name] = domains(json.loads(data))
         geo_sources.append({"category": name, "url": url, "sha256": hashlib.sha256(data.encode()).hexdigest(), "entries": len(categories[name])})
-    routing = policy(categories["category-ru"], categories["category-ads-all"], cidrs)
+    routing = policy(categories["category-ru"], categories["category-ads-all"], cidrs, categories["google-gemini"])
     candidates, seen, counters = [], set(), Counter()
     for line in original.splitlines():
         line = line.strip()
@@ -261,7 +261,7 @@ def main():
     if args.xray: xray_validate(args.xray, config)
     report = {"generated_at_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "source": settings["subscription_url"], "source_sha256": hashlib.sha256(original.encode()).hexdigest(), "counts": dict(counters), "eligible": len(eligible), "selected": len(selected), "xray_validated": bool(args.xray), "actual_egress_checked": args.verify_exits, "service_acl": True, "country_data": country_data, "excluded_country": "RU", "exclusion_basis": "source label, resolved endpoint IP, and (when enabled) actual HTTPS egress IP against RU CIDRs", "selected_protocols": dict(Counter(n["outbound"]["protocol"] for n in selected))}
     report["service_acl"] = True
-    report["routing_policy"] = "ads block; local/RU direct; everything else proxy"
+    report["routing_policy"] = "ads block; local direct; Gemini/Google proxy before RU direct; everything else proxy"
     report["geosite_sources"] = geo_sources
     report["client_geoip"] = "geoip:ru from INCY installed geoip.dat; updated by INCY, not this JSON"
     report["config_utf16_bytes"] = len(config_text.encode("utf-16-le"))
