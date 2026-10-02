@@ -27,8 +27,8 @@
       "action": "block",
       "enabled": true,
       "upstream_switch": true,
-      "sites": 40725,
-      "cidrs": 1468
+      "sites": 40078,
+      "cidrs": 1518
     },
     {
       "tag": "kg04",
@@ -73,7 +73,7 @@
       "enabled": true,
       "upstream_switch": false,
       "sites": 1051,
-      "cidrs": 8468
+      "cidrs": 8483
     },
     {
       "tag": "kg09",
@@ -185,12 +185,12 @@
     {
       "reference": "geosite:malware",
       "url": "https://raw.githubusercontent.com/KaringX/karing-ruleset/sing/geo/geosite/malware.srs",
-      "sha256": "fcbfdbc951e2d5d8863d55c0f0f750d931fc028df867b00b60bf303750ecb478"
+      "sha256": "6006a8776cc94b871e36b27126459961d5094ef6de55b368d81e8ac0a4bbf5a3"
     },
     {
       "reference": "geoip:malware",
       "url": "https://raw.githubusercontent.com/KaringX/karing-ruleset/sing/geo/geoip/malware.srs",
-      "sha256": "550c8b6ac432dad545c558058529bf8f81ada3b6c44460e25f28a37b9335b032"
+      "sha256": "c14f3557b7dc42347589b0dd967b355c4be6f07582d3f4757d0c223453a161c3"
     },
     {
       "reference": "geoip:phishing",
@@ -200,7 +200,7 @@
     {
       "reference": "geosite:phishing",
       "url": "https://raw.githubusercontent.com/KaringX/karing-ruleset/sing/geo/geosite/phishing.srs",
-      "sha256": "5e6971e78a90a4c20a604cb056c6ce3b8350493b03a3800cbf9f17d8127bf5c5"
+      "sha256": "dd46fa86d1236a10b95cb9586f0da0f96a571202d9997dd5274b1865731f322d"
     },
     {
       "reference": "geosite:cryptominers",
@@ -260,7 +260,7 @@
     {
       "reference": "geoip:google",
       "url": "https://raw.githubusercontent.com/KaringX/karing-ruleset/sing/geo/geoip/google.srs",
-      "sha256": "4325306cb96205cb79cf6f3d12af5463d955506a1781ff974c2181351bf123e4"
+      "sha256": "21873cbee027b4df760be177de1b25b7025d989d44c3f58a8f130e66c1180f82"
     },
     {
       "reference": "geosite:tiktok",
@@ -359,7 +359,7 @@
     },
     {
       "reference": "category-ads-all",
-      "sha256": "1f05b8ae9c975ab9c70b53aff9c05630c82605f64b5940c8a24909962ba9f8ff",
+      "sha256": "710375798412eb5e535269195b2151779ab27d80752bd8534036109047c0a1c4",
       "url": "https://raw.githubusercontent.com/KaringX/karing-ruleset/sing/geo/geosite/category-ads-all.json"
     },
     {
@@ -369,12 +369,12 @@
     }
   ],
   "xray_validated": true,
-  "config_utf16_bytes": 71502,
+  "config_utf16_bytes": 71858,
   "geofiles_sha256": {
-    "geosite.dat": "6db958baa0edd744396f5b11b871052a6da572db0adbfc0276efe4ee5f0ca469",
-    "geoip.dat": "e0624bec6dd61b43403766be1d040db5c60bac8db1e2f23d5f2507c085f09465"
+    "geosite.dat": "50293865c809d1c0f55abd185e3ac600f8e53b42bfe68bca23e32d692473195a",
+    "geoip.dat": "06cff93e6c04ba8b2751e8c416b81a01a98d7f753aadf53d5c4a98418546f3c1"
   },
   "requires_geodata_import": true,
   "preserved_ru_direct": true,
-  "generated_at_utc": "2026-10-02T18:25:30Z"
+  "generated_at_utc": "2026-10-02T21:35:39Z"
 }
