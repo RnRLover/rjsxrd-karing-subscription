@@ -3,11 +3,14 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from routing import domains, policy
 from generate import CountryRanges, endpoint_allowed, parse_node, build, russian_label, atomic_write
 
 UUID = "123e4567-e89b-12d3-a456-426614174000"
 KEY = "A" * 43
 URI = f"vless://{UUID}@1.1.1.1:443?security=reality&pbk={KEY}&sni=example.com&type=tcp&fp=chrome#test"
+
+ROUTING = policy(["domain:example.ru"], ["domain:ads.example.ru"], ["5.0.0.0/8"])
 
 class SubscriptionTests(unittest.TestCase):
     def test_ru_filter_checks_all_resolved_addresses(self):
@@ -37,20 +40,34 @@ class SubscriptionTests(unittest.TestCase):
         self.assertIsNone(parse_node(URI.replace("type=tcp", "type=tcp&allowInsecure=1")))
         self.assertIsNone(parse_node(URI.replace("type=tcp", "type=tcp&headerType=http")))
 
-    def test_everything_uses_proxy_without_domain_or_ip_acl(self):
-        node = parse_node(URI)
-        config = build([node, node])
-        self.assertEqual(config["routing"]["rules"], [{"type": "field", "network": "tcp,udp", "balancerTag": "auto"}])
-        self.assertEqual(config["routing"]["domainStrategy"], "AsIs")
+    def test_geo_policy_blocks_ads_before_ru_and_proxies_everything_else(self):
+        config = build([parse_node(URI)] * 2, ROUTING)
+        rules = config["routing"]["rules"]
+        self.assertEqual(config["routing"]["domainStrategy"], "IPOnDemand")
+        self.assertEqual(rules[0]["outboundTag"], "block")
+        self.assertEqual(rules[0]["domain"], ["domain:ads.example.ru"])
+        self.assertEqual([r["outboundTag"] for r in rules[1:-1]], ["direct"] * 3)
+        self.assertEqual(rules[-1], {"type": "field", "network": "tcp,udp", "balancerTag": "auto"})
+        self.assertFalse(any("port" in r or "protocol" in r for r in rules))
+        config["routing"]["rules"].clear()
+        self.assertEqual(len(ROUTING["rules"]), 5)
+
+    def test_geosite_conversion_preserves_matching_semantics(self):
+        converted = domains({"version": 2, "rules": [{"domain": ["exact.test"], "domain_suffix": [".suffix.test"], "domain_regex": [r"^ad[0-9]+\.test$"], "domain_keyword": ["advert"]}]})
+        self.assertEqual(converted, ["full:exact.test", "domain:suffix.test", r"regexp:^ad[0-9]+\.test$", "keyword:advert"])
+        self.assertEqual(domains({"version": 2, "rules": [{"domain_regex": "^ads\\."}]}), ["regexp:^ads\\."])
+        with self.assertRaises(ValueError): domains({"version": 2, "rules": [{"process_name": ["bad"]}]})
+        with self.assertRaises(ValueError): domains({"version": 2, "rules": []})
+        with self.assertRaises(ValueError): policy([], ["domain:ads.test"], ["5.0.0.0/8"])
 
     def test_unavailable_pool_blocks_and_udp_is_routed(self):
         node = parse_node(URI)
-        config = build([node, node])
+        config = build([node, node], ROUTING)
         self.assertEqual(config["outbounds"][0]["protocol"], "blackhole")
         self.assertEqual(config["routing"]["balancers"][0]["fallbackTag"], "block")
         self.assertEqual(config["routing"]["rules"][-1]["network"], "tcp,udp")
         self.assertTrue(config["inbounds"][0]["settings"]["udp"])
-        with self.assertRaises(ValueError): build([])
+        with self.assertRaises(ValueError): build([], ROUTING)
 
     def test_atomic_cache_replaces_valid_file(self):
         with tempfile.TemporaryDirectory() as directory:

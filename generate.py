@@ -1,4 +1,4 @@
-"""rjsxrd -> full Xray proxy pool without service ACL; Python stdlib only."""
+"""rjsxrd -> full Xray proxy pool with embedded GeoSite/GeoIP; stdlib only."""
 import argparse
 import concurrent.futures
 import copy
@@ -18,6 +18,7 @@ from collections import Counter
 from pathlib import Path
 
 from rjsxrd_parser import parse_url
+from routing import domains, policy
 
 ROOT = Path(__file__).resolve().parent
 
@@ -114,7 +115,7 @@ def parse_node(line):
     stream.pop("fingerprint", None)
     return {"host": cfg.host, "label": urllib.parse.unquote(cfg.remark), "outbound": outbound, "uri": line}
 
-def build(nodes):
+def build(nodes, routing):
     if len(nodes) < 2: raise ValueError("need at least two eligible exits")
     proxies = []
     for i, node in enumerate(nodes, 1):
@@ -126,10 +127,10 @@ def build(nodes):
         "log": {"loglevel": "warning"},
         "inbounds": [{"tag": "socks-in", "listen": "127.0.0.1", "port": 10808, "protocol": "socks", "settings": {"udp": True}, "sniffing": {"enabled": True, "destOverride": ["http", "tls", "quic"], "routeOnly": True}}, {"tag": "http-in", "listen": "127.0.0.1", "port": 10809, "protocol": "http"}],
         "outbounds": [{"tag": "block", "protocol": "blackhole"}, *proxies, {"tag": "direct", "protocol": "freedom"}],
-        "routing": {"domainStrategy": "AsIs", "balancers": [{"tag": "auto", "selector": ["pool-"], "fallbackTag": "block", "strategy": {"type": "leastPing"}}], "rules": [{"type": "field", "network": "tcp,udp", "balancerTag": "auto"}]},
+        "routing": copy.deepcopy(routing),
         "burstObservatory": {"subjectSelector": ["pool-"], "pingConfig": {"destination": "https://www.gstatic.com/generate_204", "interval": "30s", "sampling": 2, "timeout": "5s"}},
         "stats": {},
-        "meta": {"serverDescription": "rjsxrd: Russian endpoints excluded; automatic proxy; no service ACL"}
+        "meta": {"serverDescription": "rjsxrd: RU/local direct; ads blocked; all other TCP/UDP via automatic proxy"}
     }
 
 def xray_validate(xray, config):
@@ -209,7 +210,14 @@ def main():
     cidrs = [c for r in obj["rules"] for c in r.get("ip_cidr", [])]
     if not cidrs: raise ValueError("RU address table required")
     ranges = CountryRanges(cidrs)
-    country_data = {"url": settings["ru_cidrs_url"], "sha256": hashlib.sha256(raw.encode()).hexdigest(), "use": "server exclusion only; not client routing"}
+    country_data = {"url": settings["ru_cidrs_url"], "sha256": hashlib.sha256(raw.encode()).hexdigest(), "use": "server exclusion and client GeoIP routing"}
+    geo_sources = []
+    categories = {}
+    for name, url in settings["geosite_urls"].items():
+        data = read("geo/geosite/" + name + ".json", url)
+        categories[name] = domains(json.loads(data))
+        geo_sources.append({"category": name, "url": url, "sha256": hashlib.sha256(data.encode()).hexdigest(), "entries": len(categories[name])})
+    routing = policy(categories["category-ru"], categories["category-ads-all"], cidrs)
     candidates, seen, counters = [], set(), Counter()
     for line in original.splitlines():
         line = line.strip()
@@ -240,9 +248,12 @@ def main():
         if not args.xray: raise ValueError("--verify-exits requires --xray")
         checked = verify_exits(checked, ranges, args.xray)
     selected = checked[:settings["max_nodes"]]
-    config = build(selected)
+    config = build(selected, routing)
     if args.xray: xray_validate(args.xray, config)
-    report = {"generated_at_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "source": settings["subscription_url"], "source_sha256": hashlib.sha256(original.encode()).hexdigest(), "counts": dict(counters), "eligible": len(eligible), "selected": len(selected), "xray_validated": bool(args.xray), "actual_egress_checked": args.verify_exits, "service_acl": False, "country_data": country_data, "excluded_country": "RU", "exclusion_basis": "source label, resolved endpoint IP, and (when enabled) actual HTTPS egress IP against RU CIDRs", "selected_protocols": dict(Counter(n["outbound"]["protocol"] for n in selected))}
+    report = {"generated_at_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "source": settings["subscription_url"], "source_sha256": hashlib.sha256(original.encode()).hexdigest(), "counts": dict(counters), "eligible": len(eligible), "selected": len(selected), "xray_validated": bool(args.xray), "actual_egress_checked": args.verify_exits, "service_acl": True, "country_data": country_data, "excluded_country": "RU", "exclusion_basis": "source label, resolved endpoint IP, and (when enabled) actual HTTPS egress IP against RU CIDRs", "selected_protocols": dict(Counter(n["outbound"]["protocol"] for n in selected))}
+    report["service_acl"] = True
+    report["routing_policy"] = "ads block; local/RU direct; everything else proxy"
+    report["geosite_sources"] = geo_sources
     # Files change only after all inputs and Xray validation succeeded.
     atomic_write(args.output / "ru.json", json.dumps(config, ensure_ascii=False, separators=(",", ":")) + "\n")
     atomic_write(args.output / "servers.txt", "\n".join(n["uri"] for n in eligible) + "\n")

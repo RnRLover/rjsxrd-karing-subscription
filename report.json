@@ -13,11 +13,11 @@
   "selected": 24,
   "xray_validated": true,
   "actual_egress_checked": true,
-  "service_acl": false,
+  "service_acl": true,
   "country_data": {
     "url": "https://raw.githubusercontent.com/KaringX/karing-ruleset/sing/geo/geoip/ru.json",
     "sha256": "417956306d9d7f6e208be76109095c19b6c90dce892a265ceee0833191da87f0",
-    "use": "server exclusion only; not client routing"
+    "use": "server exclusion and client GeoIP routing"
   },
   "excluded_country": "RU",
   "exclusion_basis": "source label, resolved endpoint IP, and (when enabled) actual HTTPS egress IP against RU CIDRs",
@@ -25,5 +25,21 @@
     "shadowsocks": 7,
     "vless": 15,
     "trojan": 2
-  }
+  },
+  "routing_policy": "ads block; local/RU direct; everything else proxy",
+  "geosite_sources": [
+    {
+      "category": "category-ru",
+      "url": "https://raw.githubusercontent.com/KaringX/karing-ruleset/sing/geo/geosite/category-ru.json",
+      "sha256": "682a319eb333c7ffe2330c1c3572e987e4d0ab7b7e24acfed995575d3bbe15c3",
+      "entries": 1105
+    },
+    {
+      "category": "category-ads-all",
+      "url": "https://raw.githubusercontent.com/KaringX/karing-ruleset/sing/geo/geosite/category-ads-all.json",
+      "sha256": "1f05b8ae9c975ab9c70b53aff9c05630c82605f64b5940c8a24909962ba9f8ff",
+      "entries": 911
+    }
+  ],
+  "routing_updated_at_utc": "2026-10-02T08:46:52Z"
 }
