@@ -1,10 +1,20 @@
+import json
 import unittest
-from karing import assemble, matchers
+from karing import assemble, matchers, incy_subscription, PUBLIC
 from routing import policy
 from geo_dat import geoip, geosite
 
 
 class KaringTests(unittest.TestCase):
+    def test_incy_transport_preserves_full_config_and_remote_profile(self):
+        config = {'inbounds': [], 'outbounds': [], 'routing': {'rules': [{'ip': ['geoip:ru'], 'outboundTag': 'direct'}, {'network': 'tcp,udp', 'balancerTag': 'auto'}], 'balancers': [{'tag': 'auto'}]}, 'burstObservatory': {'subjectSelector': ['pool-']}}
+        lines = incy_subscription(config).splitlines()
+        self.assertEqual(json.loads(lines[0]), config)
+        self.assertEqual(lines[1], '://autorouting/onadd/' + PUBLIC + 'karing-routing.json')
+        self.assertEqual(lines[2], '#profile-update-interval: 1')
+        # This checks our envelope, not INCY's undocumented mixed-JSON parser.
+        self.assertEqual(len(lines), 3)
+
     def test_profile_order_and_single_ru_tail_are_preserved(self):
         profile = {'rules': [
             {'name': 'Ads', 'rule_set': ['ads'], 'outbound': 'block', 'switch': False},

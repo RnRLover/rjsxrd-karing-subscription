@@ -89,6 +89,20 @@ def assemble(profile, lists, old, extras):
     return config, site_groups, ip_groups, groups
 
 
+def incy_subscription(config):
+    """Experimental transport: full JSON plus INCY body metadata.
+
+    INCY documents stripping special lines, but does not explicitly document
+    full JSON mixed with autorouting. Keep this separate until a real import
+    confirms both fullConfigJson and geodata activation on the target client.
+    """
+    text = serialized_config(config)
+    body = text + '://autorouting/onadd/' + PUBLIC + 'karing-routing.json\n' + '#profile-update-interval: 1\n'
+    if len(body.encode('utf-16-le')) > 250_000:
+        raise ValueError('INCY subscription exceeds Android size budget')
+    return body
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--xray', required=True)
@@ -141,6 +155,7 @@ def main():
         for filename, content in geo_files.items():
             (temp / filename).write_bytes(content)
         text = serialized_config(config)
+        incy_body = incy_subscription(config)
         # Validation needs these specific custom assets, never a global install.
         prior = os.environ.get('XRAY_LOCATION_ASSET')
         os.environ['XRAY_LOCATION_ASSET'] = str(temp)
@@ -165,6 +180,7 @@ def main():
             tmp.write_bytes(content)
             tmp.replace(out)
         atomic_write(ROOT / 'ru-karing.json', text)
+        atomic_write(ROOT / 'ru-karing-incy.txt', incy_body)
         atomic_write(ROOT / 'karing-routing.json', json.dumps(route_profile, ensure_ascii=False, indent=2) + '\n')
         atomic_write(ROOT / 'karing-report.json', json.dumps(report, ensure_ascii=False, indent=2) + '\n')
         print(json.dumps({'groups': len(groups), 'config_bytes': len(text.encode()), 'geofiles_bytes': {name: len(content) for name, content in geo_files.items()}, 'xray_validated': True}))
