@@ -369,12 +369,12 @@
     }
   ],
   "xray_validated": true,
-  "config_utf16_bytes": 71446,
+  "config_utf16_bytes": 72510,
   "geofiles_sha256": {
     "geosite.dat": "50293865c809d1c0f55abd185e3ac600f8e53b42bfe68bca23e32d692473195a",
     "geoip.dat": "06cff93e6c04ba8b2751e8c416b81a01a98d7f753aadf53d5c4a98418546f3c1"
   },
   "requires_geodata_import": true,
   "preserved_ru_direct": true,
-  "generated_at_utc": "2026-10-02T21:37:30Z"
+  "generated_at_utc": "2026-10-02T22:58:14Z"
 }
