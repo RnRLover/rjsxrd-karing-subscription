@@ -23,5 +23,6 @@ if __name__ == "__main__":
     with zipfile.ZipFile(io.BytesIO(data)) as archive:
         (root / executable).write_bytes(archive.read(executable))
         (root / "geoip.dat").write_bytes(archive.read("geoip.dat"))
+        (root / "geosite.dat").write_bytes(archive.read("geosite.dat"))
     if os.name != "nt": (root / executable).chmod(0o755)
     print(f"Verified {VERSION} SHA256 {sha}")
