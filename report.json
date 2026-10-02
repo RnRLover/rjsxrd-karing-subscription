@@ -1,0 +1,85 @@
+{
+  "generated_at_utc": "2026-10-02T05:16:10Z",
+  "source": "https://raw.githubusercontent.com/whoahaow/rjsxrd/main/githubmirror/bypass/bypass-all.txt",
+  "source_sha256": "989b964220d251d3dbeb1beef661d35e55d559c2e2883dac79b0613c79712d92",
+  "counts": {
+    "source_nodes": 604,
+    "russian_label": 53,
+    "unsupported_or_invalid": 103,
+    "duplicate": 37,
+    "russian_or_unresolved_endpoint": 100
+  },
+  "eligible": 311,
+  "selected": 24,
+  "xray_validated": true,
+  "actual_egress_checked": true,
+  "rules": [
+    {
+      "action": "direct",
+      "path": "ACL4SSR/LocalAreaNetwork.json",
+      "sha256": "9ff8a9579269426018080378affaa92636884de19fd6446d4747f8710a6ff136"
+    },
+    {
+      "action": "block",
+      "path": "ACL4SSR/BanAD.json",
+      "sha256": "e39f1020d4e8a802839206a58f3e80a2a88ff1ee4903a0bdb913d976ae08bc8a"
+    },
+    {
+      "action": "proxy",
+      "path": "ACL4SSR/Ruleset/OpenAi.json",
+      "sha256": "43131d5f8492ee55492fbc3ee5ddaf07df7046d0c340c1dc90d5abdebd03d25a"
+    },
+    {
+      "action": "proxy",
+      "path": "ACL4SSR/Ruleset/Telegram.json",
+      "sha256": "23bdb70520412221f717a5b5c7f03f5b6c35a3b1304616f4ecbbbd9cdbde852c"
+    },
+    {
+      "action": "proxy",
+      "path": "ACL4SSR/Ruleset/Discord.json",
+      "sha256": "84b55fc42c550b9cdd9e587cb2899df195f75797cf9a4e1e23837f0c22810c47"
+    },
+    {
+      "action": "proxy",
+      "path": "ACL4SSR/Ruleset/Steam.json",
+      "sha256": "009f76916351e494b11d4c4de42cc4fd240c2399b45db10c1f5d527a7b13856f"
+    },
+    {
+      "action": "proxy",
+      "path": "ACL4SSR/Ruleset/Epic.json",
+      "sha256": "fcee5716ef9c4dbecaa1c7111fbbecf38eb3842bfd9639dbae73297fdbd5e3eb"
+    },
+    {
+      "action": "proxy",
+      "path": "ACL4SSR/Ruleset/Origin.json",
+      "sha256": "ef8b33b1386b6b0e92b553ff3a6f75381035b55f2e9aa80b3424d2193f2ee115"
+    },
+    {
+      "action": "proxy",
+      "path": "ACL4SSR/Ruleset/Sony.json",
+      "sha256": "334904d21e05b00fff131a378b5e35d272dc47e6b76b44b202e4d008aecd9938"
+    },
+    {
+      "action": "proxy",
+      "path": "ACL4SSR/Ruleset/Nintendo.json",
+      "sha256": "228d20f8f1d34bb65a42a313d400282cb6ccf9e43073e05df139289bc2b4dd86"
+    },
+    {
+      "action": "direct",
+      "path": "geo/geosite/category-ru.json",
+      "sha256": "682a319eb333c7ffe2330c1c3572e987e4d0ab7b7e24acfed995575d3bbe15c3"
+    },
+    {
+      "action": "direct",
+      "path": "geo/geoip/ru.json",
+      "sha256": "417956306d9d7f6e208be76109095c19b6c90dce892a265ceee0833191da87f0"
+    }
+  ],
+  "excluded_country": "RU",
+  "exclusion_basis": "source label, resolved endpoint IP, and (when enabled) actual HTTPS egress IP against Karing RU CIDRs",
+  "selected_protocols": {
+    "shadowsocks": 7,
+    "vless": 16,
+    "trojan": 1
+  }
+}
