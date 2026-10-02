@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-10-02T15:55:15Z",
+  "generated_at_utc": "2026-10-02T16:00:09Z",
   "source": "https://raw.githubusercontent.com/whoahaow/rjsxrd/main/githubmirror/bypass/bypass-all.txt",
   "source_sha256": "44d8a7a96bde1e6d0c59c0c7eadb94cbd26bf192ba9d7a8a41619efeaf588e7e",
   "counts": {
@@ -47,6 +47,6 @@
     }
   ],
   "client_geoip": "geoip:ru from INCY installed geoip.dat; updated by INCY, not this JSON",
-  "config_utf16_bytes": 117954,
-  "config_utf8_bytes": 58977
+  "config_utf16_bytes": 117966,
+  "config_utf8_bytes": 58983
 }
