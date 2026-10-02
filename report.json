@@ -1,15 +1,15 @@
 {
-  "generated_at_utc": "2026-10-02T05:39:51Z",
+  "generated_at_utc": "2026-10-02T08:50:42Z",
   "source": "https://raw.githubusercontent.com/whoahaow/rjsxrd/main/githubmirror/bypass/bypass-all.txt",
-  "source_sha256": "989b964220d251d3dbeb1beef661d35e55d559c2e2883dac79b0613c79712d92",
+  "source_sha256": "648778ea63c9b02f5544647b2fff149ee134b5ed27d5aee21ff7fa1320f44181",
   "counts": {
-    "source_nodes": 604,
-    "russian_label": 53,
-    "unsupported_or_invalid": 103,
-    "duplicate": 37,
-    "russian_or_unresolved_endpoint": 111
+    "source_nodes": 510,
+    "russian_label": 96,
+    "unsupported_or_invalid": 68,
+    "duplicate": 32,
+    "russian_or_unresolved_endpoint": 90
   },
-  "eligible": 300,
+  "eligible": 224,
   "selected": 24,
   "xray_validated": true,
   "actual_egress_checked": true,
@@ -22,9 +22,8 @@
   "excluded_country": "RU",
   "exclusion_basis": "source label, resolved endpoint IP, and (when enabled) actual HTTPS egress IP against RU CIDRs",
   "selected_protocols": {
-    "shadowsocks": 7,
-    "vless": 15,
-    "trojan": 2
+    "shadowsocks": 9,
+    "vless": 15
   },
   "routing_policy": "ads block; local/RU direct; everything else proxy",
   "geosite_sources": [
@@ -40,6 +39,5 @@
       "sha256": "1f05b8ae9c975ab9c70b53aff9c05630c82605f64b5940c8a24909962ba9f8ff",
       "entries": 911
     }
-  ],
-  "routing_updated_at_utc": "2026-10-02T08:46:52Z"
+  ]
 }
