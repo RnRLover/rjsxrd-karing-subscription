@@ -1,0 +1,39 @@
+name: Update subscription
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 * * * *'
+  push:
+    paths:
+      - '*.py'
+      - 'settings.json'
+      - '.github/workflows/update.yml'
+permissions:
+  contents: write
+concurrency:
+  group: update-subscription
+  cancel-in-progress: false
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Tests
+        run: python -m unittest discover -v
+      - name: Prepare official Xray
+        run: python setup_xray.py
+      - name: Generate and check actual exits
+        run: python generate.py --xray .runtime/xray --verify-exits
+      - name: Publish validated files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add ru.json servers.txt report.json
+          if ! git diff --cached --quiet; then
+            git commit -m "Update validated rjsxrd subscription"
+            git push
+          fi
