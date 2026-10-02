@@ -4,7 +4,7 @@ import unittest
 from pathlib import Path
 
 from routing import domains, policy
-from generate import CountryRanges, endpoint_allowed, parse_node, build, russian_label, atomic_write
+from generate import CountryRanges, endpoint_allowed, parse_node, build, russian_label, atomic_write, serialized_config
 
 UUID = "123e4567-e89b-12d3-a456-426614174000"
 KEY = "A" * 43
@@ -47,6 +47,7 @@ class SubscriptionTests(unittest.TestCase):
         self.assertEqual(rules[0]["outboundTag"], "block")
         self.assertEqual(rules[0]["domain"], ["domain:ads.example.ru"])
         self.assertEqual([r["outboundTag"] for r in rules[1:-1]], ["direct"] * 3)
+        self.assertEqual(rules[3]["ip"], ["geoip:ru"])
         self.assertEqual(rules[-1], {"type": "field", "network": "tcp,udp", "balancerTag": "auto"})
         self.assertFalse(any("port" in r or "protocol" in r for r in rules))
         config["routing"]["rules"].clear()
@@ -76,5 +77,9 @@ class SubscriptionTests(unittest.TestCase):
             atomic_write(path, "new")
             self.assertEqual(path.read_text(), "new")
             self.assertEqual(len(list(path.parent.iterdir())), 1)
+
+    def test_android_size_guard_refuses_oversized_publication(self):
+        self.assertEqual(json.loads(serialized_config({"ok": True})), {"ok": True})
+        with self.assertRaises(ValueError): serialized_config({"oversized": "x" * 125_000})
 
 if __name__ == "__main__": unittest.main()

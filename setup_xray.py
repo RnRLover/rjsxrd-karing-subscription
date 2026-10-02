@@ -22,5 +22,6 @@ if __name__ == "__main__":
     executable = "xray.exe" if os.name == "nt" else "xray"
     with zipfile.ZipFile(io.BytesIO(data)) as archive:
         (root / executable).write_bytes(archive.read(executable))
+        (root / "geoip.dat").write_bytes(archive.read("geoip.dat"))
     if os.name != "nt": (root / executable).chmod(0o755)
     print(f"Verified {VERSION} SHA256 {sha}")

@@ -22,6 +22,14 @@ from routing import domains, policy
 
 ROOT = Path(__file__).resolve().parent
 
+def serialized_config(config):
+    text = json.dumps(config, ensure_ascii=False, separators=(",", ":")) + "\n"
+    # Conservative UTF-16 budget with room for INCY patching and IPC metadata.
+    # This is a publication guard, not a measurement of Android's actual Parcel.
+    if len(text.encode("utf-16-le")) > 250_000:
+        raise ValueError("config exceeds Android publication size budget")
+    return text
+
 def fetch(url):
     req = urllib.request.Request(url, headers={"User-Agent": "rjsxrd-karing-subscription/1"})
     with urllib.request.urlopen(req, timeout=30) as response:
@@ -210,7 +218,7 @@ def main():
     cidrs = [c for r in obj["rules"] for c in r.get("ip_cidr", [])]
     if not cidrs: raise ValueError("RU address table required")
     ranges = CountryRanges(cidrs)
-    country_data = {"url": settings["ru_cidrs_url"], "sha256": hashlib.sha256(raw.encode()).hexdigest(), "use": "server exclusion and client GeoIP routing"}
+    country_data = {"url": settings["ru_cidrs_url"], "sha256": hashlib.sha256(raw.encode()).hexdigest(), "use": "server exclusion; client routing uses INCY geoip:ru"}
     geo_sources = []
     categories = {}
     for name, url in settings["geosite_urls"].items():
@@ -249,13 +257,17 @@ def main():
         checked = verify_exits(checked, ranges, args.xray)
     selected = checked[:settings["max_nodes"]]
     config = build(selected, routing)
+    config_text = serialized_config(config)
     if args.xray: xray_validate(args.xray, config)
     report = {"generated_at_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "source": settings["subscription_url"], "source_sha256": hashlib.sha256(original.encode()).hexdigest(), "counts": dict(counters), "eligible": len(eligible), "selected": len(selected), "xray_validated": bool(args.xray), "actual_egress_checked": args.verify_exits, "service_acl": True, "country_data": country_data, "excluded_country": "RU", "exclusion_basis": "source label, resolved endpoint IP, and (when enabled) actual HTTPS egress IP against RU CIDRs", "selected_protocols": dict(Counter(n["outbound"]["protocol"] for n in selected))}
     report["service_acl"] = True
     report["routing_policy"] = "ads block; local/RU direct; everything else proxy"
     report["geosite_sources"] = geo_sources
+    report["client_geoip"] = "geoip:ru from INCY installed geoip.dat; updated by INCY, not this JSON"
+    report["config_utf16_bytes"] = len(config_text.encode("utf-16-le"))
+    report["config_utf8_bytes"] = len(config_text.encode("utf-8"))
     # Files change only after all inputs and Xray validation succeeded.
-    atomic_write(args.output / "ru.json", json.dumps(config, ensure_ascii=False, separators=(",", ":")) + "\n")
+    atomic_write(args.output / "ru.json", config_text)
     atomic_write(args.output / "servers.txt", "\n".join(n["uri"] for n in eligible) + "\n")
     atomic_write(args.output / "report.json", json.dumps(report, ensure_ascii=False, indent=2) + "\n")
     print(json.dumps({"counts": counters, "eligible": len(eligible), "selected": len(selected), "xray_validated": bool(args.xray)}))

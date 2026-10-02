@@ -25,7 +25,9 @@ def policy(russian_sites, advertisements, russian_ips):
         raise ValueError("complete GeoSite/GeoIP policy required")
     # IPOnDemand is necessary: an unconditional final rule would otherwise
     # prevent IPIfNonMatch from resolving domains to check Russian IPs.
-    ips = list(dict.fromkeys(str(ipaddress.ip_network(c, strict=False)) for c in russian_ips))
+    # Validate the generator's country table, but reference INCY's on-device
+    # GeoIP database. Embedding 25k CIDRs exceeds Android Binder's buffer.
+    for c in russian_ips: ipaddress.ip_network(c, strict=False)
     return {
         "domainStrategy": "IPOnDemand",
         "balancers": [{"tag": "auto", "selector": ["pool-"], "fallbackTag": "block", "strategy": {"type": "leastPing"}}],
@@ -33,7 +35,7 @@ def policy(russian_sites, advertisements, russian_ips):
             {"type": "field", "domain": advertisements, "outboundTag": "block"},
             {"type": "field", "ip": LOCAL_IPS, "outboundTag": "direct"},
             {"type": "field", "domain": russian_sites, "outboundTag": "direct"},
-            {"type": "field", "ip": ips, "outboundTag": "direct"},
+            {"type": "field", "ip": ["geoip:ru"], "outboundTag": "direct"},
             {"type": "field", "network": "tcp,udp", "balancerTag": "auto"},
         ],
     }
