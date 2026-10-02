@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-10-02T05:30:05Z",
+  "generated_at_utc": "2026-10-02T05:39:51Z",
   "source": "https://raw.githubusercontent.com/whoahaow/rjsxrd/main/githubmirror/bypass/bypass-all.txt",
   "source_sha256": "989b964220d251d3dbeb1beef661d35e55d559c2e2883dac79b0613c79712d92",
   "counts": {
@@ -13,18 +13,17 @@
   "selected": 24,
   "xray_validated": true,
   "actual_egress_checked": true,
-  "excluded_country": "RU",
-  "exclusion_basis": "source label, resolved endpoint IP, and (when enabled) actual HTTPS egress IP against Karing RU CIDRs",
-  "selected_protocols": {
-    "shadowsocks": 8,
-    "vless": 15,
-    "trojan": 1
-  },
+  "service_acl": false,
   "country_data": {
     "url": "https://raw.githubusercontent.com/KaringX/karing-ruleset/sing/geo/geoip/ru.json",
     "sha256": "417956306d9d7f6e208be76109095c19b6c90dce892a265ceee0833191da87f0",
     "use": "server exclusion only; not client routing"
   },
-  "service_acl": false,
-  "acl_removed_at_utc": "2026-10-02T05:37:02Z"
+  "excluded_country": "RU",
+  "exclusion_basis": "source label, resolved endpoint IP, and (when enabled) actual HTTPS egress IP against RU CIDRs",
+  "selected_protocols": {
+    "shadowsocks": 7,
+    "vless": 15,
+    "trojan": 2
+  }
 }
