@@ -2,7 +2,7 @@
   "Name": "rjsxrd Karing geodata",
   "GlobalProxy": "true",
   "DomainStrategy": "IPOnDemand",
-  "LastUpdated": "1790956812",
+  "LastUpdated": "1790965530",
   "Geoipurl": "https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/karing-geoip.dat?v=bf96fe6c6dc7b9771be848fe4c6cf64c6947f1e19a2949cb808da96328c87789",
   "Geositeurl": "https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/karing-geosite.dat?v=bf96fe6c6dc7b9771be848fe4c6cf64c6947f1e19a2949cb808da96328c87789",
   "DirectSites": [
