@@ -3,7 +3,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from generate import CountryRanges, endpoint_allowed, parse_node, translate_rules, build, russian_label, atomic_write
+from generate import CountryRanges, endpoint_allowed, parse_node, build, russian_label, atomic_write
 
 UUID = "123e4567-e89b-12d3-a456-426614174000"
 KEY = "A" * 43
@@ -37,26 +37,20 @@ class SubscriptionTests(unittest.TestCase):
         self.assertIsNone(parse_node(URI.replace("type=tcp", "type=tcp&allowInsecure=1")))
         self.assertIsNone(parse_node(URI.replace("type=tcp", "type=tcp&headerType=http")))
 
-    def test_domain_and_ip_alternatives_survive_conversion(self):
-        obj = {"version": 2, "rules": [{"domain": ["a.test"], "domain_suffix": ["b.test", ".c.test"], "domain_keyword": ["ads"], "ip_cidr": ["91.108.0.0/16"]}]}
-        rules = translate_rules(obj, "proxy")
-        self.assertEqual(len(rules), 2)
-        self.assertEqual(rules[0]["balancerTag"], "auto")
-        self.assertIn("full:a.test", rules[0]["domain"])
-        self.assertIn("domain:b.test", rules[0]["domain"])
-        self.assertIn("regexp:.*\\.c\\.test$", rules[0]["domain"])
-        self.assertNotIn("ip", rules[0])
-        self.assertNotIn("domain", rules[1])
-        with self.assertRaises(ValueError): translate_rules({"version": 2, "rules": [{"process_name": ["a.exe"]}]}, "proxy")
+    def test_everything_uses_proxy_without_domain_or_ip_acl(self):
+        node = parse_node(URI)
+        config = build([node, node])
+        self.assertEqual(config["routing"]["rules"], [{"type": "field", "network": "tcp,udp", "balancerTag": "auto"}])
+        self.assertEqual(config["routing"]["domainStrategy"], "AsIs")
 
     def test_unavailable_pool_blocks_and_udp_is_routed(self):
         node = parse_node(URI)
-        config = build([node, node], [])
+        config = build([node, node])
         self.assertEqual(config["outbounds"][0]["protocol"], "blackhole")
         self.assertEqual(config["routing"]["balancers"][0]["fallbackTag"], "block")
         self.assertEqual(config["routing"]["rules"][-1]["network"], "tcp,udp")
         self.assertTrue(config["inbounds"][0]["settings"]["udp"])
-        with self.assertRaises(ValueError): build([], [])
+        with self.assertRaises(ValueError): build([])
 
     def test_atomic_cache_replaces_valid_file(self):
         with tempfile.TemporaryDirectory() as directory:

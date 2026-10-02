@@ -1,4 +1,4 @@
-"""rjsxrd + Karing -> portable full Xray config; Python stdlib only."""
+"""rjsxrd -> full Xray proxy pool without service ACL; Python stdlib only."""
 import argparse
 import concurrent.futures
 import copy
@@ -114,28 +114,7 @@ def parse_node(line):
     stream.pop("fingerprint", None)
     return {"host": cfg.host, "label": urllib.parse.unquote(cfg.remark), "outbound": outbound, "uri": line}
 
-def translate_rules(obj, action):
-    if obj.get("version") not in (1, 2, 3) or not isinstance(obj.get("rules"), list):
-        raise ValueError("unsupported Karing ruleset")
-    target = {"balancerTag": "auto"} if action == "proxy" else {"outboundTag": action}
-    result = []
-    for rule in obj["rules"]:
-        if set(rule) - {"domain", "domain_suffix", "domain_keyword", "domain_regex", "ip_cidr"}:
-            raise ValueError("unsupported ruleset fields: " + ",".join(sorted(rule)))
-        domains = ["full:" + d for d in rule.get("domain", [])]
-        for value in rule.get("domain_suffix", []):
-            # A leading dot means subdomains only, per sing-box suffix semantics.
-            domains.append("regexp:.*" + re.escape(value) + "$" if value.startswith(".") else "domain:" + value)
-        domains += ["keyword:" + d for d in rule.get("domain_keyword", [])]
-        domains += ["regexp:" + d for d in rule.get("domain_regex", [])]
-        if domains: result.append({"type": "field", "domain": domains, **target})
-        if rule.get("ip_cidr"):
-            # Separate fields retain domain/IP alternatives rather than Xray AND.
-            for cidr in rule["ip_cidr"]: ipaddress.ip_network(cidr, strict=False)
-            result.append({"type": "field", "ip": rule["ip_cidr"], **target})
-    return result
-
-def build(nodes, rules):
+def build(nodes):
     if len(nodes) < 2: raise ValueError("need at least two eligible exits")
     proxies = []
     for i, node in enumerate(nodes, 1):
@@ -147,10 +126,10 @@ def build(nodes, rules):
         "log": {"loglevel": "warning"},
         "inbounds": [{"tag": "socks-in", "listen": "127.0.0.1", "port": 10808, "protocol": "socks", "settings": {"udp": True}, "sniffing": {"enabled": True, "destOverride": ["http", "tls", "quic"], "routeOnly": True}}, {"tag": "http-in", "listen": "127.0.0.1", "port": 10809, "protocol": "http"}],
         "outbounds": [{"tag": "block", "protocol": "blackhole"}, *proxies, {"tag": "direct", "protocol": "freedom"}],
-        "routing": {"domainStrategy": "IPIfNonMatch", "balancers": [{"tag": "auto", "selector": ["pool-"], "fallbackTag": "block", "strategy": {"type": "leastPing"}}], "rules": [*rules, {"type": "field", "network": "tcp,udp", "balancerTag": "auto"}]},
+        "routing": {"domainStrategy": "AsIs", "balancers": [{"tag": "auto", "selector": ["pool-"], "fallbackTag": "block", "strategy": {"type": "leastPing"}}], "rules": [{"type": "field", "network": "tcp,udp", "balancerTag": "auto"}]},
         "burstObservatory": {"subjectSelector": ["pool-"], "pingConfig": {"destination": "https://www.gstatic.com/generate_204", "interval": "30s", "sampling": 2, "timeout": "5s"}},
         "stats": {},
-        "meta": {"serverDescription": "rjsxrd + Karing: Russian endpoints excluded; automatic proxy"}
+        "meta": {"serverDescription": "rjsxrd: Russian endpoints excluded; automatic proxy; no service ACL"}
     }
 
 def xray_validate(xray, config):
@@ -225,16 +204,12 @@ def main():
     def read(path, url):
         return (args.cache / path).read_text(encoding="utf-8-sig") if args.cache else fetch(url)
     original = read("rjsxrd.txt", settings["subscription_url"])
-    rules, provenance = [], []
-    ranges = None
-    for item in settings["rules"]:
-        raw = read(item["path"], settings["rules_base"] + item["path"])
-        obj = json.loads(raw)
-        rules.extend(translate_rules(obj, item["action"]))
-        provenance.append({**item, "sha256": hashlib.sha256(raw.encode()).hexdigest()})
-        if item["path"] == "geo/geoip/ru.json":
-            ranges = CountryRanges([c for r in obj["rules"] for c in r.get("ip_cidr", [])])
-    if ranges is None: raise ValueError("RU address table required")
+    raw = read("geo/geoip/ru.json", settings["ru_cidrs_url"])
+    obj = json.loads(raw)
+    cidrs = [c for r in obj["rules"] for c in r.get("ip_cidr", [])]
+    if not cidrs: raise ValueError("RU address table required")
+    ranges = CountryRanges(cidrs)
+    country_data = {"url": settings["ru_cidrs_url"], "sha256": hashlib.sha256(raw.encode()).hexdigest(), "use": "server exclusion only; not client routing"}
     candidates, seen, counters = [], set(), Counter()
     for line in original.splitlines():
         line = line.strip()
@@ -265,9 +240,9 @@ def main():
         if not args.xray: raise ValueError("--verify-exits requires --xray")
         checked = verify_exits(checked, ranges, args.xray)
     selected = checked[:settings["max_nodes"]]
-    config = build(selected, rules)
+    config = build(selected)
     if args.xray: xray_validate(args.xray, config)
-    report = {"generated_at_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "source": settings["subscription_url"], "source_sha256": hashlib.sha256(original.encode()).hexdigest(), "counts": dict(counters), "eligible": len(eligible), "selected": len(selected), "xray_validated": bool(args.xray), "actual_egress_checked": args.verify_exits, "rules": provenance, "excluded_country": "RU", "exclusion_basis": "source label, resolved endpoint IP, and (when enabled) actual HTTPS egress IP against Karing RU CIDRs", "selected_protocols": dict(Counter(n["outbound"]["protocol"] for n in selected))}
+    report = {"generated_at_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "source": settings["subscription_url"], "source_sha256": hashlib.sha256(original.encode()).hexdigest(), "counts": dict(counters), "eligible": len(eligible), "selected": len(selected), "xray_validated": bool(args.xray), "actual_egress_checked": args.verify_exits, "service_acl": False, "country_data": country_data, "excluded_country": "RU", "exclusion_basis": "source label, resolved endpoint IP, and (when enabled) actual HTTPS egress IP against RU CIDRs", "selected_protocols": dict(Counter(n["outbound"]["protocol"] for n in selected))}
     # Files change only after all inputs and Xray validation succeeded.
     atomic_write(args.output / "ru.json", json.dumps(config, ensure_ascii=False, separators=(",", ":")) + "\n")
     atomic_write(args.output / "servers.txt", "\n".join(n["uri"] for n in eligible) + "\n")

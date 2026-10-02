@@ -1,20 +1,6 @@
 {
   "subscription_url": "https://raw.githubusercontent.com/whoahaow/rjsxrd/main/githubmirror/bypass/bypass-all.txt",
-  "rules_base": "https://raw.githubusercontent.com/KaringX/karing-ruleset/sing/",
+  "ru_cidrs_url": "https://raw.githubusercontent.com/KaringX/karing-ruleset/sing/geo/geoip/ru.json",
   "max_nodes": 24,
-  "excluded_country": "ru",
-  "rules": [
-    {"action": "direct", "path": "ACL4SSR/LocalAreaNetwork.json"},
-    {"action": "block", "path": "ACL4SSR/BanAD.json"},
-    {"action": "proxy", "path": "ACL4SSR/Ruleset/OpenAi.json"},
-    {"action": "proxy", "path": "ACL4SSR/Ruleset/Telegram.json"},
-    {"action": "proxy", "path": "ACL4SSR/Ruleset/Discord.json"},
-    {"action": "proxy", "path": "ACL4SSR/Ruleset/Steam.json"},
-    {"action": "proxy", "path": "ACL4SSR/Ruleset/Epic.json"},
-    {"action": "proxy", "path": "ACL4SSR/Ruleset/Origin.json"},
-    {"action": "proxy", "path": "ACL4SSR/Ruleset/Sony.json"},
-    {"action": "proxy", "path": "ACL4SSR/Ruleset/Nintendo.json"},
-    {"action": "direct", "path": "geo/geosite/category-ru.json"},
-    {"action": "direct", "path": "geo/geoip/ru.json"}
-  ]
+  "excluded_country": "ru"
 }
