@@ -27,8 +27,8 @@
       "action": "block",
       "enabled": true,
       "upstream_switch": true,
-      "sites": 40078,
-      "cidrs": 1518
+      "sites": 39780,
+      "cidrs": 1496
     },
     {
       "tag": "kg04",
@@ -185,22 +185,22 @@
     {
       "reference": "geosite:malware",
       "url": "https://raw.githubusercontent.com/KaringX/karing-ruleset/sing/geo/geosite/malware.srs",
-      "sha256": "6006a8776cc94b871e36b27126459961d5094ef6de55b368d81e8ac0a4bbf5a3"
+      "sha256": "ac525daf9d7df8be41a904b4daec2d7caa8150273012789e9a7a378424099bae"
     },
     {
       "reference": "geoip:malware",
       "url": "https://raw.githubusercontent.com/KaringX/karing-ruleset/sing/geo/geoip/malware.srs",
-      "sha256": "c14f3557b7dc42347589b0dd967b355c4be6f07582d3f4757d0c223453a161c3"
+      "sha256": "fb33475017be6bea1d10e85f49856dc30baf84e3b2a8e343e8090ae2bbe8b11e"
     },
     {
       "reference": "geoip:phishing",
       "url": "https://raw.githubusercontent.com/KaringX/karing-ruleset/sing/geo/geoip/phishing.srs",
-      "sha256": "c6130f2da42329b177664a8ff544d2f0280854f562d8af31c1e2cce67dba766b"
+      "sha256": "a6ffdd1d44d21a98eec2d3ce1f1c5a0c58d372633c71ebc234c3244ea88ec775"
     },
     {
       "reference": "geosite:phishing",
       "url": "https://raw.githubusercontent.com/KaringX/karing-ruleset/sing/geo/geosite/phishing.srs",
-      "sha256": "dd46fa86d1236a10b95cb9586f0da0f96a571202d9997dd5274b1865731f322d"
+      "sha256": "32d3a631b04b74a1671055b1e26fd0c122f3c810c906229f45b58e2e30cf2b94"
     },
     {
       "reference": "geosite:cryptominers",
@@ -359,7 +359,7 @@
     },
     {
       "reference": "category-ads-all",
-      "sha256": "710375798412eb5e535269195b2151779ab27d80752bd8534036109047c0a1c4",
+      "sha256": "d06efcf17d30eb9f3c6b39047eb5fed6bb5ad17a88ff0e653b76f2d615c0a796",
       "url": "https://raw.githubusercontent.com/KaringX/karing-ruleset/sing/geo/geosite/category-ads-all.json"
     },
     {
@@ -369,23 +369,23 @@
     }
   ],
   "xray_validated": true,
-  "config_utf16_bytes": 71954,
+  "config_utf16_bytes": 71786,
   "geofiles_sha256": {
-    "geosite.dat": "50293865c809d1c0f55abd185e3ac600f8e53b42bfe68bca23e32d692473195a",
-    "geoip.dat": "06cff93e6c04ba8b2751e8c416b81a01a98d7f753aadf53d5c4a98418546f3c1"
+    "geosite.dat": "bf2492dc2a0ea6c4d130977549481337695f1a5fc52c0a196c112b6c5c4b61fb",
+    "geoip.dat": "de9124a06fe55c94c5f92e5c5abf5b669cd3dfca568f6d2664d1813b613d1c3e"
   },
   "requires_geodata_import": true,
   "preserved_ru_direct": true,
-  "generated_at_utc": "2026-10-03T17:57:21Z",
+  "generated_at_utc": "2026-10-03T21:14:30Z",
   "variants": [
     {
       "name": "Автовыбор",
       "servers": 24,
-      "config_utf16_bytes": 73782
+      "config_utf16_bytes": 73614
     }
   ],
   "fakedns": true,
   "happ_import_verified": false,
   "happ_self_contained": true,
-  "happ_bytes": 5988863
+  "happ_bytes": 5975967
 }

@@ -1,15 +1,15 @@
 {
-  "generated_at_utc": "2026-10-03T17:57:15Z",
+  "generated_at_utc": "2026-10-03T21:14:24Z",
   "source": "https://raw.githubusercontent.com/whoahaow/rjsxrd/main/githubmirror/bypass/bypass-all.txt",
-  "source_sha256": "7e50a49aeab29e3e1d838aa52e2dc615e2199645a1f0eb6991c13cc2c779e249",
+  "source_sha256": "54d9a8c504d1ce3844cf0ea41b7a0297371b5b8bcb5d3f890c445163ca4ec296",
   "counts": {
-    "source_nodes": 260,
-    "russian_label": 40,
-    "duplicate": 12,
-    "unsupported_or_invalid": 23,
-    "russian_or_unresolved_endpoint": 33
+    "source_nodes": 396,
+    "russian_label": 77,
+    "unsupported_or_invalid": 46,
+    "duplicate": 13,
+    "russian_or_unresolved_endpoint": 35
   },
-  "eligible": 152,
+  "eligible": 225,
   "selected": 24,
   "xray_validated": true,
   "actual_egress_checked": true,
@@ -31,13 +31,13 @@
     {
       "category": "category-ru",
       "url": "https://raw.githubusercontent.com/KaringX/karing-ruleset/sing/geo/geosite/category-ru.json",
-      "sha256": "c6271919b25a69701dad00eeac4621ed8f4df3acbe80bd52eada7907d77e6267",
+      "sha256": "e1ec25b00128124ae6dc5d5af0f1187486363008eae2978fc231d9363d4a61cb",
       "entries": 1105
     },
     {
       "category": "category-ads-all",
       "url": "https://raw.githubusercontent.com/KaringX/karing-ruleset/sing/geo/geosite/category-ads-all.json",
-      "sha256": "710375798412eb5e535269195b2151779ab27d80752bd8534036109047c0a1c4",
+      "sha256": "d06efcf17d30eb9f3c6b39047eb5fed6bb5ad17a88ff0e653b76f2d615c0a796",
       "entries": 911
     },
     {
@@ -48,6 +48,6 @@
     }
   ],
   "client_geoip": "geoip:ru from INCY installed geoip.dat; updated by INCY, not this JSON",
-  "config_utf16_bytes": 118922,
-  "config_utf8_bytes": 59461
+  "config_utf16_bytes": 118754,
+  "config_utf8_bytes": 59377
 }
