@@ -4,6 +4,7 @@ Publish a separate full config: existing clients need to install the associated
 geofiles once before switching. The current ru.json remains usable throughout.
 """
 import argparse
+import base64
 import concurrent.futures
 import copy
 import hashlib
@@ -89,41 +90,50 @@ def assemble(profile, lists, old, extras):
     return config, site_groups, ip_groups, groups
 
 
-def protocol_variants(config):
-    """One full config per selectable protocol, with the same routing policy."""
-    proxies = [o for o in config['outbounds'] if o.get('tag', '').startswith('pool-')]
+def automatic_config(config):
+    variant = copy.deepcopy(config)
+    proxies = [o for o in variant['outbounds'] if o.get('tag', '').startswith('pool-')]
     if not proxies:
-        raise ValueError('no checked proxy servers for protocol variants')
-    labels = {'vless': 'VLESS', 'shadowsocks': 'Shadowsocks', 'trojan': 'Trojan', 'vmess': 'VMess'}
-    if any(o['protocol'] not in labels for o in proxies):
-        raise ValueError('unsupported protocol in checked proxy pool')
-    variants = []
-    choices = [('Автовыбор', proxies)]
-    choices.extend((label, [o for o in proxies if o['protocol'] == protocol]) for protocol, label in labels.items())
-    for label, selected in choices:
-        if not selected:
-            continue
-        variant = copy.deepcopy(config)
-        tags = {o['tag'] for o in selected}
-        variant['outbounds'] = [o for o in variant['outbounds'] if not o.get('tag', '').startswith('pool-') or o['tag'] in tags]
-        chosen = [o for o in variant['outbounds'] if o.get('tag') in tags]
-        old_tag = chosen[0]['tag']
-        chosen[0]['tag'] = label
-        variant['remarks'] = label
-        # Some INCY versions name full configs after the first proxy outbound.
-        # Explicit selectors keep that renamed server in both probes and pool.
-        selected_tags = [o['tag'] for o in chosen]
-        for rule in variant['routing']['rules']:
-            if rule.get('outboundTag') == old_tag:
-                rule['outboundTag'] = label
-        for balancer in variant['routing']['balancers']:
-            balancer['selector'] = selected_tags[:]
-        for key in ('observatory', 'burstObservatory'):
-            if key in variant:
-                variant[key]['subjectSelector'] = selected_tags[:]
-        serialized_config(variant)  # Android size guard applies per entry.
-        variants.append(variant)
-    return variants
+        raise ValueError('no checked proxy servers for automatic pool')
+    old_tag = proxies[0]['tag']
+    label = 'Автовыбор'
+    proxies[0]['tag'] = label
+    variant['remarks'] = label
+    tags = [o['tag'] for o in proxies]
+    for rule in variant['routing']['rules']:
+        if rule.get('outboundTag') == old_tag:
+            rule['outboundTag'] = label
+    for balancer in variant['routing']['balancers']:
+        balancer['selector'] = tags[:]
+    for key in ('observatory', 'burstObservatory'):
+        if key in variant:
+            variant[key]['subjectSelector'] = tags[:]
+    serialized_config(variant)
+    return variant
+
+
+def with_fakedns(config):
+    variant = copy.deepcopy(config)
+    variant['fakedns'] = [{'ipPool': '198.18.0.0/15', 'poolSize': 4096}]
+    # External DNS gets synthetic IPs. Xray's internal resolver excludes the
+    # FakeDNS server when real IPs are needed for dialing and GeoIP matching.
+    variant['dns'] = {'tag': 'dns-bootstrap', 'queryStrategy': 'UseIPv4', 'servers': ['fakedns', '1.1.1.1']}
+    for inbound in variant['inbounds']:
+        sniffing = inbound.setdefault('sniffing', {})
+        sniffing.update({'enabled': True, 'routeOnly': False})
+        sniffing['destOverride'] = list(dict.fromkeys(['fakedns', *sniffing.get('destOverride', ['http', 'tls', 'quic'])]))
+    variant['outbounds'].append({'tag': 'dns-out', 'protocol': 'dns'})
+    variant['routing']['rules'][:0] = [
+        {'type': 'field', 'inboundTag': ['dns-bootstrap'], 'outboundTag': 'direct'},
+        {'type': 'field', 'inboundTag': [i['tag'] for i in variant['inbounds']], 'port': '53', 'network': 'tcp,udp', 'outboundTag': 'dns-out'},
+    ]
+    return variant
+
+
+def happ_subscription(config, profile):
+    serialized_config(config)
+    encoded = base64.b64encode(json.dumps(profile, ensure_ascii=False, separators=(',', ':')).encode()).decode('ascii')
+    return json.dumps([config], ensure_ascii=False, separators=(',', ':')) + '\n' + 'happ://routing/onadd/' + encoded + '\n#profile-update-interval: 1\n'
 
 
 def incy_subscription(config):
@@ -195,8 +205,8 @@ def main():
         for filename, content in geo_files.items():
             (temp / filename).write_bytes(content)
         text = serialized_config(config)
-        variants = protocol_variants(config)
-        incy_body = incy_subscription(variants)
+        variants = [with_fakedns(automatic_config(config))]
+        incy_body = incy_subscription(variants[0])
         # Validation needs these specific custom assets, never a global install.
         prior = os.environ.get('XRAY_LOCATION_ASSET')
         os.environ['XRAY_LOCATION_ASSET'] = str(temp)
@@ -215,8 +225,12 @@ def main():
             route_profile[prefix + 'Ip'].extend(rule.get('ip', []))
         for key in ('DirectSites', 'DirectIp', 'ProxySites', 'ProxyIp', 'BlockSites', 'BlockIp'):
             route_profile[key] = list(dict.fromkeys(route_profile[key]))
+        route_profile.update({'FakeDNS': 'true', 'RemoteDNSType': 'DoU', 'RemoteDNSIP': '1.1.1.1', 'RemoteDNSDomain': ''})
+        happ_body = happ_subscription(variants[0], route_profile)
         report = {'profile_url': BASE + 'recommend/ru.json', 'profile_sha256': hashlib.sha256(profile_data).hexdigest(), 'all_groups_enabled': True, 'groups': groups, 'sources': sources, 'xray_validated': True, 'config_utf16_bytes': len(text.encode('utf-16-le')), 'geofiles_sha256': {name: hashlib.sha256(content).hexdigest() for name, content in geo_files.items()}, 'requires_geodata_import': True, 'preserved_ru_direct': True, 'generated_at_utc': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())}
         report['variants'] = [{'name': v['remarks'], 'servers': sum(o['protocol'] in ('vless', 'shadowsocks', 'trojan', 'vmess') for o in v['outbounds']), 'config_utf16_bytes': len(serialized_config(v).encode('utf-16-le'))} for v in variants]
+        report['fakedns'] = True
+        report['happ_import_verified'] = False
         # Do not touch active ru.json. Publish complete new variant after checks.
         for filename, content in geo_files.items():
             out = ROOT / ('karing-' + filename)
@@ -225,6 +239,7 @@ def main():
             tmp.replace(out)
         atomic_write(ROOT / 'ru-karing.json', text)
         atomic_write(ROOT / 'ru-karing-incy.txt', incy_body)
+        atomic_write(ROOT / 'ru-karing-happ.txt', happ_body)
         atomic_write(ROOT / 'karing-routing.json', json.dumps(route_profile, ensure_ascii=False, indent=2) + '\n')
         atomic_write(ROOT / 'karing-report.json', json.dumps(report, ensure_ascii=False, indent=2) + '\n')
         print(json.dumps({'groups': len(groups), 'config_bytes': len(text.encode()), 'geofiles_bytes': {name: len(content) for name, content in geo_files.items()}, 'xray_validated': True}))

@@ -1,6 +1,7 @@
+import base64
 import json
 import unittest
-from karing import assemble, matchers, incy_subscription, protocol_variants, PUBLIC
+from karing import assemble, matchers, incy_subscription, automatic_config, with_fakedns, happ_subscription, PUBLIC
 from routing import policy
 from geo_dat import geoip, geosite
 from generate import diverse_pool
@@ -14,22 +15,30 @@ class KaringTests(unittest.TestCase):
         self.assertEqual(len(diverse_pool(nodes, 100)), 93)
         self.assertEqual(diverse_pool([], 24), [])
 
-    def test_protocol_variants_keep_policy_and_select_only_their_servers(self):
+    def test_single_auto_pool_keeps_all_protocols_and_routing(self):
         config = {'inbounds': [], 'outbounds': [{'tag': 'block', 'protocol': 'blackhole'}, {'tag': 'pool-01', 'protocol': 'vless'}, {'tag': 'pool-02', 'protocol': 'trojan'}, {'tag': 'pool-03', 'protocol': 'vless'}, {'tag': 'direct', 'protocol': 'freedom'}], 'routing': {'rules': [{'ip': ['geoip:ru'], 'outboundTag': 'direct'}, {'network': 'tcp,udp', 'balancerTag': 'auto'}], 'balancers': [{'tag': 'auto', 'selector': ['pool-'], 'fallbackTag': 'block', 'strategy': {'type': 'leastPing'}}]}, 'burstObservatory': {'subjectSelector': ['pool-'], 'pingConfig': {'interval': '30s'}}}
-        variants = protocol_variants(config)
-        self.assertEqual([v['remarks'] for v in variants], ['Автовыбор', 'VLESS', 'Trojan'])
-        for variant, protocols in zip(variants, [('vless', 'trojan', 'vless'), ('vless', 'vless'), ('trojan',)]):
-            proxies = [o for o in variant['outbounds'] if o['protocol'] not in ('blackhole', 'freedom')]
-            self.assertEqual(tuple(o['protocol'] for o in proxies), protocols)
-            self.assertEqual(variant['routing']['rules'], config['routing']['rules'])
-            tags = [o['tag'] for o in proxies]
-            self.assertEqual(variant['routing']['balancers'][0]['selector'], tags)
-            self.assertEqual(variant['burstObservatory']['subjectSelector'], tags)
-            self.assertEqual(variant['routing']['balancers'][0]['fallbackTag'], 'block')
-            self.assertEqual(variant['outbounds'][0]['protocol'], 'blackhole')
+        variant = automatic_config(config)
+        self.assertEqual(variant['routing']['rules'], config['routing']['rules'])
+        proxies = [o for o in variant['outbounds'] if o['protocol'] not in ('blackhole', 'freedom')]
+        self.assertEqual([o['protocol'] for o in proxies], ['vless', 'trojan', 'vless'])
+        self.assertEqual(variant['routing']['balancers'][0]['selector'], [o['tag'] for o in proxies])
+        self.assertEqual(variant['burstObservatory']['subjectSelector'], [o['tag'] for o in proxies])
         self.assertEqual(config['outbounds'][1]['tag'], 'pool-01')
-        body = incy_subscription(variants)
-        self.assertEqual(json.loads(body.splitlines()[0]), variants)
+        self.assertIsInstance(json.loads(incy_subscription(variant).splitlines()[0]), dict)
+
+    def test_happ_bundles_profile_and_fakedns_without_changing_routes(self):
+        original = {'inbounds': [{'tag': 'socks-in', 'sniffing': {'destOverride': ['tls'], 'routeOnly': True}}], 'outbounds': [{'tag': 'direct', 'protocol': 'freedom'}], 'routing': {'rules': [{'ip': ['geoip:ru'], 'outboundTag': 'direct'}, {'network': 'tcp,udp', 'balancerTag': 'auto'}]}}
+        config = with_fakedns(original)
+        self.assertEqual(config['routing']['rules'][2:], original['routing']['rules'])
+        self.assertFalse(config['inbounds'][0]['sniffing']['routeOnly'])
+        self.assertIn('fakedns', config['inbounds'][0]['sniffing']['destOverride'])
+        self.assertEqual(config['routing']['rules'][0]['inboundTag'], ['dns-bootstrap'])
+        profile = {'Name': 'test', 'FakeDNS': 'true', 'Geositeurl': PUBLIC + 'karing-geosite.dat'}
+        lines = happ_subscription(config, profile).splitlines()
+        self.assertEqual(json.loads(lines[0]), [config])
+        encoded = lines[1].removeprefix('happ://routing/onadd/')
+        self.assertEqual(json.loads(base64.b64decode(encoded)), profile)
+        self.assertNotIn('dns', original)
 
     def test_incy_transport_preserves_full_config_and_remote_profile(self):
         config = {'inbounds': [], 'outbounds': [], 'routing': {'rules': [{'ip': ['geoip:ru'], 'outboundTag': 'direct'}, {'network': 'tcp,udp', 'balancerTag': 'auto'}], 'balancers': [{'tag': 'auto'}]}, 'burstObservatory': {'subjectSelector': ['pool-']}}
