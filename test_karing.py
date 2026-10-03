@@ -3,9 +3,17 @@ import unittest
 from karing import assemble, matchers, incy_subscription, protocol_variants, PUBLIC
 from routing import policy
 from geo_dat import geoip, geosite
+from generate import diverse_pool
 
 
 class KaringTests(unittest.TestCase):
+    def test_sampling_does_not_starve_protocols_late_in_source(self):
+        nodes = [{'outbound': {'protocol': protocol}, 'id': i} for i, protocol in enumerate(['vless'] * 90 + ['shadowsocks'] * 2 + ['trojan'])]
+        sample = diverse_pool(nodes, 6)
+        self.assertEqual([n['id'] for n in sample], [0, 90, 92, 1, 91, 2])
+        self.assertEqual(len(diverse_pool(nodes, 100)), 93)
+        self.assertEqual(diverse_pool([], 24), [])
+
     def test_protocol_variants_keep_policy_and_select_only_their_servers(self):
         config = {'inbounds': [], 'outbounds': [{'tag': 'block', 'protocol': 'blackhole'}, {'tag': 'pool-01', 'protocol': 'vless'}, {'tag': 'pool-02', 'protocol': 'trojan'}, {'tag': 'pool-03', 'protocol': 'vless'}, {'tag': 'direct', 'protocol': 'freedom'}], 'routing': {'rules': [{'ip': ['geoip:ru'], 'outboundTag': 'direct'}, {'network': 'tcp,udp', 'balancerTag': 'auto'}], 'balancers': [{'tag': 'auto', 'selector': ['pool-'], 'fallbackTag': 'block', 'strategy': {'type': 'leastPing'}}]}, 'burstObservatory': {'subjectSelector': ['pool-'], 'pingConfig': {'interval': '30s'}}}
         variants = protocol_variants(config)

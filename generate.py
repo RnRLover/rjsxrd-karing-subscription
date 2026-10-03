@@ -123,6 +123,21 @@ def parse_node(line):
     stream.pop("fingerprint", None)
     return {"host": cfg.host, "label": urllib.parse.unquote(cfg.remark), "outbound": outbound, "uri": line}
 
+def diverse_pool(nodes, limit):
+    """Round robin across protocols, retaining upstream order within each."""
+    groups = {}
+    for node in nodes:
+        groups.setdefault(node['outbound']['protocol'], []).append(node)
+    result, index = [], 0
+    while len(result) < limit:
+        batch = [group[index] for group in groups.values() if index < len(group)]
+        if not batch:
+            break
+        result.extend(batch[:limit - len(result)])
+        index += 1
+    return result
+
+
 def build(nodes, routing):
     if len(nodes) < 2: raise ValueError("need at least two eligible exits")
     proxies = []
@@ -250,12 +265,13 @@ def main():
         allowed = dict(zip(hosts, executor.map(lambda h: endpoint_allowed(h, ranges), hosts)))
     eligible = [n for n in candidates if allowed[n["host"]]]
     counters["russian_or_unresolved_endpoint"] = len(candidates) - len(eligible)
-    # Upstream already sorts by its measured quality. Preserve that order.
-    checked = eligible[:max(settings["max_nodes"] * 3, 72)]
+    # Keep upstream quality order within each protocol, without starving types
+    # that appear later in the source. All selections still need exit checks.
+    checked = diverse_pool(eligible, max(settings["max_nodes"] * 3, 72))
     if args.verify_exits:
         if not args.xray: raise ValueError("--verify-exits requires --xray")
         checked = verify_exits(checked, ranges, args.xray)
-    selected = checked[:settings["max_nodes"]]
+    selected = diverse_pool(checked, settings["max_nodes"])
     config = build(selected, routing)
     config_text = serialized_config(config)
     if args.xray: xray_validate(args.xray, config)
