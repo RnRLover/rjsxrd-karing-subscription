@@ -1,15 +1,15 @@
 {
-  "generated_at_utc": "2026-10-03T15:46:13Z",
+  "generated_at_utc": "2026-10-03T17:57:15Z",
   "source": "https://raw.githubusercontent.com/whoahaow/rjsxrd/main/githubmirror/bypass/bypass-all.txt",
-  "source_sha256": "a16a3eca8e7a0e4fa167217ff10dd1973fe3290aa34b95e9d89c2022b141b2c3",
+  "source_sha256": "7e50a49aeab29e3e1d838aa52e2dc615e2199645a1f0eb6991c13cc2c779e249",
   "counts": {
-    "source_nodes": 329,
-    "russian_label": 48,
-    "unsupported_or_invalid": 40,
-    "duplicate": 17,
-    "russian_or_unresolved_endpoint": 27
+    "source_nodes": 260,
+    "russian_label": 40,
+    "duplicate": 12,
+    "unsupported_or_invalid": 23,
+    "russian_or_unresolved_endpoint": 33
   },
-  "eligible": 197,
+  "eligible": 152,
   "selected": 24,
   "xray_validated": true,
   "actual_egress_checked": true,
@@ -22,9 +22,8 @@
   "excluded_country": "RU",
   "exclusion_basis": "source label, resolved endpoint IP, and (when enabled) actual HTTPS egress IP against RU CIDRs",
   "selected_protocols": {
-    "vless": 10,
-    "shadowsocks": 10,
-    "trojan": 2,
+    "vless": 11,
+    "shadowsocks": 11,
     "vmess": 2
   },
   "routing_policy": "ads block; local direct; Gemini/Google proxy before RU direct; everything else proxy",
@@ -49,6 +48,6 @@
     }
   ],
   "client_geoip": "geoip:ru from INCY installed geoip.dat; updated by INCY, not this JSON",
-  "config_utf16_bytes": 119806,
-  "config_utf8_bytes": 59903
+  "config_utf16_bytes": 118922,
+  "config_utf8_bytes": 59461
 }
