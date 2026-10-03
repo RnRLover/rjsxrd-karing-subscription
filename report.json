@@ -1,15 +1,15 @@
 {
-  "generated_at_utc": "2026-10-03T01:57:16Z",
+  "generated_at_utc": "2026-10-03T04:15:20Z",
   "source": "https://raw.githubusercontent.com/whoahaow/rjsxrd/main/githubmirror/bypass/bypass-all.txt",
-  "source_sha256": "6755ee1e98e6c2013ef619860aff5e4edf464eb76863d0f44b117d2643c59db7",
+  "source_sha256": "7a036e2bd5d43dfa3d71cea6c8659cd74b873c959a9241306a75d07b845ca84f",
   "counts": {
-    "source_nodes": 868,
-    "russian_label": 106,
-    "unsupported_or_invalid": 138,
-    "duplicate": 29,
-    "russian_or_unresolved_endpoint": 111
+    "source_nodes": 973,
+    "russian_label": 183,
+    "duplicate": 63,
+    "unsupported_or_invalid": 140,
+    "russian_or_unresolved_endpoint": 127
   },
-  "eligible": 484,
+  "eligible": 460,
   "selected": 24,
   "xray_validated": true,
   "actual_egress_checked": true,
@@ -46,6 +46,6 @@
     }
   ],
   "client_geoip": "geoip:ru from INCY installed geoip.dat; updated by INCY, not this JSON",
-  "config_utf16_bytes": 126814,
-  "config_utf8_bytes": 63407
+  "config_utf16_bytes": 125838,
+  "config_utf8_bytes": 62919
 }
