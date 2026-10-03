@@ -1,9 +1,8 @@
-import base64
 import json
 import unittest
-from karing import assemble, matchers, incy_subscription, automatic_config, with_fakedns, happ_subscription, PUBLIC
+from karing import assemble, matchers, incy_subscription, automatic_config, with_fakedns, happ_config, happ_subscription, PUBLIC
 from routing import policy
-from geo_dat import geoip, geosite
+from geo_dat import geoip, geosite, geoip_cidrs
 from generate import diverse_pool
 
 
@@ -26,19 +25,40 @@ class KaringTests(unittest.TestCase):
         self.assertEqual(config['outbounds'][1]['tag'], 'pool-01')
         self.assertIsInstance(json.loads(incy_subscription(variant).splitlines()[0]), dict)
 
-    def test_happ_bundles_profile_and_fakedns_without_changing_routes(self):
+    def test_happ_is_complete_json_with_fakedns_and_no_asset_dependency(self):
         original = {'inbounds': [{'tag': 'socks-in', 'sniffing': {'destOverride': ['tls'], 'routeOnly': True}}], 'outbounds': [{'tag': 'direct', 'protocol': 'freedom'}], 'routing': {'rules': [{'ip': ['geoip:ru'], 'outboundTag': 'direct'}, {'network': 'tcp,udp', 'balancerTag': 'auto'}]}}
         config = with_fakedns(original)
         self.assertEqual(config['routing']['rules'][2:], original['routing']['rules'])
         self.assertFalse(config['inbounds'][0]['sniffing']['routeOnly'])
         self.assertIn('fakedns', config['inbounds'][0]['sniffing']['destOverride'])
         self.assertEqual(config['routing']['rules'][0]['inboundTag'], ['dns-bootstrap'])
-        profile = {'Name': 'test', 'FakeDNS': 'true', 'Geositeurl': PUBLIC + 'karing-geosite.dat'}
-        lines = happ_subscription(config, profile).splitlines()
-        self.assertEqual(json.loads(lines[0]), [config])
-        encoded = lines[1].removeprefix('happ://routing/onadd/')
-        self.assertEqual(json.loads(base64.b64decode(encoded)), profile)
+        config['outbounds'].insert(0, {'tag': 'block', 'protocol': 'blackhole'})
+        config['outbounds'].append({'tag': 'Автовыбор', 'protocol': 'vless'})
+        config['routing']['rules'].insert(2, {'domain': ['geosite:kg01'], 'outboundTag': 'block'})
+        expanded = happ_config(config, {'kg01': ['full:ads.test']}, {'ru': ['192.0.2.0/24']})
+        body = happ_subscription(expanded)
+        # Parse the WHOLE response, not just its first line (the old bug).
+        self.assertEqual(json.loads(body), [expanded])
+        self.assertEqual(expanded['outbounds'][0]['protocol'], 'vless')
+        self.assertEqual(expanded['routing']['rules'][2]['domain'], ['full:ads.test'])
+        self.assertEqual(expanded['routing']['rules'][-2]['ip'], ['192.0.2.0/24'])
+        self.assertEqual(expanded['routing']['rules'][-1], config['routing']['rules'][-1])
+        self.assertNotIn('happ://', body)
+        self.assertNotIn('geoip:', body)
+        self.assertNotIn('geosite:', body)
         self.assertNotIn('dns', original)
+
+    def test_happ_refuses_missing_categories(self):
+        config = {'outbounds': [{'protocol': 'vless'}], 'routing': {'rules': [{'domain': ['geosite:missing']}]}}
+        with self.assertRaisesRegex(ValueError, 'missing inline category'):
+            happ_config(config, {}, {})
+
+    def test_geoip_export_preserves_exact_ipv4_ipv6_and_rejects_missing(self):
+        values = ['192.0.2.0/24', '2001:db8::/32', '0.0.0.0/0']
+        blob = geoip({'other': ['10.0.0.0/8'], 'ru': values})
+        self.assertEqual(geoip_cidrs(blob, 'RU'), values)
+        with self.assertRaisesRegex(ValueError, 'not found'):
+            geoip_cidrs(blob, 'missing')
 
     def test_incy_transport_preserves_full_config_and_remote_profile(self):
         config = {'inbounds': [], 'outbounds': [], 'routing': {'rules': [{'ip': ['geoip:ru'], 'outboundTag': 'direct'}, {'network': 'tcp,udp', 'balancerTag': 'auto'}], 'balancers': [{'tag': 'auto'}]}, 'burstObservatory': {'subjectSelector': ['pool-']}}

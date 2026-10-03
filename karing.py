@@ -4,7 +4,6 @@ Publish a separate full config: existing clients need to install the associated
 geofiles once before switching. The current ru.json remains usable throughout.
 """
 import argparse
-import base64
 import concurrent.futures
 import copy
 import hashlib
@@ -18,7 +17,7 @@ import urllib.request
 
 from generate import atomic_write, serialized_config, xray_validate
 from routing import domains, LOCAL_IPS, GOOGLE_APP_DOMAINS
-from geo_dat import geosite, geoip
+from geo_dat import geosite, geoip, geoip_cidrs
 
 ROOT = Path(__file__).resolve().parent
 BASE = 'https://raw.githubusercontent.com/KaringX/karing-ruleset/sing/'
@@ -130,10 +129,42 @@ def with_fakedns(config):
     return variant
 
 
-def happ_subscription(config, profile):
-    serialized_config(config)
-    encoded = base64.b64encode(json.dumps(profile, ensure_ascii=False, separators=(',', ':')).encode()).decode('ascii')
-    return json.dumps([config], ensure_ascii=False, separators=(',', ':')) + '\n' + 'happ://routing/onadd/' + encoded + '\n#profile-update-interval: 1\n'
+def happ_config(config, sites, ips):
+    """Self-contained full config: no custom client metadata or geo assets."""
+    result = copy.deepcopy(config)
+    for rule in result['routing']['rules']:
+        for key, prefix, categories in (('domain', 'geosite:', sites), ('ip', 'geoip:', ips)):
+            if key not in rule:
+                continue
+            expanded = []
+            for value in rule[key]:
+                if value.startswith(prefix):
+                    tag = value[len(prefix):].lower()
+                    if tag not in categories or not categories[tag]:
+                        raise ValueError('missing inline category: ' + value)
+                    expanded.extend(categories[tag])
+                elif value.startswith(('geosite:', 'geoip:', 'ext:')):
+                    raise ValueError('unresolved external matcher: ' + value)
+                else:
+                    expanded.append(value)
+            rule[key] = list(dict.fromkeys(expanded))
+    # Match panel-generated full configs: a real proxy is first, with service
+    # outbounds after it. Explicit routing and balancer tags stay unchanged.
+    proxies = [o for o in result['outbounds'] if o['protocol'] in ('vless', 'vmess', 'trojan', 'shadowsocks')]
+    if not proxies:
+        raise ValueError('Happ config has no representative proxy')
+    result['outbounds'] = proxies + [o for o in result['outbounds'] if o not in proxies]
+    return result
+
+
+def happ_subscription(config):
+    body = json.dumps([config], ensure_ascii=False, separators=(',', ':')) + '\n'
+    # Separate from INCY's Binder budget: never pass this file to INCY.
+    if len(body.encode('utf-8')) > 15_000_000:
+        raise ValueError('self-contained Happ subscription exceeds 15 MB')
+    if len(json.loads(body)) != 1:
+        raise ValueError('Happ subscription must contain one full config')
+    return body
 
 
 def incy_subscription(config):
@@ -226,11 +257,17 @@ def main():
         for key in ('DirectSites', 'DirectIp', 'ProxySites', 'ProxyIp', 'BlockSites', 'BlockIp'):
             route_profile[key] = list(dict.fromkeys(route_profile[key]))
         route_profile.update({'FakeDNS': 'true', 'RemoteDNSType': 'DoU', 'RemoteDNSIP': '1.1.1.1', 'RemoteDNSDomain': ''})
-        happ_body = happ_subscription(variants[0], route_profile)
+        happ_ips = {**ips, 'ru': geoip_cidrs(geo_files['geoip.dat'], 'ru')}
+        happ_variant = happ_config(variants[0], sites, happ_ips)
+        happ_body = happ_subscription(happ_variant)
+        # A missing custom database must never break this independent variant.
+        xray_validate(args.xray, happ_variant)
         report = {'profile_url': BASE + 'recommend/ru.json', 'profile_sha256': hashlib.sha256(profile_data).hexdigest(), 'all_groups_enabled': True, 'groups': groups, 'sources': sources, 'xray_validated': True, 'config_utf16_bytes': len(text.encode('utf-16-le')), 'geofiles_sha256': {name: hashlib.sha256(content).hexdigest() for name, content in geo_files.items()}, 'requires_geodata_import': True, 'preserved_ru_direct': True, 'generated_at_utc': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())}
         report['variants'] = [{'name': v['remarks'], 'servers': sum(o['protocol'] in ('vless', 'shadowsocks', 'trojan', 'vmess') for o in v['outbounds']), 'config_utf16_bytes': len(serialized_config(v).encode('utf-16-le'))} for v in variants]
         report['fakedns'] = True
         report['happ_import_verified'] = False
+        report['happ_self_contained'] = True
+        report['happ_bytes'] = len(happ_body.encode('utf-8'))
         # Do not touch active ru.json. Publish complete new variant after checks.
         for filename, content in geo_files.items():
             out = ROOT / ('karing-' + filename)

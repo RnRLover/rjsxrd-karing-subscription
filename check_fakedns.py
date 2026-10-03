@@ -15,6 +15,7 @@ import time
 ROOT = Path(__file__).resolve().parent
 parser = argparse.ArgumentParser()
 parser.add_argument('--xray', required=True)
+parser.add_argument('--config', default='ru-karing.json')
 args = parser.parse_args()
 from karing import automatic_config, with_fakedns
 from generate import xray_validate
@@ -60,7 +61,15 @@ def echo_worker():
 
 threading.Thread(target=dns_worker, daemon=True).start()
 threading.Thread(target=echo_worker, daemon=True).start()
-config = with_fakedns(automatic_config(json.loads((ROOT / 'ru-karing.json').read_bytes())))
+config = json.loads((ROOT / args.config).read_bytes())
+if isinstance(config, list):
+    if len(config) != 1:
+        raise ValueError('expected one automatic full config')
+    config = config[0]
+if 'fakedns' not in config:
+    config = with_fakedns(automatic_config(config))
+# Isolate the DNS round trip from public proxy availability. Full production
+# balancers and routing were validated unchanged by karing.py before this test.
 config['log'] = {'loglevel': 'debug'}
 config.pop('burstObservatory', None)
 config['routing'].pop('balancers', None)
@@ -80,8 +89,10 @@ for inbound in config['inbounds']:
 port = config['inbounds'][0]['port']
 with tempfile.TemporaryDirectory() as temp:
     temp = Path(temp)
-    for name in ('geoip.dat', 'geosite.dat'):
-        (temp / name).write_bytes((ROOT / ('karing-' + name)).read_bytes())
+    needs_geo = any(value.startswith(('geoip:', 'geosite:', 'ext:')) for rule in config['routing']['rules'] for key in ('domain', 'ip') for value in rule.get(key, []))
+    if needs_geo:
+        for name in ('geoip.dat', 'geosite.dat'):
+            (temp / name).write_bytes((ROOT / ('karing-' + name)).read_bytes())
     os.environ['XRAY_LOCATION_ASSET'] = str(temp)
     xray = Path(args.xray).resolve()
     xray_validate(xray, config)
