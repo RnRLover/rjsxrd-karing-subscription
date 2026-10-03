@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-10-03T04:15:20Z",
+  "generated_at_utc": "2026-10-03T04:18:39Z",
   "source": "https://raw.githubusercontent.com/whoahaow/rjsxrd/main/githubmirror/bypass/bypass-all.txt",
   "source_sha256": "7a036e2bd5d43dfa3d71cea6c8659cd74b873c959a9241306a75d07b845ca84f",
   "counts": {
@@ -22,7 +22,10 @@
   "excluded_country": "RU",
   "exclusion_basis": "source label, resolved endpoint IP, and (when enabled) actual HTTPS egress IP against RU CIDRs",
   "selected_protocols": {
-    "vless": 24
+    "vless": 8,
+    "shadowsocks": 7,
+    "trojan": 6,
+    "vmess": 3
   },
   "routing_policy": "ads block; local direct; Gemini/Google proxy before RU direct; everything else proxy",
   "geosite_sources": [
@@ -46,6 +49,6 @@
     }
   ],
   "client_geoip": "geoip:ru from INCY installed geoip.dat; updated by INCY, not this JSON",
-  "config_utf16_bytes": 125838,
-  "config_utf8_bytes": 62919
+  "config_utf16_bytes": 122278,
+  "config_utf8_bytes": 61139
 }
