@@ -369,39 +369,39 @@
     }
   ],
   "xray_validated": true,
-  "config_utf16_bytes": 73102,
+  "config_utf16_bytes": 72478,
   "geofiles_sha256": {
     "geosite.dat": "50293865c809d1c0f55abd185e3ac600f8e53b42bfe68bca23e32d692473195a",
     "geoip.dat": "06cff93e6c04ba8b2751e8c416b81a01a98d7f753aadf53d5c4a98418546f3c1"
   },
   "requires_geodata_import": true,
   "preserved_ru_direct": true,
-  "generated_at_utc": "2026-10-03T08:06:18Z",
+  "generated_at_utc": "2026-10-03T13:23:29Z",
   "variants": [
     {
       "name": "Автовыбор",
       "servers": 24,
-      "config_utf16_bytes": 74006
+      "config_utf16_bytes": 73382
     },
     {
       "name": "VLESS",
       "servers": 10,
-      "config_utf16_bytes": 66686
+      "config_utf16_bytes": 66818
     },
     {
       "name": "Shadowsocks",
-      "servers": 10,
-      "config_utf16_bytes": 61986
+      "servers": 11,
+      "config_utf16_bytes": 62272
     },
     {
       "name": "Trojan",
-      "servers": 2,
-      "config_utf16_bytes": 59698
+      "servers": 1,
+      "config_utf16_bytes": 58722
     },
     {
       "name": "VMess",
       "servers": 2,
-      "config_utf16_bytes": 59678
+      "config_utf16_bytes": 59612
     }
   ]
 }
