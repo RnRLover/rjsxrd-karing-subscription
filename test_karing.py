@@ -1,11 +1,28 @@
 import json
 import unittest
-from karing import assemble, matchers, incy_subscription, PUBLIC
+from karing import assemble, matchers, incy_subscription, protocol_variants, PUBLIC
 from routing import policy
 from geo_dat import geoip, geosite
 
 
 class KaringTests(unittest.TestCase):
+    def test_protocol_variants_keep_policy_and_select_only_their_servers(self):
+        config = {'inbounds': [], 'outbounds': [{'tag': 'block', 'protocol': 'blackhole'}, {'tag': 'pool-01', 'protocol': 'vless'}, {'tag': 'pool-02', 'protocol': 'trojan'}, {'tag': 'pool-03', 'protocol': 'vless'}, {'tag': 'direct', 'protocol': 'freedom'}], 'routing': {'rules': [{'ip': ['geoip:ru'], 'outboundTag': 'direct'}, {'network': 'tcp,udp', 'balancerTag': 'auto'}], 'balancers': [{'tag': 'auto', 'selector': ['pool-'], 'fallbackTag': 'block', 'strategy': {'type': 'leastPing'}}]}, 'burstObservatory': {'subjectSelector': ['pool-'], 'pingConfig': {'interval': '30s'}}}
+        variants = protocol_variants(config)
+        self.assertEqual([v['remarks'] for v in variants], ['Автовыбор', 'VLESS', 'Trojan'])
+        for variant, protocols in zip(variants, [('vless', 'trojan', 'vless'), ('vless', 'vless'), ('trojan',)]):
+            proxies = [o for o in variant['outbounds'] if o['protocol'] not in ('blackhole', 'freedom')]
+            self.assertEqual(tuple(o['protocol'] for o in proxies), protocols)
+            self.assertEqual(variant['routing']['rules'], config['routing']['rules'])
+            tags = [o['tag'] for o in proxies]
+            self.assertEqual(variant['routing']['balancers'][0]['selector'], tags)
+            self.assertEqual(variant['burstObservatory']['subjectSelector'], tags)
+            self.assertEqual(variant['routing']['balancers'][0]['fallbackTag'], 'block')
+            self.assertEqual(variant['outbounds'][0]['protocol'], 'blackhole')
+        self.assertEqual(config['outbounds'][1]['tag'], 'pool-01')
+        body = incy_subscription(variants)
+        self.assertEqual(json.loads(body.splitlines()[0]), variants)
+
     def test_incy_transport_preserves_full_config_and_remote_profile(self):
         config = {'inbounds': [], 'outbounds': [], 'routing': {'rules': [{'ip': ['geoip:ru'], 'outboundTag': 'direct'}, {'network': 'tcp,udp', 'balancerTag': 'auto'}], 'balancers': [{'tag': 'auto'}]}, 'burstObservatory': {'subjectSelector': ['pool-']}}
         lines = incy_subscription(config).splitlines()

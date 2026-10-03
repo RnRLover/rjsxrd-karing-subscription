@@ -89,6 +89,43 @@ def assemble(profile, lists, old, extras):
     return config, site_groups, ip_groups, groups
 
 
+def protocol_variants(config):
+    """One full config per selectable protocol, with the same routing policy."""
+    proxies = [o for o in config['outbounds'] if o.get('tag', '').startswith('pool-')]
+    if not proxies:
+        raise ValueError('no checked proxy servers for protocol variants')
+    labels = {'vless': 'VLESS', 'shadowsocks': 'Shadowsocks', 'trojan': 'Trojan', 'vmess': 'VMess'}
+    if any(o['protocol'] not in labels for o in proxies):
+        raise ValueError('unsupported protocol in checked proxy pool')
+    variants = []
+    choices = [('Автовыбор', proxies)]
+    choices.extend((label, [o for o in proxies if o['protocol'] == protocol]) for protocol, label in labels.items())
+    for label, selected in choices:
+        if not selected:
+            continue
+        variant = copy.deepcopy(config)
+        tags = {o['tag'] for o in selected}
+        variant['outbounds'] = [o for o in variant['outbounds'] if not o.get('tag', '').startswith('pool-') or o['tag'] in tags]
+        chosen = [o for o in variant['outbounds'] if o.get('tag') in tags]
+        old_tag = chosen[0]['tag']
+        chosen[0]['tag'] = label
+        variant['remarks'] = label
+        # Some INCY versions name full configs after the first proxy outbound.
+        # Explicit selectors keep that renamed server in both probes and pool.
+        selected_tags = [o['tag'] for o in chosen]
+        for rule in variant['routing']['rules']:
+            if rule.get('outboundTag') == old_tag:
+                rule['outboundTag'] = label
+        for balancer in variant['routing']['balancers']:
+            balancer['selector'] = selected_tags[:]
+        for key in ('observatory', 'burstObservatory'):
+            if key in variant:
+                variant[key]['subjectSelector'] = selected_tags[:]
+        serialized_config(variant)  # Android size guard applies per entry.
+        variants.append(variant)
+    return variants
+
+
 def incy_subscription(config):
     """Experimental transport: full JSON plus INCY body metadata.
 
@@ -96,10 +133,13 @@ def incy_subscription(config):
     full JSON mixed with autorouting. Keep this separate until a real import
     confirms both fullConfigJson and geodata activation on the target client.
     """
-    text = serialized_config(config)
+    configs = config if isinstance(config, list) else [config]
+    for item in configs:
+        serialized_config(item)
+    text = json.dumps(config, ensure_ascii=False, separators=(',', ':')) + '\n'
     body = text + '://autorouting/onadd/' + PUBLIC + 'karing-routing.json\n' + '#profile-update-interval: 1\n'
-    if len(body.encode('utf-16-le')) > 250_000:
-        raise ValueError('INCY subscription exceeds Android size budget')
+    if len(body.encode('utf-8')) > 2_000_000:
+        raise ValueError('INCY subscription exceeds download size budget')
     return body
 
 
@@ -155,12 +195,15 @@ def main():
         for filename, content in geo_files.items():
             (temp / filename).write_bytes(content)
         text = serialized_config(config)
-        incy_body = incy_subscription(config)
+        variants = protocol_variants(config)
+        incy_body = incy_subscription(variants)
         # Validation needs these specific custom assets, never a global install.
         prior = os.environ.get('XRAY_LOCATION_ASSET')
         os.environ['XRAY_LOCATION_ASSET'] = str(temp)
         try:
             xray_validate(args.xray, config)
+            for variant in variants:
+                xray_validate(args.xray, variant)
         finally:
             if prior is None: os.environ.pop('XRAY_LOCATION_ASSET', None)
             else: os.environ['XRAY_LOCATION_ASSET'] = prior
@@ -173,6 +216,7 @@ def main():
         for key in ('DirectSites', 'DirectIp', 'ProxySites', 'ProxyIp', 'BlockSites', 'BlockIp'):
             route_profile[key] = list(dict.fromkeys(route_profile[key]))
         report = {'profile_url': BASE + 'recommend/ru.json', 'profile_sha256': hashlib.sha256(profile_data).hexdigest(), 'all_groups_enabled': True, 'groups': groups, 'sources': sources, 'xray_validated': True, 'config_utf16_bytes': len(text.encode('utf-16-le')), 'geofiles_sha256': {name: hashlib.sha256(content).hexdigest() for name, content in geo_files.items()}, 'requires_geodata_import': True, 'preserved_ru_direct': True, 'generated_at_utc': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())}
+        report['variants'] = [{'name': v['remarks'], 'servers': sum(o['protocol'] in ('vless', 'shadowsocks', 'trojan', 'vmess') for o in v['outbounds']), 'config_utf16_bytes': len(serialized_config(v).encode('utf-16-le'))} for v in variants]
         # Do not touch active ru.json. Publish complete new variant after checks.
         for filename, content in geo_files.items():
             out = ROOT / ('karing-' + filename)
