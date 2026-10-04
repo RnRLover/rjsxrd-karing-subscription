@@ -24,7 +24,7 @@ ROOT = Path(__file__).resolve().parent
 BASE = 'https://raw.githubusercontent.com/KaringX/karing-ruleset/sing/'
 PUBLIC = 'https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/'
 REMOTE_DOH = 'https://dns.google/dns-query'
-DIRECT_DNS = ['77.88.8.8', '77.88.8.1']
+DIRECT_DNS = ['8.8.8.8', '8.8.4.4']
 
 
 def download(url):

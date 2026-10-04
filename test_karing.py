@@ -82,7 +82,7 @@ class KaringTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'missing inline category'):
             happ_config(config, {}, {})
 
-    def test_direct_dns_uses_yandex_without_overriding_prior_proxy_domain(self):
+    def test_direct_dns_uses_google_without_overriding_prior_proxy_domain(self):
         original = {'inbounds': [], 'outbounds': [{'tag': 'direct', 'protocol': 'freedom'}, {'tag': 'pool-01', 'protocol': 'vless'}], 'routing': {'rules': [
             {'domain': ['geosite:google'], 'balancerTag': 'auto'},
             {'domain': ['geosite:ru'], 'outboundTag': 'direct'},
@@ -90,7 +90,7 @@ class KaringTests(unittest.TestCase):
             {'network': 'tcp,udp', 'balancerTag': 'auto'}]}}
         config = with_fakedns(original)
         servers = config['dns']['servers']
-        self.assertEqual([s['address'] for s in servers[:-1]], ['fakedns', '77.88.8.8', '77.88.8.1', REMOTE_DOH, '77.88.8.8', '77.88.8.1'])
+        self.assertEqual([s['address'] for s in servers[:-1]], ['fakedns', '8.8.8.8', '8.8.4.4', REMOTE_DOH, '8.8.8.8', '8.8.4.4'])
         self.assertEqual(servers[3]['domains'], ['geosite:google'])
         self.assertEqual(servers[3]['tag'], 'dns-proxy')
         self.assertEqual(servers[4]['domains'], ['geosite:ru'])
@@ -104,7 +104,7 @@ class KaringTests(unittest.TestCase):
     def test_client_profile_uses_documented_domestic_dns_and_retains_routes(self):
         config = {'routing': {'rules': [{'domain': ['geosite:kg01'], 'outboundTag': 'block'}, {'domain': ['domain:yandex.ru'], 'outboundTag': 'direct'}, {'network': 'tcp,udp', 'balancerTag': 'auto'}]}}
         profile = client_routing_profile(config)
-        self.assertEqual(profile['DomesticDNSIP'], '77.88.8.8')
+        self.assertEqual(profile['DomesticDNSIP'], '8.8.8.8')
         self.assertEqual(profile['DomesticDNSType'], 'DoU')
         self.assertEqual(profile['RemoteDNSType'], 'DoH')
         self.assertEqual(profile['RemoteDNSDomain'], REMOTE_DOH)

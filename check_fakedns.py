@@ -88,7 +88,7 @@ for i, item in enumerate(config['dns']['servers']):
     if address == 'fakedns':
         continue
     server = dict(item) if isinstance(item, dict) else {}
-    server.update({'address': '127.0.0.1', 'port': (dns if address in ('77.88.8.8', '77.88.8.1') else remote_dns).getsockname()[1]})
+    server.update({'address': '127.0.0.1', 'port': (dns if address in ('8.8.8.8', '8.8.4.4') else remote_dns).getsockname()[1]})
     config['dns']['servers'][i] = server
 config['routing']['rules'].insert(3, {'type': 'field', 'domain': ['full:music.yandex.ru'], 'outboundTag': 'direct'})
 for inbound in config['inbounds']:
@@ -143,8 +143,8 @@ with tempfile.TemporaryDirectory() as temp:
             tcp.sendall(b'PING')
             assert receive(tcp, 4) == b'PONG'
         assert real_queries, 'internal real DNS fallback was not exercised'
-        assert not remote_queries, 'Yandex Music DNS went to the general resolver instead of Yandex'
-        print(json.dumps({'fake_ip': fake_ip, 'tcp_payload_roundtrip': True, 'internal_real_dns_fallback': True, 'yandex_music_dns_policy': True}))
+        assert not remote_queries, 'Yandex Music DNS went to the general resolver instead of direct Google DNS'
+        print(json.dumps({'fake_ip': fake_ip, 'tcp_payload_roundtrip': True, 'internal_real_dns_fallback': True, 'direct_site_google_dns_policy': True}))
         control.close()
     except Exception:
         log.flush()
