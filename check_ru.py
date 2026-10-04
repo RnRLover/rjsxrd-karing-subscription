@@ -1,4 +1,4 @@
-"""Check-Host TCP diagnostics from RU probes; never filters VPN pools."""
+"""Check-Host TCP probes for mandatory Russian reachability and diagnostics."""
 import argparse
 from concurrent.futures import ThreadPoolExecutor
 import ipaddress
@@ -94,14 +94,13 @@ def measure(target, nodes, request=get_json, sleep=time.sleep, deadline=None):
         result['status'] = 'reachable' if 'reachable' in states else ('unreachable' if states and all(s == 'unreachable' for s in states) else 'unknown')
         result['report_url'] = BASE + '/check-report/' + request_id
     except Exception:
-        # Diagnostic outages and rate limiting must not suppress publication.
+        # The caller decides whether unknown results must stop publication.
         result['diagnostic_error'] = 'API unavailable, invalid response, or measurement incomplete'
     return result
 
 
-def run(config_paths, output_dir, limit=48, request=get_json):
-    groups = {Path(p).stem: endpoints(json.loads(Path(p).read_bytes())) for p in config_paths}
-    targets = list(dict.fromkeys(t for group in groups.values() for t in group))[:limit]
+def probe_targets(targets, request=get_json, measure_fn=measure):
+    targets = list(dict.fromkeys(targets))
     try:
         inventory = request('/nodes/hosts')['nodes']
         nodes = {name: meta for name, meta in inventory.items() if meta.get('location', [''])[0] == 'ru'}
@@ -111,9 +110,37 @@ def run(config_paths, output_dir, limit=48, request=get_json):
     if nodes:
         deadline = time.monotonic() + 90
         with ThreadPoolExecutor(max_workers=2) as pool:
-            results = dict(zip(targets, pool.map(lambda target: measure(target, nodes, request, deadline=deadline), targets)))
+            results = dict(zip(targets, pool.map(lambda target: measure_fn(target, nodes, request, deadline=deadline), targets)))
     else:
         results = {}
+    return nodes, results
+
+
+def filter_candidates(candidates, request=get_json, measure_fn=measure):
+    """Fail closed on missing measurements; never send VPN credentials."""
+    group = endpoints({'outbounds': [{**node['outbound'], 'tag': str(i)}
+        for i, node in enumerate(candidates)]})
+    nodes, results = probe_targets(group, request, measure_fn)
+    if not nodes or not group or any(results.get(target, {}).get('status') not in
+        ('reachable', 'unreachable') for target in group):
+        raise ValueError('Russian reachability check unavailable or incomplete; preserve published pool')
+    accepted = {int(index) for target, indexes in group.items()
+        if results[target]['status'] == 'reachable' for index in indexes}
+    if not accepted:
+        raise ValueError('No candidates reachable from Russian probes; preserve published pool')
+    report = {'generated_at_utc': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
+        'service': BASE, 'measurement': 'TCP connection to entry host:port from Russian probes',
+        'filters_pool': True, 'criterion': 'at least one confirmed RU probe succeeds',
+        'vpn_handshake_checked': False, 'mobile_whitelist_checked': False, 'probes': nodes,
+        'candidate_configs': len(candidates), 'accepted_configs': len(accepted),
+        'results': [{**results[target], 'candidate_indices': indexes} for target, indexes in group.items()]}
+    return [node for i, node in enumerate(candidates) if i in accepted], report
+
+
+def run(config_paths, output_dir, limit=48, request=get_json):
+    groups = {Path(p).stem: endpoints(json.loads(Path(p).read_bytes())) for p in config_paths}
+    targets = list(dict.fromkeys(t for group in groups.values() for t in group))[:limit]
+    nodes, results = probe_targets(targets, request)
     reports = {}
     for name, group in groups.items():
         report = {'generated_at_utc': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()), 'service': BASE,

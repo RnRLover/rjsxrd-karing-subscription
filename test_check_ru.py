@@ -2,10 +2,39 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
-from check_ru import tcp_result, endpoint, endpoints, measure, run
+from check_ru import tcp_result, endpoint, endpoints, measure, run, filter_candidates
 
 
 class RussianProbeTests(unittest.TestCase):
+    def candidates(self):
+        return [{'outbound': {'protocol': 'trojan', 'settings': {'servers': [{'address': host, 'port': 443, 'password': 'secret'}]}}}
+                for host in ('1.1.1.1', '8.8.8.8', '1.1.1.1')]
+
+    def test_primary_filter_deduplicates_endpoints_and_excludes_failed_entries(self):
+        calls = []
+        def request(_): return {'nodes': {'ru1': {'location': ['ru', 'Russia']}, 'de1': {'location': ['de', 'Germany']}}}
+        def probe(target, nodes, request, deadline):
+            calls.append(target)
+            self.assertEqual(list(nodes), ['ru1'])
+            return {'endpoint': target, 'status': 'reachable' if target == '1.1.1.1:443' else 'unreachable'}
+        candidates = self.candidates()
+        accepted, report = filter_candidates(candidates, request, probe)
+        self.assertEqual(accepted, [candidates[0], candidates[2]])
+        self.assertEqual(sorted(calls), ['1.1.1.1:443', '8.8.8.8:443'])
+        self.assertTrue(report['filters_pool'])
+        self.assertNotIn('secret', json.dumps(report))
+
+    def test_primary_filter_refuses_partial_outage_or_empty_pool(self):
+        def request(_): return {'nodes': {'ru1': {'location': ['ru']}}}
+        for state in ('unknown', 'unreachable'):
+            def probe(target, nodes, request, deadline):
+                return {'endpoint': target, 'status': state}
+            with self.assertRaises(ValueError):
+                filter_candidates(self.candidates(), request, probe)
+        def unavailable(_): raise OSError('API down')
+        with self.assertRaises(ValueError):
+            filter_candidates(self.candidates(), unavailable)
+
     def test_tcp_success_is_not_icmp_ping_and_pending_is_unknown(self):
         self.assertEqual(tcp_result([{'time': 0.012, 'address': '1.1.1.1'}])['tcp_connect_ms'], 12)
         self.assertEqual(tcp_result([{'error': 'Connection timed out'}])['status'], 'unreachable')

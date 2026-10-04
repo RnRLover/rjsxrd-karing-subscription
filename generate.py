@@ -281,6 +281,9 @@ def main():
     # Keep upstream quality order within each protocol, without starving types
     # that appear later in the source. All selections still need exit checks.
     checked = diverse_pool(eligible, max(settings["max_nodes"] * 3, 72))
+    from check_ru import filter_candidates, endpoints
+    checked, ru_report = filter_candidates(checked)
+    counters['ru_reachable_candidates'] = len(checked)
     if args.verify_exits:
         if not args.xray: raise ValueError("--verify-exits requires --xray")
         checked = verify_exits(checked, ranges, args.xray)
@@ -290,7 +293,14 @@ def main():
     if args.xray: xray_validate(args.xray, config)
     report = {"generated_at_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "pool": args.pool, "source": source_url, "source_sha256": hashlib.sha256(original.encode()).hexdigest(), "counts": dict(counters), "eligible": len(eligible), "selected": len(selected), "xray_validated": bool(args.xray), "actual_egress_checked": args.verify_exits, "service_acl": False, "country_data": country_data, "excluded_country": "RU", "exclusion_basis": "mandatory actual HTTPS egress IP against RU CIDRs; public Russian entry IPs and RU labels permitted", "selected_protocols": dict(Counter(n["outbound"]["protocol"] for n in selected))}
     report["service_acl"] = False
-    report["routing_policy"] = "ads block; local direct; Gemini/Google proxy before RU direct; everything else proxy"
+    report["routing_policy"] = "local direct; RU direct; everything else proxy"
+    report['ru_reachability_required'] = True
+    report['ru_probe_criterion'] = ru_report['criterion']
+    published_endpoints = endpoints(config)
+    ru_report['published_endpoints'] = list(published_endpoints)
+    for result in ru_report['results']:
+        result['published'] = result['endpoint'] in published_endpoints
+        result['outbound_tags'] = published_endpoints.get(result['endpoint'], [])
     report["geosite_sources"] = geo_sources
     report["client_geoip"] = "geoip:ru from INCY installed geoip.dat; updated by INCY, not this JSON"
     report["config_utf16_bytes"] = len(config_text.encode("utf-16-le"))
@@ -300,6 +310,8 @@ def main():
     atomic_write(args.output / config_name, config_text)
     atomic_write(args.output / servers_name, "\n".join(n["uri"] for n in selected) + "\n")
     atomic_write(args.output / report_name, json.dumps(report, ensure_ascii=False, indent=2) + "\n")
+    ru_report_name = 'normal-reachability.json' if args.pool == 'normal' else 'ru-reachability.json'
+    atomic_write(args.output / ru_report_name, json.dumps(ru_report, ensure_ascii=False, indent=2) + '\n')
     print(json.dumps({"counts": counters, "eligible": len(eligible), "selected": len(selected), "xray_validated": bool(args.xray)}))
 
 if __name__ == "__main__": main()
