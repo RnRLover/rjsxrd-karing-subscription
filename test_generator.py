@@ -10,7 +10,7 @@ UUID = "123e4567-e89b-12d3-a456-426614174000"
 KEY = "A" * 43
 URI = f"vless://{UUID}@1.1.1.1:443?security=reality&pbk={KEY}&sni=example.com&type=tcp&fp=chrome#test"
 
-ROUTING = policy(["domain:example.ru"], ["domain:ads.example.ru"], ["5.0.0.0/8"])
+ROUTING = policy(["domain:example.ru"], ["5.0.0.0/8"])
 
 class SubscriptionTests(unittest.TestCase):
     def test_ru_entry_is_allowed_but_exit_must_be_foreign(self):
@@ -45,27 +45,18 @@ class SubscriptionTests(unittest.TestCase):
         self.assertIsNone(parse_node(URI.replace("type=tcp", "type=tcp&allowInsecure=1")))
         self.assertIsNone(parse_node(URI.replace("type=tcp", "type=tcp&headerType=http")))
 
-    def test_geo_policy_blocks_ads_before_ru_and_proxies_everything_else(self):
+    def test_geo_policy_keeps_only_direct_exceptions_and_proxy_catchall(self):
         config = build([parse_node(URI)] * 2, ROUTING)
         rules = config["routing"]["rules"]
         self.assertEqual(config["routing"]["domainStrategy"], "IPOnDemand")
-        self.assertEqual(rules[0]["outboundTag"], "block")
-        self.assertEqual(rules[0]["domain"], ["domain:ads.example.ru"])
-        self.assertEqual([rules[i]["outboundTag"] for i in (1, 3, 4)], ["direct"] * 3)
-        self.assertEqual(rules[4]["ip"], ["geoip:ru"])
+        self.assertEqual([rules[i]["outboundTag"] for i in (0, 1, 2)], ["direct"] * 3)
+        self.assertEqual(rules[1]["domain"], ["domain:example.ru"])
+        self.assertEqual(rules[2]["ip"], ["geoip:ru"])
+        self.assertFalse(any(r.get('outboundTag') == 'block' for r in rules))
         self.assertEqual(rules[-1], {"type": "field", "network": "tcp,udp", "balancerTag": "auto"})
         self.assertFalse(any("port" in r or "protocol" in r for r in rules))
         config["routing"]["rules"].clear()
-        self.assertEqual(len(ROUTING["rules"]), 6)
-
-    def test_gemini_and_google_api_proxy_rule_precedes_ru_ip_direct(self):
-        rules = policy(["domain:google.com"], ["domain:ads.test"], ["5.0.0.0/8"], ["domain:gemini.google.com"])["rules"]
-        self.assertEqual(rules[2]["balancerTag"], "auto")
-        for domain in ("domain:google.com", "domain:googleapis.com", "domain:gstatic.com", "domain:googleusercontent.com", "domain:gemini.google.com"):
-            self.assertIn(domain, rules[2]["domain"])
-        self.assertEqual(rules[3]["outboundTag"], "direct")
-        self.assertEqual(rules[4]["ip"], ["geoip:ru"])
-        self.assertEqual(rules[0]["outboundTag"], "block")
+        self.assertEqual(len(ROUTING["rules"]), 4)
 
     def test_geosite_conversion_preserves_matching_semantics(self):
         converted = domains({"version": 2, "rules": [{"domain": ["exact.test"], "domain_suffix": [".suffix.test"], "domain_regex": [r"^ad[0-9]+\.test$"], "domain_keyword": ["advert"]}]})
@@ -73,7 +64,7 @@ class SubscriptionTests(unittest.TestCase):
         self.assertEqual(domains({"version": 2, "rules": [{"domain_regex": "^ads\\."}]}), ["regexp:^ads\\."])
         with self.assertRaises(ValueError): domains({"version": 2, "rules": [{"process_name": ["bad"]}]})
         with self.assertRaises(ValueError): domains({"version": 2, "rules": []})
-        with self.assertRaises(ValueError): policy([], ["domain:ads.test"], ["5.0.0.0/8"])
+        with self.assertRaises(ValueError): policy([], ["5.0.0.0/8"])
 
     def test_unavailable_pool_blocks_and_udp_is_routed(self):
         node = parse_node(URI)

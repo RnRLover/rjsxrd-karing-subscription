@@ -16,7 +16,7 @@ import time
 import urllib.request
 
 from generate import atomic_write, serialized_config, xray_validate
-from routing import domains, LOCAL_IPS, GOOGLE_APP_DOMAINS
+from routing import domains, LOCAL_IPS
 from geo_dat import geosite, geoip, geoip_cidrs
 
 ROOT = Path(__file__).resolve().parent
@@ -48,24 +48,31 @@ def matchers(raw):
     return list(dict.fromkeys(sites)), list(dict.fromkeys(ips))
 
 
-def assemble(profile, lists, old, extras):
-    site_groups, ip_groups, routing_rules, groups = {}, {}, [], []
-    routing_rules.append({'type': 'field', 'ip': LOCAL_IPS, 'outboundTag': 'direct'})
+def selected_groups(profile):
+    """Reuse upstream direct routes and two ad filters, in original order."""
+    result = []
     for number, group in enumerate(profile['rules'], 1):
         if group['outbound'] not in ('block', 'direct', 'currentSelected'):
             raise ValueError('unknown Karing action')
+        ad_filter = group['outbound'] == 'block' and any(ref in (
+            'geosite:category-ads', 'acl:BanProgramAD', 'acl:BanADCompany') for ref in group['rule_set'])
+        if group['outbound'] == 'direct' or ad_filter:
+            result.append((number, group))
+    if not result:
+        raise ValueError('no requested Karing routes')
+    return result
+
+
+def assemble(profile, lists, old):
+    site_groups, ip_groups, routing_rules, groups = {}, {}, [], []
+    routing_rules.append({'type': 'field', 'ip': LOCAL_IPS, 'outboundTag': 'direct'})
+    for number, group in selected_groups(profile):
         tag = f'kg{number:02d}'
         sites, ips = [], []
         for ref in group['rule_set']:
             ds, cs = matchers(lists[ref])
             sites.extend(ds)
             ips.extend(cs)
-        if 'geosite:category-ads' in group['rule_set']:
-            sites.extend(extras['category-ads-all'])
-        if 'geosite:google' in group['rule_set']:
-            sites.extend(GOOGLE_APP_DOMAINS)
-        if 'acl:Gemini' in group['rule_set']:
-            sites.extend(extras['google-gemini'])
         target = {'balancerTag': 'auto'} if group['outbound'] == 'currentSelected' else {'outboundTag': group['outbound']}
         # Separate rules preserve domain OR IP; putting both in one Xray rule
         # would instead require both to match.
@@ -211,7 +218,7 @@ def main():
         return (cache / path).read_bytes() if cache and (cache / path).exists() else download(BASE + path)
     profile_data = data('recommend/ru.json')
     profile = json.loads(profile_data)
-    refs = list(dict.fromkeys(ref for group in profile['rules'] for ref in group['rule_set']))
+    refs = list(dict.fromkeys(ref for _, group in selected_groups(profile) for ref in group['rule_set']))
     sources = []
     with tempfile.TemporaryDirectory() as temp:
         temp = Path(temp)
@@ -238,13 +245,8 @@ def main():
             loaded = list(pool.map(load, refs))
         lists = {ref: obj for ref, obj, meta in loaded}
         sources.extend(meta for ref, obj, meta in loaded)
-        extras = {}
-        for name in ('category-ads-all', 'google-gemini'):
-            raw = data(f'geo/geosite/{name}.json')
-            extras[name] = domains(json.loads(raw))
-            sources.append({'reference': name, 'sha256': hashlib.sha256(raw).hexdigest(), 'url': BASE + f'geo/geosite/{name}.json'})
         old = json.loads((ROOT / 'ru.json').read_bytes())
-        config, sites, ips, groups = assemble(profile, lists, old, extras)
+        config, sites, ips, groups = assemble(profile, lists, old)
         assets = Path(args.xray).resolve().parent
         # Retain original categories for other INCY profiles; protobuf repeated
         # entry streams can be concatenated without replacing original entries.
@@ -253,7 +255,7 @@ def main():
             (temp / filename).write_bytes(content)
         text = serialized_config(config)
         normal_old = json.loads((ROOT / 'normal.json').read_bytes())
-        normal_config, _, _, _ = assemble(profile, lists, normal_old, extras)
+        normal_config, _, _, _ = assemble(profile, lists, normal_old)
         variants = [with_fakedns(automatic_config(normal_config, 'Для обычного интернета')),
                     with_fakedns(automatic_config(config, 'Для белых списков (если не работает)'))]
         incy_body = incy_subscription(variants)
@@ -282,7 +284,7 @@ def main():
         # A missing custom database must never break this independent variant.
         for variant in happ_variants:
             xray_validate(args.xray, variant)
-        report = {'profile_url': BASE + 'recommend/ru.json', 'profile_sha256': hashlib.sha256(profile_data).hexdigest(), 'all_groups_enabled': True, 'groups': groups, 'sources': sources, 'xray_validated': True, 'config_utf16_bytes': len(text.encode('utf-16-le')), 'geofiles_sha256': {name: hashlib.sha256(content).hexdigest() for name, content in geo_files.items()}, 'requires_geodata_import': True, 'preserved_ru_direct': True, 'generated_at_utc': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())}
+        report = {'profile_url': BASE + 'recommend/ru.json', 'profile_sha256': hashlib.sha256(profile_data).hexdigest(), 'all_groups_enabled': False, 'selection': 'direct groups plus Adblock and AdblockPlus; no Anticensor or custom advertising/Google additions', 'groups': groups, 'sources': sources, 'xray_validated': True, 'config_utf16_bytes': len(text.encode('utf-16-le')), 'geofiles_sha256': {name: hashlib.sha256(content).hexdigest() for name, content in geo_files.items()}, 'requires_geodata_import': True, 'preserved_ru_direct': True, 'generated_at_utc': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())}
         report['variants'] = [{'name': v['remarks'], 'servers': sum(o['protocol'] in ('vless', 'shadowsocks', 'trojan', 'vmess') for o in v['outbounds']), 'config_utf16_bytes': len(serialized_config(v).encode('utf-16-le'))} for v in variants]
         report['fakedns'] = True
         report['happ_import_verified'] = False

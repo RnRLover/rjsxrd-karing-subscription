@@ -254,7 +254,7 @@ def main():
         data = read("geo/geosite/" + name + ".json", url)
         categories[name] = domains(json.loads(data))
         geo_sources.append({"category": name, "url": url, "sha256": hashlib.sha256(data.encode()).hexdigest(), "entries": len(categories[name])})
-    routing = policy(categories["category-ru"], categories["category-ads-all"], cidrs, categories["google-gemini"])
+    routing = policy(categories["category-ru"], cidrs)
     candidates, seen, counters = [], set(), Counter()
     for line in original.splitlines():
         line = line.strip()
@@ -288,8 +288,8 @@ def main():
     config = build(selected, routing)
     config_text = serialized_config(config)
     if args.xray: xray_validate(args.xray, config)
-    report = {"generated_at_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "pool": args.pool, "source": source_url, "source_sha256": hashlib.sha256(original.encode()).hexdigest(), "counts": dict(counters), "eligible": len(eligible), "selected": len(selected), "xray_validated": bool(args.xray), "actual_egress_checked": args.verify_exits, "service_acl": True, "country_data": country_data, "excluded_country": "RU", "exclusion_basis": "mandatory actual HTTPS egress IP against RU CIDRs; public Russian entry IPs and RU labels permitted", "selected_protocols": dict(Counter(n["outbound"]["protocol"] for n in selected))}
-    report["service_acl"] = True
+    report = {"generated_at_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "pool": args.pool, "source": source_url, "source_sha256": hashlib.sha256(original.encode()).hexdigest(), "counts": dict(counters), "eligible": len(eligible), "selected": len(selected), "xray_validated": bool(args.xray), "actual_egress_checked": args.verify_exits, "service_acl": False, "country_data": country_data, "excluded_country": "RU", "exclusion_basis": "mandatory actual HTTPS egress IP against RU CIDRs; public Russian entry IPs and RU labels permitted", "selected_protocols": dict(Counter(n["outbound"]["protocol"] for n in selected))}
+    report["service_acl"] = False
     report["routing_policy"] = "ads block; local direct; Gemini/Google proxy before RU direct; everything else proxy"
     report["geosite_sources"] = geo_sources
     report["client_geoip"] = "geoip:ru from INCY installed geoip.dat; updated by INCY, not this JSON"
@@ -303,3 +303,4 @@ def main():
     print(json.dumps({"counts": counters, "eligible": len(eligible), "selected": len(selected), "xray_validated": bool(args.xray)}))
 
 if __name__ == "__main__": main()
+

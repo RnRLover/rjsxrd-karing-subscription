@@ -1,12 +1,25 @@
 import json
 import unittest
-from karing import assemble, matchers, incy_subscription, automatic_config, with_fakedns, happ_config, happ_subscription, PUBLIC
+from karing import selected_groups, assemble, matchers, incy_subscription, automatic_config, with_fakedns, happ_config, happ_subscription, PUBLIC
 from routing import policy
 from geo_dat import geoip, geosite, geoip_cidrs
 from generate import diverse_pool
 
 
 class KaringTests(unittest.TestCase):
+    def test_selection_retains_ads_and_direct_but_rejects_proxy_and_malware(self):
+        specifications = [('Adblock', 'block', 'geosite:category-ads'),
+            ('AdblockPlus', 'block', 'acl:BanProgramAD'),
+            ('Malware', 'block', 'geosite:malware'),
+            ('Google', 'currentSelected', 'geosite:google'),
+            ('OneDrive', 'direct', 'geosite:onedrive'),
+            ('Apple', 'direct', 'geosite:apple'),
+            ('Anticensor', 'currentSelected', 'geosite:blocked@ru')]
+        profile = {'rules': [{'name': name, 'outbound': action, 'rule_set': [ref], 'switch': False}
+            for name, action, ref in specifications]}
+        self.assertEqual([(number, group['name']) for number, group in selected_groups(profile)],
+            [(1, 'Adblock'), (2, 'AdblockPlus'), (5, 'OneDrive'), (6, 'Apple')])
+
     def test_two_modes_are_distinct_full_configs_in_one_subscription(self):
         def base(tag):
             return {'inbounds': [], 'outbounds': [{'tag': 'pool-01', 'protocol': 'vless', 'settings': {'mode': tag}}], 'routing': {'rules': [{'network': 'tcp,udp', 'balancerTag': 'auto'}], 'balancers': [{'tag': 'auto', 'selector': ['pool-']}]}, 'burstObservatory': {'subjectSelector': ['pool-']}}
@@ -106,20 +119,26 @@ class KaringTests(unittest.TestCase):
             {'name': 'Ads', 'rule_set': ['ads'], 'outbound': 'block', 'switch': False},
             {'name': 'Google', 'rule_set': ['google'], 'outbound': 'currentSelected', 'switch': False},
             {'name': 'OneDrive', 'rule_set': ['onedrive'], 'outbound': 'direct', 'switch': False},
+            {'name': 'Anticensor', 'rule_set': ['geosite:blocked@ru', 'geoip:blocked@ru'], 'outbound': 'currentSelected', 'switch': True},
         ]}
         lists = {name: {'version': 1, 'rules': [{'domain_suffix': [name + '.test'], 'ip_cidr': ['1.2.3.0/24']}]} for name in ('ads', 'google', 'onedrive')}
-        old = {'routing': policy(['domain:example.ru'], ['domain:ad.test'], ['5.0.0.0/8']), 'outbounds': [{'tag': 'pool-01'}]}
-        config, sites, ips, groups = assemble(profile, lists, old, {})
+        lists['geosite:blocked@ru'] = {'version': 1, 'rules': [{'domain_suffix': ['blocked.ru']}]}
+        lists['geoip:blocked@ru'] = {'version': 1, 'rules': [{'ip_cidr': ['5.1.0.0/16']}]}
+        # Removed groups need no downloaded lists at all.
+        del lists['ads'], lists['google']
+        old = {'routing': policy(['domain:example.ru'], ['5.0.0.0/8']), 'outbounds': [{'tag': 'pool-01'}]}
+        config, sites, ips, groups = assemble(profile, lists, old)
         rules = config['routing']['rules']
-        self.assertEqual([r['ruleTag'] for r in rules if 'ruleTag' in r], ['kg01-sites', 'kg01-ips', 'kg02-sites', 'kg02-ips', 'kg03-sites', 'kg03-ips'])
+        self.assertEqual([r['ruleTag'] for r in rules if 'ruleTag' in r], ['kg03-sites', 'kg03-ips'])
         self.assertTrue(all(not ('ip' in rule and 'domain' in rule) for rule in rules))
         self.assertEqual(rules[-3:-1], old['routing']['rules'][-3:-1])
         self.assertEqual(sum(r.get('ip') == ['geoip:ru'] for r in rules), 1)
         self.assertEqual(rules[-1]['network'], 'tcp,udp')
-        self.assertEqual(rules[3]['balancerTag'], 'auto')
-        self.assertEqual(rules[5]['outboundTag'], 'direct')
+        self.assertEqual(rules[1]['outboundTag'], 'direct')
+        self.assertEqual([g['name'] for g in groups], ['OneDrive'])
+        self.assertEqual(sum('balancerTag' in r for r in rules), 1)
         self.assertTrue(all(g['enabled'] for g in groups))
-        self.assertEqual(len(old['routing']['rules']), 6)
+        self.assertEqual(len(old['routing']['rules']), 4)
 
     def test_no_silent_loss_of_unknown_source_conditions(self):
         with self.assertRaises(ValueError):

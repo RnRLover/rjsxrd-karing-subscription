@@ -3,9 +3,7 @@
   "normal_subscription_url": "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS.txt",
   "ru_cidrs_url": "https://raw.githubusercontent.com/KaringX/karing-ruleset/sing/geo/geoip/ru.json",
   "geosite_urls": {
-    "category-ru": "https://raw.githubusercontent.com/KaringX/karing-ruleset/sing/geo/geosite/category-ru.json",
-    "category-ads-all": "https://raw.githubusercontent.com/KaringX/karing-ruleset/sing/geo/geosite/category-ads-all.json",
-    "google-gemini": "https://raw.githubusercontent.com/KaringX/karing-ruleset/sing/geo/geosite/google-gemini.json"
+    "category-ru": "https://raw.githubusercontent.com/KaringX/karing-ruleset/sing/geo/geosite/category-ru.json"
   },
   "max_nodes": 24,
   "excluded_country": "ru"
