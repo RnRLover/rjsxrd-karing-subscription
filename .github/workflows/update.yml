@@ -2,7 +2,7 @@ name: Update subscription
 on:
   workflow_dispatch:
   schedule:
-    - cron: '17 * * * *'
+    - cron: '*/5 * * * *'
   push:
     paths:
       - '*.py'
@@ -28,12 +28,10 @@ jobs:
         run: python setup_xray.py
       - name: Prepare official sing-box rule converter
         run: python setup_singbox.py
-      - name: Generate and check actual exits
+      - name: Filter whitelist candidates from RU then verify foreign exits
         run: python generate.py --xray .runtime/xray --verify-exits
-      - name: Generate ordinary internet pool and check exits
+      - name: Filter ordinary candidates from RU then verify foreign exits
         run: python generate.py --xray .runtime/xray --verify-exits --pool normal
-      - name: Diagnose TCP reachability from Russian probes
-        run: python check_ru.py
       - name: Generate Karing profile with RU direct
         run: python karing.py --xray .runtime/xray --singbox .runtime/sing-box
       - name: Check FakeDNS startup and local DNS TCP exchange
