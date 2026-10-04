@@ -2,9 +2,9 @@
   "Name": "rjsxrd Karing geodata",
   "GlobalProxy": "true",
   "DomainStrategy": "IPOnDemand",
-  "LastUpdated": "1791144009",
-  "Geoipurl": "https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/karing-geoip.dat?v=90bf63409379efe6896127f076f097fd73663ec842ecd4428f00fafe66f6d897",
-  "Geositeurl": "https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/karing-geosite.dat?v=90bf63409379efe6896127f076f097fd73663ec842ecd4428f00fafe66f6d897",
+  "LastUpdated": "1791149798",
+  "Geoipurl": "https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/karing-geoip.dat",
+  "Geositeurl": "https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/karing-geosite.dat",
   "DirectSites": [
     "geosite:kg05",
     "geosite:kg07",
@@ -1135,10 +1135,13 @@
     "geoip:kg02"
   ],
   "FakeDNS": "true",
-  "LocalDNSType": "DoU",
-  "LocalDNSIP": "77.88.8.8",
-  "LocalDNSDomain": "",
-  "RemoteDNSType": "DoU",
-  "RemoteDNSIP": "1.1.1.1",
-  "RemoteDNSDomain": ""
+  "DomesticDNSType": "DoU",
+  "DomesticDNSIP": "77.88.8.8",
+  "DomesticDNSDomain": "",
+  "RemoteDNSType": "DoH",
+  "RemoteDNSIP": "8.8.8.8",
+  "RemoteDNSDomain": "https://dns.google/dns-query",
+  "DnsHosts": {
+    "dns.google": "8.8.8.8"
+  }
 }
