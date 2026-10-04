@@ -1,24 +1,24 @@
-trojan://UX82473651@sacred-anemone.rooster465.autos:443?security=tls&type=tcp&sni=sacred-anemone.rooster465.autos#%F0%9F%87%AE%F0%9F%87%AA_%E7%88%B1%E5%B0%94%E5%85%B0_22%20t.me%2Frjsxrd
-ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpvWklvQTY5UTh5aGNRVjhrYTNQYTNB@82.38.31.10:8080#🇳🇱 Join+Telegram:@SolVPN 🇳🇱%20t.me%2Frjsxrd
-vmess://eyJ2IjoiMiIsInBzIjoi5pyq55+lMTAwIiwiYWRkIjoiMTcyLjY3LjE2Ny43OCIsInBvcnQiOiI4NDQzIiwiaWQiOiI2MDQ0MTU0OC1iNjhlLTQzYjItODE5MS1lM2I4ODRiZTRiM2MiLCJhaWQiOiIwIiwic2N5IjoiYXV0byIsIm5ldCI6IndzIiwidHlwZSI6IiIsImhvc3QiOiJ2MnJheTEuZG96YXBwLnh5eiIsInBhdGgiOiIvbE1uc1pVTjQvIiwidGxzIjoidGxzIiwic25pIjoidjJyYXkxLmRvemFwcC54eXoiLCJ0ZXN0X25hbWUiOiIxMDAifQ==#%20t.me%2Frjsxrd
-vless://1bb2af63-4472-44ed-9c70-8f316258b68b@62.152.58.90:443?encryption=none&fp=ios&mode=gun&pbk=JBKJlzuJH1YzDHAoz28wEKbzWTGpDpKjgtSq0oT0a0k&security=reality&sid=27e53bbcab7593d7&sni=360.yandex.ru&spx=%2F&type=grpc#%F0%9F%87%B5%F0%9F%87%B1%20Poland%20%E2%80%94%20%23105%20%5BVerified%20RU%5D%20t.me%2Frjsxrd
 trojan://UX82473651@3.253.106.233:443?security=tls&type=tcp&sni=loved-shark.rooster465.autos#%F0%9F%87%AE%F0%9F%87%AA_%E7%88%B1%E5%B0%94%E5%85%B0_107%20t.me%2Frjsxrd
-ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTprMWRCT21PQjRvcWk3VW1wMzdhMWJR@82.38.31.192:8080#🇳🇱 Join+Telegram:@SolVPN 🇳🇱%20t.me%2Frjsxrd
 vmess://eyJhZGQiOiIxMDQuMTcuNzcuNzciLCJhaWQiOiIwIiwiYWxwbiI6IiIsImZwIjoiIiwiaG9zdCI6InYycmF5MS5kb3phcHAueHl6IiwiaWQiOiI2MDQ0MTU0OC1iNjhlLTQzYjItODE5MS1lM2I4ODRiZTRiM2MiLCJuZXQiOiJ3cyIsInBhdGgiOiIvbE1uc1pVTjQvIiwicG9ydCI6Ijg0NDMiLCJwcyI6Ilx1ZDgzY1x1ZGRmYVx1ZDgzY1x1ZGRmOCBKb2luK1RlbGVncmFtOkBTb2xWUE4gXHVkODNjXHVkZGZhXHVkODNjXHVkZGY4Iiwic2N5IjoiYXV0byIsInNuaSI6InYycmF5MS5kb3phcHAueHl6IiwidGxzIjoidGxzIiwidHlwZSI6IiIsInYiOiIyIiwic2tpcC1jZXJ0LXZlcmlmeSI6dHJ1ZX0=#%20t.me%2Frjsxrd
-vless://1bb2af63-4472-44ed-9c70-8f316258b68b@62.152.58.90:443?encryption=none&mode=gun&pbk=JBKJlzuJH1YzDHAoz28wEKbzWTGpDpKjgtSq0oT0a0k&security=reality&sid=27e53bbcab7593d7&sni=360.yandex.ru&spx=%2F&type=grpc&fp=firefox#[625ms Россия RU 🇷🇺 @vlesstrojan]%20t.me%2Frjsxrd
-trojan://UX82473651@meet-goshawk.rooster465.autos:443?security=tls&type=tcp&sni=meet-goshawk.rooster465.autos#%F0%9F%87%A9%F0%9F%87%AA_%E5%BE%B7%E5%9B%BD_8%20t.me%2Frjsxrd
-ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTp6UlpOQnN6WXlXbzU@51.77.225.200:8388#🇬🇧 Join+Telegram:@SolVPN 🇬🇧%20t.me%2Frjsxrd
-vmess://eyJhZGQiOiIxNzIuNjQuODAuMSIsImFpZCI6IjAiLCJhbHBuIjoiIiwiZnAiOiIiLCJob3N0IjoidjJyYXkxLmRvemFwcC54eXoiLCJpZCI6IjYwNDQxNTQ4LWI2OGUtNDNiMi04MTkxLWUzYjg4NGJlNGIzYyIsImluc2VjdXJlIjoiMCIsIm5ldCI6IndzIiwicGF0aCI6Ii9sTW5zWlVONC8iLCJwY3MiOiIiLCJwb3J0IjoiODQ0MyIsInBzIjoi8J+Gk1Byb3h5Tm92YSDina8g8J+HuvCfh7gg0KHQqNCQIOKdr9Cg0LXQutC70LDQvNCwINCyIFlvdVR1YmUg4p2vICMxMCIsInNjeSI6ImF1dG8iLCJzbmkiOiJ2MnJheTEuZG96YXBwLnh5eiIsInRscyI6InRscyIsInR5cGUiOiJub25lIiwidiI6IjIiLCJ2Y24iOiIifQ==#%20t.me%2Frjsxrd
-vless://51a1fd52-fd88-4905-a976-35e44be28e4b@pl.flen-vpn.xyz:8443?type=tcp&headerType=none&security=tls&encryption=none&sni=pl.flen-vpn.xyz&alpn=http%2F1.1&fp=android#[842ms Польша PL 🇵🇱 @vlesstrojan]%20t.me%2Frjsxrd
+ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTprMWRCT21PQjRvcWk3VW1wMzdhMWJR@82.38.31.207:8080#%F0%9F%87%B3%F0%9F%87%B1%20The%20Netherlands%20%7C%20%40RaViraNet%20t.me%2Frjsxrd
+vless://1bb2af63-4472-44ed-9c70-8f316258b68b@62.152.58.90:443?security=reality&encryption=none&pbk=JBKJlzuJH1YzDHAoz28wEKbzWTGpDpKjgtSq0oT0a0k&type=grpc&sni=360.yandex.ru&sid=27e53bbcab7593d7&fp=edge#%F0%9F%87%B5%F0%9F%87%B1%20Poland%20%7C%20%5B%2ACIDR%5D%20t.me%2Frjsxrd
 trojan://UX82473651@loved-shark.rooster465.autos:443?security=tls&type=tcp&sni=loved-shark.rooster465.autos#%F0%9F%87%AE%F0%9F%87%AA_%E7%88%B1%E5%B0%94%E5%85%B0_105%20t.me%2Frjsxrd
-ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpvWklvQTY5UTh5aGNRVjhrYTNQYTNB@82.38.31.46:8080#[1162ms Нидерланды NL 🇳🇱 @vlesstrojan]%20t.me%2Frjsxrd
-trojan://humanity@166.1.36.83:443?security=tls&type=ws&host=www.calmlunch.com&path=%2Fassignment&sni=www.calmlunch.com#%F0%9F%87%A9%F0%9F%87%AA_%E5%BE%B7%E5%9B%BD_223%20t.me%2Frjsxrd
-ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpCcW5xVG9paDBQYlU@51.255.13.232:8388#🇫🇷 Join+Telegram:@SolVPN 🇫🇷%20t.me%2Frjsxrd
-trojan://UX82473651@guided-ferret.rooster465.autos:443?security=tls&type=tcp&sni=guided-ferret.rooster465.autos#%F0%9F%87%BA%F0%9F%87%B8_%E7%BE%8E%E5%9B%BD_100%20t.me%2Frjsxrd
-ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpvWklvQTY5UTh5aGNRVjhrYTNQYTNB@82.38.31.149:8080#🇳🇱 Join+Telegram:@SolVPN 🇳🇱%20t.me%2Frjsxrd
-trojan://UX82473651@obliging-louse.rooster465.autos:443?security=tls&type=tcp&sni=obliging-louse.rooster465.autos#%F0%9F%87%AF%F0%9F%87%B5_%E6%97%A5%E6%9C%AC_83%20t.me%2Frjsxrd
-ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpxSXRHOFN1ZVlRY1A@140.174.184.5:8388#🇪🇸 Join+Telegram:@SolVPN 🇪🇸%20t.me%2Frjsxrd
-trojan://UX82473651@fancy-javelin.rooster465.autos:443?security=tls&type=tcp&sni=fancy-javelin.rooster465.autos#%F0%9F%87%AF%F0%9F%87%B5_%E6%97%A5%E6%9C%AC_87%20t.me%2Frjsxrd
+vmess://eyJhZGQiOiIxNzIuNjQuODAuMSIsImFpZCI6IjAiLCJhbHBuIjoiIiwiZnAiOiIiLCJob3N0IjoidjJyYXkxLmRvemFwcC54eXoiLCJpZCI6IjYwNDQxNTQ4LWI2OGUtNDNiMi04MTkxLWUzYjg4NGJlNGIzYyIsImluc2VjdXJlIjoiMCIsIm5ldCI6IndzIiwicGF0aCI6Ii9sTW5zWlVONC8iLCJwY3MiOiIiLCJwb3J0IjoiODQ0MyIsInBzIjoi8J+Gk1Byb3h5Tm92YSDina8g8J+HuvCfh7gg0KHQqNCQIOKdr9Cg0LXQutC70LDQvNCwINCyIFlvdVR1YmUg4p2vICMxMCIsInNjeSI6ImF1dG8iLCJzbmkiOiJ2MnJheTEuZG96YXBwLnh5eiIsInRscyI6InRscyIsInR5cGUiOiJub25lIiwidiI6IjIiLCJ2Y24iOiIifQ==#%20t.me%2Frjsxrd
 ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNToyWWRFNGxGT2lkNWE@51.195.126.38:8388#🇩🇪 Join+Telegram:@SolVPN 🇩🇪%20t.me%2Frjsxrd
-trojan://UX82473651@integral-rodent.rooster465.autos:443?security=tls&type=tcp&sni=integral-rodent.rooster465.autos#%F0%9F%87%AF%F0%9F%87%B5_%E6%97%A5%E6%9C%AC_82%20t.me%2Frjsxrd
+vless://1bb2af63-4472-44ed-9c70-8f316258b68b@62.152.58.90:443?security=reality&encryption=none&pbk=JBKJlzuJH1YzDHAoz28wEKbzWTGpDpKjgtSq0oT0a0k&type=grpc&sni=360.yandex.ru&sid=27e53bbcab7593d7&fp=chrome#%F0%9F%87%B5%F0%9F%87%B1%20Poland%20%7C%20%5B%2ACIDR%5D%20t.me%2Frjsxrd
+trojan://UX82473651@sacred-anemone.rooster465.autos:443?security=tls&type=tcp&sni=sacred-anemone.rooster465.autos#%F0%9F%87%AE%F0%9F%87%AA_%E7%88%B1%E5%B0%94%E5%85%B0_22%20t.me%2Frjsxrd
+ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTp6UlpOQnN6WXlXbzU@51.77.225.200:8388#🇬🇧 Join+Telegram:@SolVPN 🇬🇧%20t.me%2Frjsxrd
+vless://51a1fd52-fd88-4905-a976-35e44be28e4b@pl.flen-vpn.xyz:8443?type=tcp&headerType=none&security=tls&encryption=none&sni=pl.flen-vpn.xyz&alpn=http%2F1.1&fp=safari#.%F0%96%A5%94%20%DD%81%20%CB%96%D6%B4%F0%9F%9B%B8%E0%BC%84%CB%96%C2%B0.%20%7C%20%5BBL%5D%20t.me%2Frjsxrd
+trojan://UX82473651@guided-ferret.rooster465.autos:443?security=tls&type=tcp&sni=guided-ferret.rooster465.autos#%F0%9F%87%BA%F0%9F%87%B8_%E7%BE%8E%E5%9B%BD_100%20t.me%2Frjsxrd
+ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpCcW5xVG9paDBQYlU@51.255.13.232:8388#🇫🇷 Join+Telegram:@SolVPN 🇫🇷%20t.me%2Frjsxrd
+trojan://UX82473651@ultimate-jaguar.rooster465.autos:443?security=tls&type=tcp&sni=ultimate-jaguar.rooster465.autos#%F0%9F%87%BA%F0%9F%87%B8_%E7%BE%8E%E5%9B%BD_52%20t.me%2Frjsxrd
+ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpvWklvQTY5UTh5aGNRVjhrYTNQYTNB@82.38.31.11:8080#🇳🇱 Join+Telegram:@SolVPN 🇳🇱%20t.me%2Frjsxrd
+trojan://UX82473651@meet-goshawk.rooster465.autos:443?security=tls&type=tcp&sni=meet-goshawk.rooster465.autos#%F0%9F%87%A9%F0%9F%87%AA_%E5%BE%B7%E5%9B%BD_8%20t.me%2Frjsxrd
+ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTprMWRCT21PQjRvcWk3VW1wMzdhMWJR@82.38.31.192:8080#🇳🇱 Join+Telegram:@SolVPN 🇳🇱%20t.me%2Frjsxrd
+trojan://UX82473651@comic-poodle.rooster465.autos:443?security=tls&type=tcp&sni=comic-poodle.rooster465.autos#%F0%9F%87%AF%F0%9F%87%B5_%E6%97%A5%E6%9C%AC_88%20t.me%2Frjsxrd
+ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTpxSXRHOFN1ZVlRY1A@140.174.184.5:8388#🇪🇸 Join+Telegram:@SolVPN 🇪🇸%20t.me%2Frjsxrd
+trojan://UX82473651@intense-sole.rooster465.autos:443?security=tls&type=tcp&sni=intense-sole.rooster465.autos#%F0%9F%87%AF%F0%9F%87%B5_%E6%97%A5%E6%9C%AC_84%20t.me%2Frjsxrd
 ss://YWVzLTI1Ni1nY206ZXZlYWFUT2I4amk4eW50dzJaOXlXVUcwZDZJcjhMZDhtM3ltSDhUSGRDNWVnaVRIMW1YQ2lCYzBTa3I3RmliSA==@yyz-ca-01.blncvpn4u.cc:9443#🇨🇦 Join+Telegram:@SolVPN 🇨🇦%20t.me%2Frjsxrd
+trojan://UX82473651@evolving-platypus.rooster465.autos:443?security=tls&type=tcp&sni=evolving-platypus.rooster465.autos#%F0%9F%87%AF%F0%9F%87%B5_%E6%97%A5%E6%9C%AC_86%20t.me%2Frjsxrd
+ss://YWVzLTI1Ni1nY206eEJTdEJFVnF2R3dIUG9jYw@64.176.2.21:8388#🇨🇱 Join+Telegram:@SolVPN 🇨🇱%20t.me%2Frjsxrd
+trojan://UX82473651@delicate-buck.rooster465.autos:443?security=tls&type=tcp&sni=delicate-buck.rooster465.autos#%F0%9F%87%B0%F0%9F%87%B7_%E9%9F%A9%E5%9B%BD_46%20t.me%2Frjsxrd

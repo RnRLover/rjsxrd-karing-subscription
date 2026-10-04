@@ -1,15 +1,17 @@
 {
-  "generated_at_utc": "2026-10-04T17:35:57Z",
+  "generated_at_utc": "2026-10-04T20:00:09Z",
   "pool": "normal",
   "source": "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS.txt",
-  "source_sha256": "cbb7dee5e4440faa8a6580ae891d405240573b8c0a6e4acff22eac2f2adeeca2",
+  "source_sha256": "e083ee5f347c364393ba76aee20bb2672003a9634ca2045d4568754f4259287c",
   "counts": {
-    "source_nodes": 158,
-    "unsupported_or_invalid": 29,
+    "source_nodes": 124,
+    "unsupported_or_invalid": 43,
     "duplicate": 1,
-    "nonpublic_or_unresolved_endpoint": 0
+    "russian_label_candidates": 1,
+    "nonpublic_or_unresolved_endpoint": 0,
+    "ru_reachable_candidates": 72
   },
-  "eligible": 128,
+  "eligible": 80,
   "selected": 24,
   "xray_validated": true,
   "actual_egress_checked": true,
@@ -24,16 +26,18 @@
   "selected_protocols": {
     "vless": 24
   },
-  "routing_policy": "ads block; local direct; Gemini/Google proxy before RU direct; everything else proxy",
+  "routing_policy": "local direct; RU direct; everything else proxy",
+  "ru_reachability_required": true,
+  "ru_probe_criterion": "at least one confirmed RU probe succeeds",
   "geosite_sources": [
     {
       "category": "category-ru",
       "url": "https://raw.githubusercontent.com/KaringX/karing-ruleset/sing/geo/geosite/category-ru.json",
-      "sha256": "e1ec25b00128124ae6dc5d5af0f1187486363008eae2978fc231d9363d4a61cb",
+      "sha256": "bbdc0c403ec78a605858f58c7fc529b010721d68380bfe326bbe3c9a03b20ebf",
       "entries": 1105
     }
   ],
   "client_geoip": "geoip:ru from INCY installed geoip.dat; updated by INCY, not this JSON",
-  "config_utf16_bytes": 72688,
-  "config_utf8_bytes": 36344
+  "config_utf16_bytes": 72998,
+  "config_utf8_bytes": 36499
 }
