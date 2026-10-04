@@ -1,6 +1,12 @@
 name: Update subscription
 on:
   workflow_dispatch:
+    inputs:
+      refresh_pools:
+        description: 'Refresh server pools (disable to update routing/DNS on the last validated pools)'
+        required: true
+        default: true
+        type: boolean
   schedule:
     - cron: '*/5 * * * *'
   push:
@@ -29,8 +35,10 @@ jobs:
       - name: Prepare official sing-box rule converter
         run: python setup_singbox.py
       - name: Filter whitelist candidates from RU then verify foreign exits
+        if: github.event_name != 'workflow_dispatch' || inputs.refresh_pools
         run: python generate.py --xray .runtime/xray --verify-exits
       - name: Filter ordinary candidates from RU then verify foreign exits
+        if: github.event_name != 'workflow_dispatch' || inputs.refresh_pools
         run: python generate.py --xray .runtime/xray --verify-exits --pool normal
       - name: Generate Karing profile with RU direct
         run: python karing.py --xray .runtime/xray --singbox .runtime/sing-box
