@@ -1,12 +1,43 @@
 import json
 import unittest
-from karing import selected_groups, assemble, matchers, incy_subscription, automatic_config, with_fakedns, happ_config, happ_subscription, PUBLIC, REMOTE_DOH, client_routing_profile
+from karing import selected_groups, assemble, matchers, incy_subscription, automatic_config, with_fakedns, happ_config, happ_subscription, PUBLIC, REMOTE_DOH, client_routing_profile, subscription_variants, RESERVE_DNS
 from routing import policy
 from geo_dat import geoip, geosite, geoip_cidrs
-from generate import diverse_pool
+from generate import diverse_pool, premium_pool, CountryRanges
 
 
 class KaringTests(unittest.TestCase):
+    def test_three_profiles_share_main_reserve_pool_but_not_dns(self):
+        def base(count):
+            return {'inbounds': [], 'outbounds': [{'tag': f'pool-{i:02d}', 'protocol': 'vless',
+                'settings': {'vnext': [{'address': 'entry.example', 'port': 443}]}} for i in range(1, count + 1)],
+                'routing': {'rules': [{'domain': ['domain:example.ru'], 'outboundTag': 'direct'},
+                {'network': 'tcp,udp', 'balancerTag': 'auto'}], 'balancers': [{'tag': 'auto', 'selector': ['pool-']}]},
+                'burstObservatory': {'subjectSelector': ['pool-']}}
+        configs = subscription_variants(base(3), base(1))
+        self.assertEqual([c['remarks'] for c in configs], ['Основной', 'Резерв', 'Премиум'])
+        self.assertEqual([len(c['outbounds']) for c in configs], [4, 4, 2])
+        self.assertEqual([o['settings'] for o in configs[0]['outbounds'] if 'settings' in o],
+                         [o['settings'] for o in configs[1]['outbounds'] if 'settings' in o])
+        for config, dns in zip(configs, [['8.8.8.8', '8.8.4.4'], RESERVE_DNS, ['8.8.8.8', '8.8.4.4']]):
+            direct = [s for s in config['dns']['servers'] if s.get('tag') == 'dns-bootstrap']
+            self.assertEqual(sorted({s['address'] for s in direct}), sorted(dns))
+            self.assertTrue(all('full:entry.example' in s['domains'] for s in direct[:2]))
+            self.assertEqual(config['dns']['servers'][-1], {'address': REMOTE_DOH, 'tag': 'dns-proxy'})
+        self.assertEqual(len(json.loads(incy_subscription(configs).splitlines()[0])), 3)
+        self.assertEqual(len(json.loads(happ_subscription(configs))), 3)
+
+    def test_premium_uses_verified_exit_not_flag_or_entry_ip(self):
+        ranges = CountryRanges(['8.8.8.0/24'])
+        nodes = [{'id': 1, 'label': 'US', 'host': '8.8.8.8', 'exit_ip': '5.5.5.5', 'outbound': {'protocol': 'vless'}},
+            {'id': 2, 'label': 'RU', 'host': '5.5.5.5', 'exit_ip': '8.8.8.8', 'outbound': {'protocol': 'vless'}},
+            {'id': 3, 'label': 'US', 'outbound': {'protocol': 'trojan'}}]
+        self.assertEqual([n['id'] for n in premium_pool(nodes, ranges, 24)], [2])
+        with self.assertRaisesRegex(ValueError, 'no verified US exits'):
+            premium_pool(nodes[:1], ranges, 24)
+        with self.assertRaisesRegex(ValueError, 'US address table required'):
+            premium_pool(nodes, CountryRanges([]), 24)
+
     def test_selection_retains_ads_and_direct_but_rejects_proxy_and_malware(self):
         specifications = [('Adblock', 'block', 'geosite:category-ads'),
             ('AdblockPlus', 'block', 'acl:BanProgramAD'),
@@ -19,19 +50,6 @@ class KaringTests(unittest.TestCase):
             for name, action, ref in specifications]}
         self.assertEqual([(number, group['name']) for number, group in selected_groups(profile)],
             [(1, 'Adblock'), (2, 'AdblockPlus'), (5, 'OneDrive'), (6, 'Apple')])
-
-    def test_two_modes_are_distinct_full_configs_in_one_subscription(self):
-        def base(tag):
-            return {'inbounds': [], 'outbounds': [{'tag': 'pool-01', 'protocol': 'vless', 'settings': {'mode': tag}}], 'routing': {'rules': [{'network': 'tcp,udp', 'balancerTag': 'auto'}], 'balancers': [{'tag': 'auto', 'selector': ['pool-']}]}, 'burstObservatory': {'subjectSelector': ['pool-']}}
-        names = ['Для обычного интернета', 'Для белых списков (если не работает)']
-        configs = [automatic_config(base(tag), name) for tag, name in zip(['normal', 'whitelist'], names)]
-        self.assertEqual([v['remarks'] for v in configs], names)
-        self.assertEqual([v['outbounds'][0]['settings']['mode'] for v in configs], ['normal', 'whitelist'])
-        self.assertEqual(json.loads(incy_subscription(configs).splitlines()[0]), configs)
-        self.assertEqual(json.loads(happ_subscription(configs)), configs)
-        for config, name in zip(configs, names):
-            self.assertEqual(config['routing']['balancers'][0]['selector'], [name])
-            self.assertEqual(config['burstObservatory']['subjectSelector'], [name])
 
     def test_sampling_does_not_starve_protocols_late_in_source(self):
         nodes = [{'outbound': {'protocol': protocol}, 'id': i} for i, protocol in enumerate(['vless'] * 90 + ['shadowsocks'] * 2 + ['trojan'])]
@@ -104,10 +122,7 @@ class KaringTests(unittest.TestCase):
     def test_client_profile_uses_documented_domestic_dns_and_retains_routes(self):
         config = {'routing': {'rules': [{'domain': ['geosite:kg01'], 'outboundTag': 'block'}, {'domain': ['domain:yandex.ru'], 'outboundTag': 'direct'}, {'network': 'tcp,udp', 'balancerTag': 'auto'}]}}
         profile = client_routing_profile(config)
-        self.assertEqual(profile['DomesticDNSIP'], '8.8.8.8')
-        self.assertEqual(profile['DomesticDNSType'], 'DoU')
-        self.assertEqual(profile['RemoteDNSType'], 'DoH')
-        self.assertEqual(profile['RemoteDNSDomain'], REMOTE_DOH)
+        self.assertFalse(any('DNS' in key and key != 'FakeDNS' for key in profile))
         self.assertFalse(any(key.startswith('LocalDNS') for key in profile))
         self.assertEqual(profile['BlockSites'], ['geosite:kg01'])
         self.assertEqual(profile['DirectSites'], ['domain:yandex.ru'])
@@ -120,6 +135,7 @@ class KaringTests(unittest.TestCase):
         bootstrap = result['dns']['servers'][1:3]
         self.assertTrue(all('full:entry.example' in s['domains'] and 'full:www.gstatic.com' in s['domains'] and s['tag'] == 'dns-bootstrap' and s['skipFallback'] for s in bootstrap))
         self.assertEqual(result['dns']['hosts'], {'dns.google': '8.8.8.8'})
+        self.assertEqual(result['outbounds'][0]['streamSettings']['sockopt']['domainStrategy'], 'UseIPv4')
 
     def test_geoip_export_preserves_exact_ipv4_ipv6_and_rejects_missing(self):
         values = ['192.0.2.0/24', '2001:db8::/32', '0.0.0.0/0']

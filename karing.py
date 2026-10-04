@@ -25,6 +25,7 @@ BASE = 'https://raw.githubusercontent.com/KaringX/karing-ruleset/sing/'
 PUBLIC = 'https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/'
 REMOTE_DOH = 'https://dns.google/dns-query'
 DIRECT_DNS = ['8.8.8.8', '8.8.4.4']
+RESERVE_DNS = ['77.88.8.8', '77.88.8.1']
 
 
 def download(url):
@@ -120,7 +121,8 @@ def automatic_config(config, label='Автовыбор'):
     return variant
 
 
-def with_fakedns(config):
+def with_fakedns(config, direct_dns=None):
+    direct_dns = list(DIRECT_DNS if direct_dns is None else direct_dns)
     variant = copy.deepcopy(config)
     variant['fakedns'] = [{'ipPool': '198.18.0.0/15', 'poolSize': 4096}]
     # External DNS gets synthetic IPs. Xray's internal resolver excludes the
@@ -138,16 +140,20 @@ def with_fakedns(config):
             try:
                 ipaddress.ip_address(host)
             except ValueError:
-                if host: bootstrap_names.append('full:' + host)
+                if host:
+                    bootstrap_names.append('full:' + host)
+                    # Dial entry domains through the profile's built-in resolver,
+                    # rather than silently using the operating system resolver.
+                    outbound.setdefault('streamSettings', {}).setdefault('sockopt', {})['domainStrategy'] = 'UseIPv4'
     bootstrap_names = list(dict.fromkeys(bootstrap_names))
     servers.extend({'address': address, 'domains': bootstrap_names[:], 'skipFallback': True,
-                    'tag': 'dns-bootstrap'} for address in DIRECT_DNS)
+                    'tag': 'dns-bootstrap'} for address in direct_dns)
     for rule in variant['routing']['rules']:
         names = rule.get('domain', [])
         if not names:
             continue
         if rule.get('outboundTag') == 'direct':
-            addresses, tag = DIRECT_DNS, 'dns-bootstrap'
+            addresses, tag = direct_dns, 'dns-bootstrap'
         elif rule.get('balancerTag') == 'auto':
             addresses, tag = [REMOTE_DOH], 'dns-proxy'
         else:
@@ -176,9 +182,9 @@ def client_routing_profile(config):
         'Geoipurl': PUBLIC + 'karing-geoip.dat', 'Geositeurl': PUBLIC + 'karing-geosite.dat',
         'DirectSites': [], 'DirectIp': LOCAL_IPS + ['geoip:ru'],
         'ProxySites': [], 'ProxyIp': [], 'BlockSites': [], 'BlockIp': [],
-        'FakeDNS': 'true', 'DomesticDNSType': 'DoU', 'DomesticDNSIP': DIRECT_DNS[0],
-        'DomesticDNSDomain': '', 'RemoteDNSType': 'DoH', 'RemoteDNSIP': '8.8.8.8',
-        'RemoteDNSDomain': REMOTE_DOH, 'DnsHosts': {'dns.google': '8.8.8.8'}}
+        'FakeDNS': 'true'}
+    # Full configs own their DNS. A shared geodata profile must not dictate
+    # one DomesticDNS value for three different selectable full configs.
     for rule in config['routing']['rules']:
         prefix = 'Proxy' if 'balancerTag' in rule else ('Direct' if rule.get('outboundTag') == 'direct' else 'Block')
         profile[prefix + 'Sites'].extend(rule.get('domain', []))
@@ -245,6 +251,12 @@ def incy_subscription(config):
     return body
 
 
+def subscription_variants(config, premium):
+    return [with_fakedns(automatic_config(config, 'Основной'), DIRECT_DNS),
+            with_fakedns(automatic_config(config, 'Резерв'), RESERVE_DNS),
+            with_fakedns(automatic_config(premium, 'Премиум'), DIRECT_DNS)]
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--xray', required=True)
@@ -292,10 +304,18 @@ def main():
         for filename, content in geo_files.items():
             (temp / filename).write_bytes(content)
         text = serialized_config(config)
-        normal_old = json.loads((ROOT / 'normal.json').read_bytes())
-        normal_config, _, _, _ = assemble(profile, lists, normal_old)
-        variants = [with_fakedns(automatic_config(normal_config, 'Для обычного интернета')),
-                    with_fakedns(automatic_config(config, 'Для белых списков (если не работает)'))]
+        premium_old = json.loads((ROOT / 'premium.json').read_bytes())
+        premium_report = json.loads((ROOT / 'premium-report.json').read_bytes())
+        premium_tags = {o['tag'] for o in premium_old['outbounds'] if o.get('tag', '').startswith('pool-')}
+        if (premium_report.get('required_exit_country') != 'US'
+                or premium_report.get('actual_egress_checked') is not True
+                or premium_report.get('xray_validated') is not True
+                or premium_report.get('config_sha256') != hashlib.sha256(serialized_config(premium_old).encode()).hexdigest()
+                or {e['tag'] for e in premium_report.get('exits', []) if e.get('country') == 'US'} != premium_tags
+                or not premium_tags):
+            raise ValueError('Premium requires checked US exit evidence for every proxy')
+        premium_config, _, _, _ = assemble(profile, lists, premium_old)
+        variants = subscription_variants(config, premium_config)
         incy_body = incy_subscription(variants)
         # Validation needs these specific custom assets, never a global install.
         prior = os.environ.get('XRAY_LOCATION_ASSET')
@@ -317,6 +337,10 @@ def main():
         report = {'profile_url': BASE + 'recommend/ru.json', 'profile_sha256': hashlib.sha256(profile_data).hexdigest(), 'all_groups_enabled': False, 'selection': 'direct groups plus Adblock and AdblockPlus; no Anticensor or custom advertising/Google additions', 'groups': groups, 'sources': sources, 'xray_validated': True, 'config_utf16_bytes': len(text.encode('utf-16-le')), 'geofiles_sha256': {name: hashlib.sha256(content).hexdigest() for name, content in geo_files.items()}, 'requires_geodata_import': True, 'preserved_ru_direct': True, 'generated_at_utc': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())}
         report['variants'] = [{'name': v['remarks'], 'servers': sum(o['protocol'] in ('vless', 'shadowsocks', 'trojan', 'vmess') for o in v['outbounds']), 'config_utf16_bytes': len(serialized_config(v).encode('utf-16-le'))} for v in variants]
         report['fakedns'] = True
+        report['premium_exit_evidence'] = premium_report
+        report['same_main_reserve_pool'] = True
+        report['dns_policy'] = {'Основной': DIRECT_DNS, 'Резерв': RESERVE_DNS,
+                                'Премиум': DIRECT_DNS, 'proxy': REMOTE_DOH}
         report['happ_import_verified'] = False
         report['happ_self_contained'] = True
         report['happ_bytes'] = len(happ_body.encode('utf-8'))
