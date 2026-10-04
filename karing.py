@@ -7,6 +7,7 @@ import argparse
 import concurrent.futures
 import copy
 import hashlib
+import ipaddress
 import json
 import os
 from pathlib import Path
@@ -22,6 +23,8 @@ from geo_dat import geosite, geoip, geoip_cidrs
 ROOT = Path(__file__).resolve().parent
 BASE = 'https://raw.githubusercontent.com/KaringX/karing-ruleset/sing/'
 PUBLIC = 'https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/'
+REMOTE_DOH = 'https://dns.google/dns-query'
+DIRECT_DNS = ['77.88.8.8', '77.88.8.1']
 
 
 def download(url):
@@ -125,29 +128,64 @@ def with_fakedns(config):
     # Preserve route precedence for overlapping domain categories. FakeDNS
     # matches first for client queries and is excluded by Xray for real-IP lookup.
     servers = [{'address': 'fakedns', 'domains': ['regexp:.*']}]
+    # Observatory must resolve its probe before the leastPing balancer is ready.
+    # Resolve proxy entry names here too, so their lookup cannot depend on them.
+    bootstrap_names = ['full:www.gstatic.com']
+    for outbound in variant['outbounds']:
+        settings = outbound.get('settings', {})
+        for server in settings.get('vnext', []) + settings.get('servers', []):
+            host = server.get('address', '')
+            try:
+                ipaddress.ip_address(host)
+            except ValueError:
+                if host: bootstrap_names.append('full:' + host)
+    bootstrap_names = list(dict.fromkeys(bootstrap_names))
+    servers.extend({'address': address, 'domains': bootstrap_names[:], 'skipFallback': True,
+                    'tag': 'dns-bootstrap'} for address in DIRECT_DNS)
     for rule in variant['routing']['rules']:
         names = rule.get('domain', [])
         if not names:
             continue
         if rule.get('outboundTag') == 'direct':
-            addresses = ['77.88.8.8', '77.88.8.1']
+            addresses, tag = DIRECT_DNS, 'dns-bootstrap'
         elif rule.get('balancerTag') == 'auto':
-            addresses = ['1.1.1.1']
+            addresses, tag = [REMOTE_DOH], 'dns-proxy'
         else:
             continue
-        servers.extend({'address': address, 'domains': names[:], 'skipFallback': True} for address in addresses)
-    servers.append('1.1.1.1')
-    variant['dns'] = {'tag': 'dns-bootstrap', 'queryStrategy': 'UseIPv4', 'servers': servers}
+        servers.extend({'address': address, 'domains': names[:], 'skipFallback': True, 'tag': tag} for address in addresses)
+    servers.append({'address': REMOTE_DOH, 'tag': 'dns-proxy'})
+    variant['dns'] = {'tag': 'dns-bootstrap', 'queryStrategy': 'UseIPv4',
+                      'hosts': {'dns.google': '8.8.8.8'}, 'servers': servers}
     for inbound in variant['inbounds']:
         sniffing = inbound.setdefault('sniffing', {})
         sniffing.update({'enabled': True, 'routeOnly': False})
         sniffing['destOverride'] = list(dict.fromkeys(['fakedns', *sniffing.get('destOverride', ['http', 'tls', 'quic'])]))
     variant['outbounds'].append({'tag': 'dns-out', 'protocol': 'dns'})
     variant['routing']['rules'][:0] = [
+        {'type': 'field', 'inboundTag': ['dns-proxy'], 'balancerTag': 'auto'},
         {'type': 'field', 'inboundTag': ['dns-bootstrap'], 'outboundTag': 'direct'},
         {'type': 'field', 'inboundTag': [i['tag'] for i in variant['inbounds']], 'port': '53', 'network': 'tcp,udp', 'outboundTag': 'dns-out'},
     ]
     return variant
+
+
+def client_routing_profile(config):
+    """Use INCY's documented field names, keeping UI and full config consistent."""
+    profile = {'Name': 'rjsxrd Karing geodata', 'GlobalProxy': 'true',
+        'DomainStrategy': 'IPOnDemand', 'LastUpdated': str(int(time.time())),
+        'Geoipurl': PUBLIC + 'karing-geoip.dat', 'Geositeurl': PUBLIC + 'karing-geosite.dat',
+        'DirectSites': [], 'DirectIp': LOCAL_IPS + ['geoip:ru'],
+        'ProxySites': [], 'ProxyIp': [], 'BlockSites': [], 'BlockIp': [],
+        'FakeDNS': 'true', 'DomesticDNSType': 'DoU', 'DomesticDNSIP': DIRECT_DNS[0],
+        'DomesticDNSDomain': '', 'RemoteDNSType': 'DoH', 'RemoteDNSIP': '8.8.8.8',
+        'RemoteDNSDomain': REMOTE_DOH, 'DnsHosts': {'dns.google': '8.8.8.8'}}
+    for rule in config['routing']['rules']:
+        prefix = 'Proxy' if 'balancerTag' in rule else ('Direct' if rule.get('outboundTag') == 'direct' else 'Block')
+        profile[prefix + 'Sites'].extend(rule.get('domain', []))
+        profile[prefix + 'Ip'].extend(rule.get('ip', []))
+    for key in ('DirectSites', 'DirectIp', 'ProxySites', 'ProxyIp', 'BlockSites', 'BlockIp'):
+        profile[key] = list(dict.fromkeys(profile[key]))
+    return profile
 
 
 def happ_config(config, sites, ips):
@@ -269,15 +307,7 @@ def main():
         finally:
             if prior is None: os.environ.pop('XRAY_LOCATION_ASSET', None)
             else: os.environ['XRAY_LOCATION_ASSET'] = prior
-        digest = hashlib.sha256(b''.join(geo_files.values())).hexdigest()
-        route_profile = {'Name': 'rjsxrd Karing geodata', 'GlobalProxy': 'true', 'DomainStrategy': 'IPOnDemand', 'LastUpdated': str(int(time.time())), 'Geoipurl': PUBLIC + 'karing-geoip.dat?v=' + digest, 'Geositeurl': PUBLIC + 'karing-geosite.dat?v=' + digest, 'DirectSites': [], 'DirectIp': LOCAL_IPS + ['geoip:ru'], 'ProxySites': [], 'ProxyIp': [], 'BlockSites': [], 'BlockIp': []}
-        for rule in config['routing']['rules']:
-            prefix = 'Proxy' if 'balancerTag' in rule else ('Direct' if rule.get('outboundTag') == 'direct' else 'Block')
-            route_profile[prefix + 'Sites'].extend(rule.get('domain', []))
-            route_profile[prefix + 'Ip'].extend(rule.get('ip', []))
-        for key in ('DirectSites', 'DirectIp', 'ProxySites', 'ProxyIp', 'BlockSites', 'BlockIp'):
-            route_profile[key] = list(dict.fromkeys(route_profile[key]))
-        route_profile.update({'FakeDNS': 'true', 'LocalDNSType': 'DoU', 'LocalDNSIP': '77.88.8.8', 'LocalDNSDomain': '', 'RemoteDNSType': 'DoU', 'RemoteDNSIP': '1.1.1.1', 'RemoteDNSDomain': ''})
+        route_profile = client_routing_profile(config)
         happ_ips = {**ips, 'ru': geoip_cidrs(geo_files['geoip.dat'], 'ru')}
         happ_variants = [happ_config(v, sites, happ_ips) for v in variants]
         happ_body = happ_subscription(happ_variants)
@@ -296,6 +326,7 @@ def main():
             tmp = out.with_suffix('.tmp')
             tmp.write_bytes(content)
             tmp.replace(out)
+            atomic_write(ROOT / ('karing-' + filename + '.sha256'), hashlib.sha256(content).hexdigest() + '\n')
         atomic_write(ROOT / 'ru-karing.json', text)
         atomic_write(ROOT / 'ru-karing-incy.txt', incy_body)
         atomic_write(ROOT / 'ru-karing-happ.txt', happ_body)

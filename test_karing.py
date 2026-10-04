@@ -1,6 +1,6 @@
 import json
 import unittest
-from karing import selected_groups, assemble, matchers, incy_subscription, automatic_config, with_fakedns, happ_config, happ_subscription, PUBLIC
+from karing import selected_groups, assemble, matchers, incy_subscription, automatic_config, with_fakedns, happ_config, happ_subscription, PUBLIC, REMOTE_DOH, client_routing_profile
 from routing import policy
 from geo_dat import geoip, geosite, geoip_cidrs
 from generate import diverse_pool
@@ -55,11 +55,12 @@ class KaringTests(unittest.TestCase):
         original = {'inbounds': [{'tag': 'socks-in', 'sniffing': {'destOverride': ['tls'], 'routeOnly': True}}], 'outbounds': [{'tag': 'direct', 'protocol': 'freedom'}], 'routing': {'rules': [{'ip': ['geoip:ru'], 'outboundTag': 'direct'}, {'network': 'tcp,udp', 'balancerTag': 'auto'}]}}
         config = with_fakedns(original)
         self.assertEqual(config['dns']['servers'][0], {'address': 'fakedns', 'domains': ['regexp:.*']})
-        self.assertEqual(config['dns']['servers'][-1], '1.1.1.1')
-        self.assertEqual(config['routing']['rules'][2:], original['routing']['rules'])
+        self.assertEqual(config['dns']['servers'][-1], {'address': REMOTE_DOH, 'tag': 'dns-proxy'})
+        self.assertEqual(config['routing']['rules'][3:], original['routing']['rules'])
         self.assertFalse(config['inbounds'][0]['sniffing']['routeOnly'])
         self.assertIn('fakedns', config['inbounds'][0]['sniffing']['destOverride'])
-        self.assertEqual(config['routing']['rules'][0]['inboundTag'], ['dns-bootstrap'])
+        self.assertEqual(config['routing']['rules'][0], {'type': 'field', 'inboundTag': ['dns-proxy'], 'balancerTag': 'auto'})
+        self.assertEqual(config['routing']['rules'][1]['inboundTag'], ['dns-bootstrap'])
         config['outbounds'].insert(0, {'tag': 'block', 'protocol': 'blackhole'})
         config['outbounds'].append({'tag': 'Автовыбор', 'protocol': 'vless'})
         config['routing']['rules'].insert(2, {'domain': ['geosite:kg01'], 'outboundTag': 'block'})
@@ -89,14 +90,36 @@ class KaringTests(unittest.TestCase):
             {'network': 'tcp,udp', 'balancerTag': 'auto'}]}}
         config = with_fakedns(original)
         servers = config['dns']['servers']
-        self.assertEqual([s['address'] for s in servers[:-1]], ['fakedns', '1.1.1.1', '77.88.8.8', '77.88.8.1'])
-        self.assertEqual(servers[1]['domains'], ['geosite:google'])
-        self.assertEqual(servers[2]['domains'], ['geosite:ru'])
-        self.assertTrue(servers[2]['skipFallback'])
-        self.assertEqual(config['routing']['rules'][2:], original['routing']['rules'])
+        self.assertEqual([s['address'] for s in servers[:-1]], ['fakedns', '77.88.8.8', '77.88.8.1', REMOTE_DOH, '77.88.8.8', '77.88.8.1'])
+        self.assertEqual(servers[3]['domains'], ['geosite:google'])
+        self.assertEqual(servers[3]['tag'], 'dns-proxy')
+        self.assertEqual(servers[4]['domains'], ['geosite:ru'])
+        self.assertEqual(servers[4]['tag'], 'dns-bootstrap')
+        self.assertTrue(servers[4]['skipFallback'])
+        self.assertEqual(config['routing']['rules'][3:], original['routing']['rules'])
         expanded = happ_config(config, {'google': ['domain:google.test'], 'ru': ['domain:yandex.test']}, {'ru': ['5.0.0.0/8']})
-        self.assertEqual(expanded['dns']['servers'][2]['domains'], ['domain:yandex.test'])
+        self.assertEqual(expanded['dns']['servers'][4]['domains'], ['domain:yandex.test'])
         self.assertNotIn('geosite:', happ_subscription(expanded))
+
+    def test_client_profile_uses_documented_domestic_dns_and_retains_routes(self):
+        config = {'routing': {'rules': [{'domain': ['geosite:kg01'], 'outboundTag': 'block'}, {'domain': ['domain:yandex.ru'], 'outboundTag': 'direct'}, {'network': 'tcp,udp', 'balancerTag': 'auto'}]}}
+        profile = client_routing_profile(config)
+        self.assertEqual(profile['DomesticDNSIP'], '77.88.8.8')
+        self.assertEqual(profile['DomesticDNSType'], 'DoU')
+        self.assertEqual(profile['RemoteDNSType'], 'DoH')
+        self.assertEqual(profile['RemoteDNSDomain'], REMOTE_DOH)
+        self.assertFalse(any(key.startswith('LocalDNS') for key in profile))
+        self.assertEqual(profile['BlockSites'], ['geosite:kg01'])
+        self.assertEqual(profile['DirectSites'], ['domain:yandex.ru'])
+        self.assertEqual(profile['FakeDNS'], 'true')
+        self.assertTrue(profile['Geoipurl'].endswith('.dat'))
+
+    def test_proxy_entry_and_observatory_dns_do_not_depend_on_balancer(self):
+        config = {'inbounds': [], 'outbounds': [{'protocol': 'vless', 'settings': {'vnext': [{'address': 'entry.example', 'port': 443}]}}], 'routing': {'rules': []}}
+        result = with_fakedns(config)
+        bootstrap = result['dns']['servers'][1:3]
+        self.assertTrue(all('full:entry.example' in s['domains'] and 'full:www.gstatic.com' in s['domains'] and s['tag'] == 'dns-bootstrap' and s['skipFallback'] for s in bootstrap))
+        self.assertEqual(result['dns']['hosts'], {'dns.google': '8.8.8.8'})
 
     def test_geoip_export_preserves_exact_ipv4_ipv6_and_rejects_missing(self):
         values = ['192.0.2.0/24', '2001:db8::/32', '0.0.0.0/0']

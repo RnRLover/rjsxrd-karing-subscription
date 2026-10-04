@@ -90,7 +90,7 @@ for i, item in enumerate(config['dns']['servers']):
     server = dict(item) if isinstance(item, dict) else {}
     server.update({'address': '127.0.0.1', 'port': (dns if address in ('77.88.8.8', '77.88.8.1') else remote_dns).getsockname()[1]})
     config['dns']['servers'][i] = server
-config['routing']['rules'].insert(2, {'type': 'field', 'domain': ['full:music.yandex.ru'], 'outboundTag': 'direct'})
+config['routing']['rules'].insert(3, {'type': 'field', 'domain': ['full:music.yandex.ru'], 'outboundTag': 'direct'})
 for inbound in config['inbounds']:
     with socket.socket() as held:
         held.bind(('127.0.0.1', 0))
