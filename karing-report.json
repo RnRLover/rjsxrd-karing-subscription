@@ -369,23 +369,28 @@
     }
   ],
   "xray_validated": true,
-  "config_utf16_bytes": 74448,
+  "config_utf16_bytes": 72894,
   "geofiles_sha256": {
     "geosite.dat": "bf2492dc2a0ea6c4d130977549481337695f1a5fc52c0a196c112b6c5c4b61fb",
     "geoip.dat": "de9124a06fe55c94c5f92e5c5abf5b669cd3dfca568f6d2664d1813b613d1c3e"
   },
   "requires_geodata_import": true,
   "preserved_ru_direct": true,
-  "generated_at_utc": "2026-10-04T05:52:39Z",
+  "generated_at_utc": "2026-10-04T10:22:03Z",
   "variants": [
     {
-      "name": "Автовыбор",
+      "name": "Для обычного интернета",
       "servers": 24,
-      "config_utf16_bytes": 76276
+      "config_utf16_bytes": 184070
+    },
+    {
+      "name": "Для белых списков (если не работает)",
+      "servers": 24,
+      "config_utf16_bytes": 180224
     }
   ],
   "fakedns": true,
   "happ_import_verified": false,
   "happ_self_contained": true,
-  "happ_bytes": 5977298
+  "happ_bytes": 16147343
 }

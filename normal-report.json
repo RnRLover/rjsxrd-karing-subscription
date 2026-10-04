@@ -1,16 +1,15 @@
 {
-  "generated_at_utc": "2026-10-04T10:21:22Z",
-  "pool": "whitelist",
-  "source": "https://raw.githubusercontent.com/whoahaow/rjsxrd/main/githubmirror/bypass/bypass-all.txt",
-  "source_sha256": "ec1cfe4f742a2a7edced7738a159dd2fcb8b61ad15497f180ec4ea0520b0864a",
+  "generated_at_utc": "2026-10-04T10:21:50Z",
+  "pool": "normal",
+  "source": "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS.txt",
+  "source_sha256": "5db1eb92794dd5a40820f248adb35fe19774334240a32b3bceb47619475cd8d8",
   "counts": {
-    "source_nodes": 443,
-    "russian_label_candidates": 77,
-    "unsupported_or_invalid": 48,
-    "duplicate": 68,
+    "source_nodes": 161,
+    "unsupported_or_invalid": 42,
+    "duplicate": 22,
     "nonpublic_or_unresolved_endpoint": 0
   },
-  "eligible": 327,
+  "eligible": 97,
   "selected": 24,
   "xray_validated": true,
   "actual_egress_checked": true,
@@ -23,10 +22,7 @@
   "excluded_country": "RU",
   "exclusion_basis": "mandatory actual HTTPS egress IP against RU CIDRs; public Russian entry IPs and RU labels permitted",
   "selected_protocols": {
-    "trojan": 8,
-    "vmess": 2,
-    "shadowsocks": 7,
-    "vless": 7
+    "vless": 24
   },
   "routing_policy": "ads block; local direct; Gemini/Google proxy before RU direct; everything else proxy",
   "geosite_sources": [
@@ -50,6 +46,6 @@
     }
   ],
   "client_geoip": "geoip:ru from INCY installed geoip.dat; updated by INCY, not this JSON",
-  "config_utf16_bytes": 119862,
-  "config_utf8_bytes": 59931
+  "config_utf16_bytes": 123820,
+  "config_utf8_bytes": 61910
 }

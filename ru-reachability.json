@@ -1,0 +1,471 @@
+{
+  "generated_at_utc": "2026-10-04T10:21:56Z",
+  "service": "https://check-host.net",
+  "measurement": "TCP connection to entry host:port from Russian probes",
+  "filters_pool": false,
+  "vpn_handshake_checked": false,
+  "mobile_whitelist_checked": false,
+  "probes": {
+    "ru1.node.check-host.net": {
+      "asn": "AS14576",
+      "ip": "185.130.104.238",
+      "location": [
+        "ru",
+        "Russia",
+        "Moscow"
+      ]
+    },
+    "ru2.node.check-host.net": {
+      "asn": "AS210644",
+      "ip": "194.26.229.20",
+      "location": [
+        "ru",
+        "Russia",
+        "Moscow"
+      ]
+    },
+    "ru3.node.check-host.net": {
+      "asn": "AS210644",
+      "ip": "185.221.199.82",
+      "location": [
+        "ru",
+        "Russia",
+        "Saint Petersburg"
+      ]
+    }
+  },
+  "results": [
+    {
+      "endpoint": "meet-goshawk.rooster465.autos:443",
+      "status": "unknown",
+      "probes": {
+        "ru1.node.check-host.net": {
+          "status": "unknown"
+        },
+        "ru2.node.check-host.net": {
+          "status": "unknown"
+        },
+        "ru3.node.check-host.net": {
+          "status": "unknown"
+        }
+      },
+      "diagnostic_error": "API unavailable, invalid response, or measurement incomplete",
+      "outbound_tags": [
+        "pool-01"
+      ]
+    },
+    {
+      "endpoint": "104.17.77.77:8443",
+      "status": "unknown",
+      "probes": {
+        "ru1.node.check-host.net": {
+          "status": "unknown"
+        },
+        "ru2.node.check-host.net": {
+          "status": "unknown"
+        },
+        "ru3.node.check-host.net": {
+          "status": "unknown"
+        }
+      },
+      "diagnostic_error": "API unavailable, invalid response, or measurement incomplete",
+      "outbound_tags": [
+        "pool-02"
+      ]
+    },
+    {
+      "endpoint": "82.38.31.207:8080",
+      "status": "unknown",
+      "probes": {
+        "ru1.node.check-host.net": {
+          "status": "unknown"
+        },
+        "ru2.node.check-host.net": {
+          "status": "unknown"
+        },
+        "ru3.node.check-host.net": {
+          "status": "unknown"
+        }
+      },
+      "diagnostic_error": "API unavailable, invalid response, or measurement incomplete",
+      "outbound_tags": [
+        "pool-03"
+      ]
+    },
+    {
+      "endpoint": "188.225.35.207:443",
+      "status": "unknown",
+      "probes": {
+        "ru1.node.check-host.net": {
+          "status": "unknown"
+        },
+        "ru2.node.check-host.net": {
+          "status": "unknown"
+        },
+        "ru3.node.check-host.net": {
+          "status": "unknown"
+        }
+      },
+      "diagnostic_error": "API unavailable, invalid response, or measurement incomplete",
+      "outbound_tags": [
+        "pool-04",
+        "pool-08"
+      ]
+    },
+    {
+      "endpoint": "162.159.253.41:443",
+      "status": "unknown",
+      "probes": {
+        "ru1.node.check-host.net": {
+          "status": "unknown"
+        },
+        "ru2.node.check-host.net": {
+          "status": "unknown"
+        },
+        "ru3.node.check-host.net": {
+          "status": "unknown"
+        }
+      },
+      "diagnostic_error": "API unavailable, invalid response, or measurement incomplete",
+      "outbound_tags": [
+        "pool-05"
+      ]
+    },
+    {
+      "endpoint": "172.64.80.1:8443",
+      "status": "unknown",
+      "probes": {
+        "ru1.node.check-host.net": {
+          "status": "unknown"
+        },
+        "ru2.node.check-host.net": {
+          "status": "unknown"
+        },
+        "ru3.node.check-host.net": {
+          "status": "unknown"
+        }
+      },
+      "diagnostic_error": "API unavailable, invalid response, or measurement incomplete",
+      "outbound_tags": [
+        "pool-06"
+      ]
+    },
+    {
+      "endpoint": "82.38.31.174:8080",
+      "status": "unknown",
+      "probes": {
+        "ru1.node.check-host.net": {
+          "status": "unknown"
+        },
+        "ru2.node.check-host.net": {
+          "status": "unknown"
+        },
+        "ru3.node.check-host.net": {
+          "status": "unknown"
+        }
+      },
+      "diagnostic_error": "API unavailable, invalid response, or measurement incomplete",
+      "outbound_tags": [
+        "pool-07"
+      ]
+    },
+    {
+      "endpoint": "sacred-anemone.rooster465.autos:443",
+      "status": "unknown",
+      "probes": {
+        "ru1.node.check-host.net": {
+          "status": "unknown"
+        },
+        "ru2.node.check-host.net": {
+          "status": "unknown"
+        },
+        "ru3.node.check-host.net": {
+          "status": "unknown"
+        }
+      },
+      "diagnostic_error": "API unavailable, invalid response, or measurement incomplete",
+      "outbound_tags": [
+        "pool-09"
+      ]
+    },
+    {
+      "endpoint": "82.38.31.219:8080",
+      "status": "unknown",
+      "probes": {
+        "ru1.node.check-host.net": {
+          "status": "unknown"
+        },
+        "ru2.node.check-host.net": {
+          "status": "unknown"
+        },
+        "ru3.node.check-host.net": {
+          "status": "unknown"
+        }
+      },
+      "diagnostic_error": "API unavailable, invalid response, or measurement incomplete",
+      "outbound_tags": [
+        "pool-10"
+      ]
+    },
+    {
+      "endpoint": "13.143.166.71:443",
+      "status": "unknown",
+      "probes": {
+        "ru1.node.check-host.net": {
+          "status": "unknown"
+        },
+        "ru2.node.check-host.net": {
+          "status": "unknown"
+        },
+        "ru3.node.check-host.net": {
+          "status": "unknown"
+        }
+      },
+      "diagnostic_error": "API unavailable, invalid response, or measurement incomplete",
+      "outbound_tags": [
+        "pool-11"
+      ]
+    },
+    {
+      "endpoint": "www.calmlunch.com:443",
+      "status": "unknown",
+      "probes": {
+        "ru1.node.check-host.net": {
+          "status": "unknown"
+        },
+        "ru2.node.check-host.net": {
+          "status": "unknown"
+        },
+        "ru3.node.check-host.net": {
+          "status": "unknown"
+        }
+      },
+      "diagnostic_error": "API unavailable, invalid response, or measurement incomplete",
+      "outbound_tags": [
+        "pool-12"
+      ]
+    },
+    {
+      "endpoint": "82.38.31.149:8080",
+      "status": "unknown",
+      "probes": {
+        "ru1.node.check-host.net": {
+          "status": "unknown"
+        },
+        "ru2.node.check-host.net": {
+          "status": "unknown"
+        },
+        "ru3.node.check-host.net": {
+          "status": "unknown"
+        }
+      },
+      "diagnostic_error": "API unavailable, invalid response, or measurement incomplete",
+      "outbound_tags": [
+        "pool-13"
+      ]
+    },
+    {
+      "endpoint": "id-nl-01.mintrocket.org:443",
+      "status": "reachable",
+      "probes": {
+        "ru1.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 132.68,
+          "resolved_address": "109.176.202.7"
+        },
+        "ru2.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 1116.76,
+          "resolved_address": "109.176.202.7"
+        },
+        "ru3.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 1078.62,
+          "resolved_address": "109.176.202.7"
+        }
+      },
+      "report_url": "https://check-host.net/check-report/4eee1423ka29",
+      "outbound_tags": [
+        "pool-14",
+        "pool-23"
+      ]
+    },
+    {
+      "endpoint": "loved-shark.rooster465.autos:443",
+      "status": "unknown",
+      "probes": {
+        "ru1.node.check-host.net": {
+          "status": "unknown"
+        },
+        "ru2.node.check-host.net": {
+          "status": "unknown"
+        },
+        "ru3.node.check-host.net": {
+          "status": "unknown"
+        }
+      },
+      "diagnostic_error": "API unavailable, invalid response, or measurement incomplete",
+      "outbound_tags": [
+        "pool-15"
+      ]
+    },
+    {
+      "endpoint": "82.38.31.164:8080",
+      "status": "unknown",
+      "probes": {
+        "ru1.node.check-host.net": {
+          "status": "unknown"
+        },
+        "ru2.node.check-host.net": {
+          "status": "unknown"
+        },
+        "ru3.node.check-host.net": {
+          "status": "unknown"
+        }
+      },
+      "diagnostic_error": "API unavailable, invalid response, or measurement incomplete",
+      "outbound_tags": [
+        "pool-16"
+      ]
+    },
+    {
+      "endpoint": "188.225.58.238:443",
+      "status": "unknown",
+      "probes": {
+        "ru1.node.check-host.net": {
+          "status": "unknown"
+        },
+        "ru2.node.check-host.net": {
+          "status": "unknown"
+        },
+        "ru3.node.check-host.net": {
+          "status": "unknown"
+        }
+      },
+      "diagnostic_error": "API unavailable, invalid response, or measurement incomplete",
+      "outbound_tags": [
+        "pool-17"
+      ]
+    },
+    {
+      "endpoint": "3.253.106.233:443",
+      "status": "unknown",
+      "probes": {
+        "ru1.node.check-host.net": {
+          "status": "unknown"
+        },
+        "ru2.node.check-host.net": {
+          "status": "unknown"
+        },
+        "ru3.node.check-host.net": {
+          "status": "unknown"
+        }
+      },
+      "diagnostic_error": "API unavailable, invalid response, or measurement incomplete",
+      "outbound_tags": [
+        "pool-18"
+      ]
+    },
+    {
+      "endpoint": "185.103.110.68:18283",
+      "status": "unknown",
+      "probes": {
+        "ru1.node.check-host.net": {
+          "status": "unknown"
+        },
+        "ru2.node.check-host.net": {
+          "status": "unknown"
+        },
+        "ru3.node.check-host.net": {
+          "status": "unknown"
+        }
+      },
+      "diagnostic_error": "API unavailable, invalid response, or measurement incomplete",
+      "outbound_tags": [
+        "pool-19"
+      ]
+    },
+    {
+      "endpoint": "188.225.25.142:443",
+      "status": "unknown",
+      "probes": {
+        "ru1.node.check-host.net": {
+          "status": "unknown"
+        },
+        "ru2.node.check-host.net": {
+          "status": "unknown"
+        },
+        "ru3.node.check-host.net": {
+          "status": "unknown"
+        }
+      },
+      "diagnostic_error": "API unavailable, invalid response, or measurement incomplete",
+      "outbound_tags": [
+        "pool-20"
+      ]
+    },
+    {
+      "endpoint": "172.67.200.219:443",
+      "status": "unknown",
+      "probes": {
+        "ru1.node.check-host.net": {
+          "status": "unknown"
+        },
+        "ru2.node.check-host.net": {
+          "status": "unknown"
+        },
+        "ru3.node.check-host.net": {
+          "status": "unknown"
+        }
+      },
+      "diagnostic_error": "API unavailable, invalid response, or measurement incomplete",
+      "outbound_tags": [
+        "pool-21"
+      ]
+    },
+    {
+      "endpoint": "51.195.126.38:8388",
+      "status": "unknown",
+      "probes": {
+        "ru1.node.check-host.net": {
+          "status": "unknown"
+        },
+        "ru2.node.check-host.net": {
+          "status": "unknown"
+        },
+        "ru3.node.check-host.net": {
+          "status": "unknown"
+        }
+      },
+      "diagnostic_error": "API unavailable, invalid response, or measurement incomplete",
+      "outbound_tags": [
+        "pool-22"
+      ]
+    },
+    {
+      "endpoint": "ultimate-jaguar.rooster465.autos:443",
+      "status": "reachable",
+      "probes": {
+        "ru1.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 325.29,
+          "resolved_address": "54.213.238.59"
+        },
+        "ru2.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 196.63,
+          "resolved_address": "54.213.238.59"
+        },
+        "ru3.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 186.92,
+          "resolved_address": "54.213.238.59"
+        }
+      },
+      "report_url": "https://check-host.net/check-report/4eee1436kaff",
+      "outbound_tags": [
+        "pool-24"
+      ]
+    }
+  ]
+}
