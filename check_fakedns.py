@@ -16,6 +16,7 @@ ROOT = Path(__file__).resolve().parent
 parser = argparse.ArgumentParser()
 parser.add_argument('--xray', required=True)
 parser.add_argument('--config', default='ru-karing.json')
+parser.add_argument('--profile-index', type=int, default=0)
 args = parser.parse_args()
 from karing import automatic_config, with_fakedns
 from generate import xray_validate
@@ -33,19 +34,22 @@ def receive(sock, count):
 
 dns = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 dns.bind(('127.0.0.1', 0))
+remote_dns = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+remote_dns.bind(('127.0.0.1', 0))
 echo = socket.socket()
 echo.bind(('127.0.0.1', 0))
 echo.listen()
 real_queries = []
+remote_queries = []
 
 
-def dns_worker():
+def dns_worker(server, queries):
     while True:
         try:
-            request, addr = dns.recvfrom(4096)
-            real_queries.append(request)
+            request, addr = server.recvfrom(4096)
+            queries.append(request)
             response = request[:2] + b'\x81\x80\x00\x01\x00\x01\x00\x00\x00\x00' + request[12:] + b'\xc0\x0c\x00\x01\x00\x01\x00\x00\x00\x3c\x00\x04' + socket.inet_aton('127.0.0.1')
-            dns.sendto(response, addr)
+            server.sendto(response, addr)
         except OSError:
             return
 
@@ -59,13 +63,12 @@ def echo_worker():
         conn.sendall(b'PONG')
 
 
-threading.Thread(target=dns_worker, daemon=True).start()
+threading.Thread(target=dns_worker, args=(dns, real_queries), daemon=True).start()
+threading.Thread(target=dns_worker, args=(remote_dns, remote_queries), daemon=True).start()
 threading.Thread(target=echo_worker, daemon=True).start()
 config = json.loads((ROOT / args.config).read_bytes())
 if isinstance(config, list):
-    if len(config) != 1:
-        raise ValueError('expected one automatic full config')
-    config = config[0]
+    config = config[args.profile_index]
 if 'fakedns' not in config:
     config = with_fakedns(automatic_config(config))
 # Isolate the DNS round trip from public proxy availability. Full production
@@ -80,8 +83,14 @@ for rule in config['routing']['rules']:
 for outbound in config['outbounds']:
     if outbound['tag'] == 'direct':
         outbound['settings'] = {'domainStrategy': 'UseIPv4'}
-config['dns']['servers'][1] = {'address': '127.0.0.1', 'port': dns.getsockname()[1]}
-config['routing']['rules'].insert(2, {'type': 'field', 'domain': ['full:fake.test'], 'outboundTag': 'direct'})
+for i, item in enumerate(config['dns']['servers']):
+    address = item if isinstance(item, str) else item['address']
+    if address == 'fakedns':
+        continue
+    server = dict(item) if isinstance(item, dict) else {}
+    server.update({'address': '127.0.0.1', 'port': (dns if address in ('77.88.8.8', '77.88.8.1') else remote_dns).getsockname()[1]})
+    config['dns']['servers'][i] = server
+config['routing']['rules'].insert(2, {'type': 'field', 'domain': ['full:music.yandex.ru'], 'outboundTag': 'direct'})
 for inbound in config['inbounds']:
     with socket.socket() as held:
         held.bind(('127.0.0.1', 0))
@@ -119,7 +128,7 @@ with tempfile.TemporaryDirectory() as temp:
         reply = receive(control, 10)
         assert reply[:4] == b'\x05\x00\x00\x01', reply
         relay = (socket.inet_ntoa(reply[4:8]), struct.unpack('!H', reply[8:])[0])
-        query = b'\x12\x34\x01\x00\x00\x01\x00\x00\x00\x00\x00\x00\x04fake\x04test\x00\x00\x01\x00\x01'
+        query = b'\x12\x34\x01\x00\x00\x01\x00\x00\x00\x00\x00\x00\x05music\x06yandex\x02ru\x00\x00\x01\x00\x01'
         with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as udp:
             udp.settimeout(5)
             udp.sendto(b'\x00\x00\x00\x01' + socket.inet_aton('1.1.1.1') + b'\x00\x35' + query, relay)
@@ -134,7 +143,8 @@ with tempfile.TemporaryDirectory() as temp:
             tcp.sendall(b'PING')
             assert receive(tcp, 4) == b'PONG'
         assert real_queries, 'internal real DNS fallback was not exercised'
-        print(json.dumps({'fake_ip': fake_ip, 'tcp_payload_roundtrip': True, 'internal_real_dns_fallback': True}))
+        assert not remote_queries, 'Yandex Music DNS went to the general resolver instead of Yandex'
+        print(json.dumps({'fake_ip': fake_ip, 'tcp_payload_roundtrip': True, 'internal_real_dns_fallback': True, 'yandex_music_dns_policy': True}))
         control.close()
     except Exception:
         log.flush()
@@ -145,5 +155,6 @@ with tempfile.TemporaryDirectory() as temp:
         process.wait(timeout=5)
         log.close()
 dns.close()
+remote_dns.close()
 echo.close()
 

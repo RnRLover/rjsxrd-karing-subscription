@@ -62,10 +62,21 @@ def russian_label(label):
     label = urllib.parse.unquote(label).lower()
     return "🇷🇺" in label or bool(re.search(r"(?<![a-zа-я])(ru|rus|russia|russian|россия|российский|москва)(?![a-zа-я])", label))
 
-def endpoint_allowed(host, ranges, resolver=None):
+def endpoint_allowed(host, resolver=None):
     resolver = resolver or resolve
     addresses = resolver(host)
-    return bool(addresses) and all(ipaddress.ip_address(a).is_global and not ranges.contains(a) for a in addresses)
+    return bool(addresses) and all(ipaddress.ip_address(a).is_global for a in addresses)
+
+def egress_allowed(address, ranges):
+    try:
+        ip = ipaddress.ip_address(address)
+        return ip.is_global and not ranges.contains(ip)
+    except (ValueError, TypeError):
+        return False
+
+def require_exit_checks(enabled, xray):
+    if not enabled or not xray:
+        raise ValueError('publication requires --verify-exits and --xray: entry country does not establish exit country')
 
 def resolve(host):
     try:
@@ -205,7 +216,7 @@ def verify_exits(nodes, ranges, xray):
                 try:
                     with opener.open("https://api.ipify.org?format=json", timeout=12) as response:
                         ip = json.loads(response.read(1000))["ip"]
-                    if not ipaddress.ip_address(ip).is_global or ranges.contains(ip): return None
+                    if not egress_allowed(ip, ranges): return None
                     return node
                 except Exception: return None
             with concurrent.futures.ThreadPoolExecutor(max_workers=12) as executor:
@@ -223,11 +234,14 @@ def main():
     parser.add_argument("--cache", type=Path, help="use saved upstream data instead of downloading")
     parser.add_argument("--xray", help="Xray binary: required for publication")
     parser.add_argument("--verify-exits", action="store_true", help="check actual HTTPS egress; requires --xray")
+    parser.add_argument("--pool", choices=('whitelist', 'normal'), default='whitelist')
     args = parser.parse_args()
+    require_exit_checks(args.verify_exits, args.xray)
     settings = json.loads((ROOT / "settings.json").read_text(encoding="utf-8"))
+    source_url = settings['normal_subscription_url'] if args.pool == 'normal' else settings['subscription_url']
     def read(path, url):
         return (args.cache / path).read_text(encoding="utf-8-sig") if args.cache else fetch(url)
-    original = read("rjsxrd.txt", settings["subscription_url"])
+    original = read('rjsxrd-normal.txt' if args.pool == 'normal' else 'rjsxrd.txt', source_url)
     raw = read("geo/geoip/ru.json", settings["ru_cidrs_url"])
     obj = json.loads(raw)
     cidrs = [c for r in obj["rules"] for c in r.get("ip_cidr", [])]
@@ -252,8 +266,7 @@ def main():
             counters["unsupported_or_invalid"] += 1
             continue
         if russian_label(node["label"]):
-            counters["russian_label"] += 1
-            continue
+            counters["russian_label_candidates"] += 1
         key = json.dumps(node["outbound"], sort_keys=True)
         if key in seen:
             counters["duplicate"] += 1
@@ -262,9 +275,9 @@ def main():
         candidates.append(node)
     hosts = sorted({n["host"] for n in candidates})
     with concurrent.futures.ThreadPoolExecutor(max_workers=12) as executor:
-        allowed = dict(zip(hosts, executor.map(lambda h: endpoint_allowed(h, ranges), hosts)))
+        allowed = dict(zip(hosts, executor.map(endpoint_allowed, hosts)))
     eligible = [n for n in candidates if allowed[n["host"]]]
-    counters["russian_or_unresolved_endpoint"] = len(candidates) - len(eligible)
+    counters["nonpublic_or_unresolved_endpoint"] = len(candidates) - len(eligible)
     # Keep upstream quality order within each protocol, without starving types
     # that appear later in the source. All selections still need exit checks.
     checked = diverse_pool(eligible, max(settings["max_nodes"] * 3, 72))
@@ -275,7 +288,7 @@ def main():
     config = build(selected, routing)
     config_text = serialized_config(config)
     if args.xray: xray_validate(args.xray, config)
-    report = {"generated_at_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "source": settings["subscription_url"], "source_sha256": hashlib.sha256(original.encode()).hexdigest(), "counts": dict(counters), "eligible": len(eligible), "selected": len(selected), "xray_validated": bool(args.xray), "actual_egress_checked": args.verify_exits, "service_acl": True, "country_data": country_data, "excluded_country": "RU", "exclusion_basis": "source label, resolved endpoint IP, and (when enabled) actual HTTPS egress IP against RU CIDRs", "selected_protocols": dict(Counter(n["outbound"]["protocol"] for n in selected))}
+    report = {"generated_at_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "pool": args.pool, "source": source_url, "source_sha256": hashlib.sha256(original.encode()).hexdigest(), "counts": dict(counters), "eligible": len(eligible), "selected": len(selected), "xray_validated": bool(args.xray), "actual_egress_checked": args.verify_exits, "service_acl": True, "country_data": country_data, "excluded_country": "RU", "exclusion_basis": "mandatory actual HTTPS egress IP against RU CIDRs; public Russian entry IPs and RU labels permitted", "selected_protocols": dict(Counter(n["outbound"]["protocol"] for n in selected))}
     report["service_acl"] = True
     report["routing_policy"] = "ads block; local direct; Gemini/Google proxy before RU direct; everything else proxy"
     report["geosite_sources"] = geo_sources
@@ -283,9 +296,10 @@ def main():
     report["config_utf16_bytes"] = len(config_text.encode("utf-16-le"))
     report["config_utf8_bytes"] = len(config_text.encode("utf-8"))
     # Files change only after all inputs and Xray validation succeeded.
-    atomic_write(args.output / "ru.json", config_text)
-    atomic_write(args.output / "servers.txt", "\n".join(n["uri"] for n in eligible) + "\n")
-    atomic_write(args.output / "report.json", json.dumps(report, ensure_ascii=False, indent=2) + "\n")
+    config_name, servers_name, report_name = ('normal.json', 'normal-servers.txt', 'normal-report.json') if args.pool == 'normal' else ('ru.json', 'servers.txt', 'report.json')
+    atomic_write(args.output / config_name, config_text)
+    atomic_write(args.output / servers_name, "\n".join(n["uri"] for n in selected) + "\n")
+    atomic_write(args.output / report_name, json.dumps(report, ensure_ascii=False, indent=2) + "\n")
     print(json.dumps({"counts": counters, "eligible": len(eligible), "selected": len(selected), "xray_validated": bool(args.xray)}))
 
 if __name__ == "__main__": main()

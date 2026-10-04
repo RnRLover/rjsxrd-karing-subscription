@@ -4,7 +4,7 @@ import unittest
 from pathlib import Path
 
 from routing import domains, policy
-from generate import CountryRanges, endpoint_allowed, parse_node, build, russian_label, atomic_write, serialized_config
+from generate import CountryRanges, endpoint_allowed, egress_allowed, require_exit_checks, parse_node, build, russian_label, atomic_write, serialized_config
 
 UUID = "123e4567-e89b-12d3-a456-426614174000"
 KEY = "A" * 43
@@ -13,13 +13,18 @@ URI = f"vless://{UUID}@1.1.1.1:443?security=reality&pbk={KEY}&sni=example.com&ty
 ROUTING = policy(["domain:example.ru"], ["domain:ads.example.ru"], ["5.0.0.0/8"])
 
 class SubscriptionTests(unittest.TestCase):
-    def test_ru_filter_checks_all_resolved_addresses(self):
+    def test_ru_entry_is_allowed_but_exit_must_be_foreign(self):
         ru = CountryRanges(["5.0.0.0/8", "2a00:1::/32"])
-        self.assertTrue(endpoint_allowed("host.test", ru, lambda h: ["1.1.1.1"]))
-        self.assertFalse(endpoint_allowed("host.test", ru, lambda h: ["1.1.1.1", "5.1.2.3"]))
-        self.assertFalse(endpoint_allowed("host.test", ru, lambda h: ["2a00:1::1"]))
-        self.assertFalse(endpoint_allowed("host.test", ru, lambda h: []))
-        self.assertFalse(endpoint_allowed("host.test", ru, lambda h: ["127.0.0.1"]))
+        self.assertTrue(endpoint_allowed("host.test", lambda h: ["1.1.1.1", "5.1.2.3", "2a00:1::1"]))
+        for addresses in ([], ["127.0.0.1"], ["1.1.1.1", "10.0.0.1"], ["::1"]):
+            self.assertFalse(endpoint_allowed("host.test", lambda h: addresses))
+        self.assertTrue(egress_allowed("1.1.1.1", ru))
+        for address in ("5.1.2.3", "2a00:1::1", "127.0.0.1", "bad", None):
+            self.assertFalse(egress_allowed(address, ru))
+        for enabled, xray in ((False, 'xray'), (True, None), (False, None)):
+            with self.assertRaisesRegex(ValueError, 'publication requires'):
+                require_exit_checks(enabled, xray)
+        require_exit_checks(True, 'xray')
 
     def test_ru_labels_do_not_depend_on_flag_only(self):
         for label in ("🇷🇺", "%F0%9F%87%B7%F0%9F%87%BA", "Russia", "RU:server", "Россия"):

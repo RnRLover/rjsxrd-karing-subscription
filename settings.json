@@ -1,5 +1,6 @@
 {
   "subscription_url": "https://raw.githubusercontent.com/whoahaow/rjsxrd/main/githubmirror/bypass/bypass-all.txt",
+  "normal_subscription_url": "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS.txt",
   "ru_cidrs_url": "https://raw.githubusercontent.com/KaringX/karing-ruleset/sing/geo/geoip/ru.json",
   "geosite_urls": {
     "category-ru": "https://raw.githubusercontent.com/KaringX/karing-ruleset/sing/geo/geosite/category-ru.json",

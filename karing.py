@@ -89,13 +89,12 @@ def assemble(profile, lists, old, extras):
     return config, site_groups, ip_groups, groups
 
 
-def automatic_config(config):
+def automatic_config(config, label='Автовыбор'):
     variant = copy.deepcopy(config)
     proxies = [o for o in variant['outbounds'] if o.get('tag', '').startswith('pool-')]
     if not proxies:
         raise ValueError('no checked proxy servers for automatic pool')
     old_tag = proxies[0]['tag']
-    label = 'Автовыбор'
     proxies[0]['tag'] = label
     variant['remarks'] = label
     tags = [o['tag'] for o in proxies]
@@ -116,7 +115,22 @@ def with_fakedns(config):
     variant['fakedns'] = [{'ipPool': '198.18.0.0/15', 'poolSize': 4096}]
     # External DNS gets synthetic IPs. Xray's internal resolver excludes the
     # FakeDNS server when real IPs are needed for dialing and GeoIP matching.
-    variant['dns'] = {'tag': 'dns-bootstrap', 'queryStrategy': 'UseIPv4', 'servers': ['fakedns', '1.1.1.1']}
+    # Preserve route precedence for overlapping domain categories. FakeDNS
+    # matches first for client queries and is excluded by Xray for real-IP lookup.
+    servers = [{'address': 'fakedns', 'domains': ['regexp:.*']}]
+    for rule in variant['routing']['rules']:
+        names = rule.get('domain', [])
+        if not names:
+            continue
+        if rule.get('outboundTag') == 'direct':
+            addresses = ['77.88.8.8', '77.88.8.1']
+        elif rule.get('balancerTag') == 'auto':
+            addresses = ['1.1.1.1']
+        else:
+            continue
+        servers.extend({'address': address, 'domains': names[:], 'skipFallback': True} for address in addresses)
+    servers.append('1.1.1.1')
+    variant['dns'] = {'tag': 'dns-bootstrap', 'queryStrategy': 'UseIPv4', 'servers': servers}
     for inbound in variant['inbounds']:
         sniffing = inbound.setdefault('sniffing', {})
         sniffing.update({'enabled': True, 'routeOnly': False})
@@ -132,8 +146,9 @@ def with_fakedns(config):
 def happ_config(config, sites, ips):
     """Self-contained full config: no custom client metadata or geo assets."""
     result = copy.deepcopy(config)
-    for rule in result['routing']['rules']:
-        for key, prefix, categories in (('domain', 'geosite:', sites), ('ip', 'geoip:', ips)):
+    dns_servers = [s for s in result.get('dns', {}).get('servers', []) if isinstance(s, dict)]
+    for rule in result['routing']['rules'] + dns_servers:
+        for key, prefix, categories in (('domain', 'geosite:', sites), ('domains', 'geosite:', sites), ('ip', 'geoip:', ips)):
             if key not in rule:
                 continue
             expanded = []
@@ -158,12 +173,13 @@ def happ_config(config, sites, ips):
 
 
 def happ_subscription(config):
-    body = json.dumps([config], ensure_ascii=False, separators=(',', ':')) + '\n'
+    configs = config if isinstance(config, list) else [config]
+    body = json.dumps(configs, ensure_ascii=False, separators=(',', ':')) + '\n'
     # Separate from INCY's Binder budget: never pass this file to INCY.
-    if len(body.encode('utf-8')) > 15_000_000:
-        raise ValueError('self-contained Happ subscription exceeds 15 MB')
-    if len(json.loads(body)) != 1:
-        raise ValueError('Happ subscription must contain one full config')
+    if len(body.encode('utf-8')) > 30_000_000:
+        raise ValueError('self-contained Happ subscription exceeds 30 MB')
+    if not configs or len(json.loads(body)) != len(configs):
+        raise ValueError('Happ subscription must contain complete full configs')
     return body
 
 
@@ -236,8 +252,11 @@ def main():
         for filename, content in geo_files.items():
             (temp / filename).write_bytes(content)
         text = serialized_config(config)
-        variants = [with_fakedns(automatic_config(config))]
-        incy_body = incy_subscription(variants[0])
+        normal_old = json.loads((ROOT / 'normal.json').read_bytes())
+        normal_config, _, _, _ = assemble(profile, lists, normal_old, extras)
+        variants = [with_fakedns(automatic_config(normal_config, 'Для обычного интернета')),
+                    with_fakedns(automatic_config(config, 'Для белых списков (если не работает)'))]
+        incy_body = incy_subscription(variants)
         # Validation needs these specific custom assets, never a global install.
         prior = os.environ.get('XRAY_LOCATION_ASSET')
         os.environ['XRAY_LOCATION_ASSET'] = str(temp)
@@ -256,12 +275,13 @@ def main():
             route_profile[prefix + 'Ip'].extend(rule.get('ip', []))
         for key in ('DirectSites', 'DirectIp', 'ProxySites', 'ProxyIp', 'BlockSites', 'BlockIp'):
             route_profile[key] = list(dict.fromkeys(route_profile[key]))
-        route_profile.update({'FakeDNS': 'true', 'RemoteDNSType': 'DoU', 'RemoteDNSIP': '1.1.1.1', 'RemoteDNSDomain': ''})
+        route_profile.update({'FakeDNS': 'true', 'LocalDNSType': 'DoU', 'LocalDNSIP': '77.88.8.8', 'LocalDNSDomain': '', 'RemoteDNSType': 'DoU', 'RemoteDNSIP': '1.1.1.1', 'RemoteDNSDomain': ''})
         happ_ips = {**ips, 'ru': geoip_cidrs(geo_files['geoip.dat'], 'ru')}
-        happ_variant = happ_config(variants[0], sites, happ_ips)
-        happ_body = happ_subscription(happ_variant)
+        happ_variants = [happ_config(v, sites, happ_ips) for v in variants]
+        happ_body = happ_subscription(happ_variants)
         # A missing custom database must never break this independent variant.
-        xray_validate(args.xray, happ_variant)
+        for variant in happ_variants:
+            xray_validate(args.xray, variant)
         report = {'profile_url': BASE + 'recommend/ru.json', 'profile_sha256': hashlib.sha256(profile_data).hexdigest(), 'all_groups_enabled': True, 'groups': groups, 'sources': sources, 'xray_validated': True, 'config_utf16_bytes': len(text.encode('utf-16-le')), 'geofiles_sha256': {name: hashlib.sha256(content).hexdigest() for name, content in geo_files.items()}, 'requires_geodata_import': True, 'preserved_ru_direct': True, 'generated_at_utc': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())}
         report['variants'] = [{'name': v['remarks'], 'servers': sum(o['protocol'] in ('vless', 'shadowsocks', 'trojan', 'vmess') for o in v['outbounds']), 'config_utf16_bytes': len(serialized_config(v).encode('utf-16-le'))} for v in variants]
         report['fakedns'] = True

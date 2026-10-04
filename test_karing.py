@@ -7,6 +7,19 @@ from generate import diverse_pool
 
 
 class KaringTests(unittest.TestCase):
+    def test_two_modes_are_distinct_full_configs_in_one_subscription(self):
+        def base(tag):
+            return {'inbounds': [], 'outbounds': [{'tag': 'pool-01', 'protocol': 'vless', 'settings': {'mode': tag}}], 'routing': {'rules': [{'network': 'tcp,udp', 'balancerTag': 'auto'}], 'balancers': [{'tag': 'auto', 'selector': ['pool-']}]}, 'burstObservatory': {'subjectSelector': ['pool-']}}
+        names = ['Для обычного интернета', 'Для белых списков (если не работает)']
+        configs = [automatic_config(base(tag), name) for tag, name in zip(['normal', 'whitelist'], names)]
+        self.assertEqual([v['remarks'] for v in configs], names)
+        self.assertEqual([v['outbounds'][0]['settings']['mode'] for v in configs], ['normal', 'whitelist'])
+        self.assertEqual(json.loads(incy_subscription(configs).splitlines()[0]), configs)
+        self.assertEqual(json.loads(happ_subscription(configs)), configs)
+        for config, name in zip(configs, names):
+            self.assertEqual(config['routing']['balancers'][0]['selector'], [name])
+            self.assertEqual(config['burstObservatory']['subjectSelector'], [name])
+
     def test_sampling_does_not_starve_protocols_late_in_source(self):
         nodes = [{'outbound': {'protocol': protocol}, 'id': i} for i, protocol in enumerate(['vless'] * 90 + ['shadowsocks'] * 2 + ['trojan'])]
         sample = diverse_pool(nodes, 6)
@@ -28,6 +41,8 @@ class KaringTests(unittest.TestCase):
     def test_happ_is_complete_json_with_fakedns_and_no_asset_dependency(self):
         original = {'inbounds': [{'tag': 'socks-in', 'sniffing': {'destOverride': ['tls'], 'routeOnly': True}}], 'outbounds': [{'tag': 'direct', 'protocol': 'freedom'}], 'routing': {'rules': [{'ip': ['geoip:ru'], 'outboundTag': 'direct'}, {'network': 'tcp,udp', 'balancerTag': 'auto'}]}}
         config = with_fakedns(original)
+        self.assertEqual(config['dns']['servers'][0], {'address': 'fakedns', 'domains': ['regexp:.*']})
+        self.assertEqual(config['dns']['servers'][-1], '1.1.1.1')
         self.assertEqual(config['routing']['rules'][2:], original['routing']['rules'])
         self.assertFalse(config['inbounds'][0]['sniffing']['routeOnly'])
         self.assertIn('fakedns', config['inbounds'][0]['sniffing']['destOverride'])
@@ -52,6 +67,23 @@ class KaringTests(unittest.TestCase):
         config = {'outbounds': [{'protocol': 'vless'}], 'routing': {'rules': [{'domain': ['geosite:missing']}]}}
         with self.assertRaisesRegex(ValueError, 'missing inline category'):
             happ_config(config, {}, {})
+
+    def test_direct_dns_uses_yandex_without_overriding_prior_proxy_domain(self):
+        original = {'inbounds': [], 'outbounds': [{'tag': 'direct', 'protocol': 'freedom'}, {'tag': 'pool-01', 'protocol': 'vless'}], 'routing': {'rules': [
+            {'domain': ['geosite:google'], 'balancerTag': 'auto'},
+            {'domain': ['geosite:ru'], 'outboundTag': 'direct'},
+            {'ip': ['geoip:ru'], 'outboundTag': 'direct'},
+            {'network': 'tcp,udp', 'balancerTag': 'auto'}]}}
+        config = with_fakedns(original)
+        servers = config['dns']['servers']
+        self.assertEqual([s['address'] for s in servers[:-1]], ['fakedns', '1.1.1.1', '77.88.8.8', '77.88.8.1'])
+        self.assertEqual(servers[1]['domains'], ['geosite:google'])
+        self.assertEqual(servers[2]['domains'], ['geosite:ru'])
+        self.assertTrue(servers[2]['skipFallback'])
+        self.assertEqual(config['routing']['rules'][2:], original['routing']['rules'])
+        expanded = happ_config(config, {'google': ['domain:google.test'], 'ru': ['domain:yandex.test']}, {'ru': ['5.0.0.0/8']})
+        self.assertEqual(expanded['dns']['servers'][2]['domains'], ['domain:yandex.test'])
+        self.assertNotIn('geosite:', happ_subscription(expanded))
 
     def test_geoip_export_preserves_exact_ipv4_ipv6_and_rejects_missing(self):
         values = ['192.0.2.0/24', '2001:db8::/32', '0.0.0.0/0']
