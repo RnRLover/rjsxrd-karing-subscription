@@ -1,15 +1,15 @@
 {
-  "generated_at_utc": "2026-10-04T12:22:21Z",
+  "generated_at_utc": "2026-10-04T17:35:57Z",
   "pool": "normal",
   "source": "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS.txt",
-  "source_sha256": "34bcfccd603083d33cca08249b7abdca6c85d3ec8fc0f241a69d401383ae418d",
+  "source_sha256": "cbb7dee5e4440faa8a6580ae891d405240573b8c0a6e4acff22eac2f2adeeca2",
   "counts": {
-    "source_nodes": 148,
-    "unsupported_or_invalid": 45,
-    "duplicate": 11,
+    "source_nodes": 158,
+    "unsupported_or_invalid": 29,
+    "duplicate": 1,
     "nonpublic_or_unresolved_endpoint": 0
   },
-  "eligible": 92,
+  "eligible": 128,
   "selected": 24,
   "xray_validated": true,
   "actual_egress_checked": true,
@@ -34,6 +34,6 @@
     }
   ],
   "client_geoip": "geoip:ru from INCY installed geoip.dat; updated by INCY, not this JSON",
-  "config_utf16_bytes": 73874,
-  "config_utf8_bytes": 36937
+  "config_utf16_bytes": 72688,
+  "config_utf8_bytes": 36344
 }

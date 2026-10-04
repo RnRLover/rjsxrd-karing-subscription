@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-10-04T12:22:34Z",
+  "generated_at_utc": "2026-10-04T17:37:04Z",
   "service": "https://check-host.net",
   "measurement": "TCP connection to entry host:port from Russian probes",
   "filters_pool": false,
@@ -36,117 +36,226 @@
   },
   "results": [
     {
-      "endpoint": "82.38.31.7:8080",
-      "status": "unknown",
+      "endpoint": "sacred-anemone.rooster465.autos:443",
+      "status": "reachable",
       "probes": {
         "ru1.node.check-host.net": {
-          "status": "unknown"
+          "status": "reachable",
+          "tcp_connect_ms": 162.57,
+          "resolved_address": "34.242.77.118"
         },
         "ru2.node.check-host.net": {
-          "status": "unknown"
+          "status": "reachable",
+          "tcp_connect_ms": 87.94,
+          "resolved_address": "34.242.77.118"
         },
         "ru3.node.check-host.net": {
-          "status": "unknown"
+          "status": "reachable",
+          "tcp_connect_ms": 94.79,
+          "resolved_address": "34.242.77.118"
         }
       },
-      "diagnostic_error": "API unavailable, invalid response, or measurement incomplete",
+      "report_url": "https://check-host.net/check-report/4efbdf8dkb93",
       "outbound_tags": [
         "pool-01"
       ]
     },
     {
-      "endpoint": "3.253.106.233:443",
-      "status": "unknown",
+      "endpoint": "82.38.31.10:8080",
+      "status": "reachable",
       "probes": {
         "ru1.node.check-host.net": {
-          "status": "unknown"
+          "status": "unreachable",
+          "error": "Connection timed out"
         },
         "ru2.node.check-host.net": {
-          "status": "unknown"
+          "status": "reachable",
+          "tcp_connect_ms": 121.33,
+          "resolved_address": "82.38.31.10"
         },
         "ru3.node.check-host.net": {
-          "status": "unknown"
+          "status": "reachable",
+          "tcp_connect_ms": 41.73,
+          "resolved_address": "82.38.31.10"
         }
       },
-      "diagnostic_error": "API unavailable, invalid response, or measurement incomplete",
+      "report_url": "https://check-host.net/check-report/4efbdf8bk7ac",
       "outbound_tags": [
         "pool-02"
       ]
     },
     {
-      "endpoint": "104.17.77.77:8443",
-      "status": "unknown",
+      "endpoint": "172.67.167.78:8443",
+      "status": "reachable",
       "probes": {
         "ru1.node.check-host.net": {
-          "status": "unknown"
+          "status": "reachable",
+          "tcp_connect_ms": 30.27,
+          "resolved_address": "172.67.167.78"
         },
         "ru2.node.check-host.net": {
-          "status": "unknown"
+          "status": "reachable",
+          "tcp_connect_ms": 23.14,
+          "resolved_address": "172.67.167.78"
         },
         "ru3.node.check-host.net": {
-          "status": "unknown"
+          "status": "reachable",
+          "tcp_connect_ms": 27.87,
+          "resolved_address": "172.67.167.78"
         }
       },
-      "diagnostic_error": "API unavailable, invalid response, or measurement incomplete",
+      "report_url": "https://check-host.net/check-report/4efbdfefkb51",
       "outbound_tags": [
         "pool-03"
       ]
     },
     {
-      "endpoint": "185.28.47.28:443",
-      "status": "unknown",
+      "endpoint": "62.152.58.90:443",
+      "status": "reachable",
       "probes": {
         "ru1.node.check-host.net": {
-          "status": "unknown"
+          "status": "reachable",
+          "tcp_connect_ms": 3.18,
+          "resolved_address": "62.152.58.90"
         },
         "ru2.node.check-host.net": {
-          "status": "unknown"
+          "status": "reachable",
+          "tcp_connect_ms": 6.01,
+          "resolved_address": "62.152.58.90"
         },
         "ru3.node.check-host.net": {
-          "status": "unknown"
+          "status": "reachable",
+          "tcp_connect_ms": 17.98,
+          "resolved_address": "62.152.58.90"
         }
       },
-      "diagnostic_error": "API unavailable, invalid response, or measurement incomplete",
+      "report_url": "https://check-host.net/check-report/4efbe067k737",
       "outbound_tags": [
-        "pool-04"
+        "pool-04",
+        "pool-08"
       ]
     },
     {
-      "endpoint": "82.38.31.213:8080",
-      "status": "unknown",
+      "endpoint": "3.253.106.233:443",
+      "status": "reachable",
       "probes": {
         "ru1.node.check-host.net": {
-          "status": "unknown"
+          "status": "reachable",
+          "tcp_connect_ms": 120.74,
+          "resolved_address": "3.253.106.233"
         },
         "ru2.node.check-host.net": {
-          "status": "unknown"
+          "status": "reachable",
+          "tcp_connect_ms": 191.99,
+          "resolved_address": "3.253.106.233"
         },
         "ru3.node.check-host.net": {
-          "status": "unknown"
+          "status": "reachable",
+          "tcp_connect_ms": 46.22,
+          "resolved_address": "3.253.106.233"
         }
       },
-      "diagnostic_error": "API unavailable, invalid response, or measurement incomplete",
+      "report_url": "https://check-host.net/check-report/4efbe07ek956",
       "outbound_tags": [
         "pool-05"
       ]
     },
     {
-      "endpoint": "loved-shark.rooster465.autos:443",
-      "status": "unknown",
+      "endpoint": "82.38.31.192:8080",
+      "status": "reachable",
       "probes": {
         "ru1.node.check-host.net": {
-          "status": "unknown"
+          "status": "unreachable",
+          "error": "Connection timed out"
         },
         "ru2.node.check-host.net": {
-          "status": "unknown"
+          "status": "reachable",
+          "tcp_connect_ms": 69.33,
+          "resolved_address": "82.38.31.192"
         },
         "ru3.node.check-host.net": {
-          "status": "unknown"
+          "status": "reachable",
+          "tcp_connect_ms": 46.83,
+          "resolved_address": "82.38.31.192"
         }
       },
-      "diagnostic_error": "API unavailable, invalid response, or measurement incomplete",
+      "report_url": "https://check-host.net/check-report/4efbe0e5kb47",
       "outbound_tags": [
         "pool-06"
+      ]
+    },
+    {
+      "endpoint": "104.17.77.77:8443",
+      "status": "reachable",
+      "probes": {
+        "ru1.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 135.49,
+          "resolved_address": "104.17.77.77"
+        },
+        "ru2.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 72.66,
+          "resolved_address": "104.17.77.77"
+        },
+        "ru3.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 27.82,
+          "resolved_address": "104.17.77.77"
+        }
+      },
+      "report_url": "https://check-host.net/check-report/4efbe105kda5",
+      "outbound_tags": [
+        "pool-07"
+      ]
+    },
+    {
+      "endpoint": "meet-goshawk.rooster465.autos:443",
+      "status": "reachable",
+      "probes": {
+        "ru1.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 112.81,
+          "resolved_address": "3.75.93.113"
+        },
+        "ru2.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 110.35,
+          "resolved_address": "3.75.93.113"
+        },
+        "ru3.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 80.75,
+          "resolved_address": "3.75.93.113"
+        }
+      },
+      "report_url": "https://check-host.net/check-report/4efbe1c5kadb",
+      "outbound_tags": [
+        "pool-09"
+      ]
+    },
+    {
+      "endpoint": "51.77.225.200:8388",
+      "status": "reachable",
+      "probes": {
+        "ru1.node.check-host.net": {
+          "status": "unreachable",
+          "error": "Connection timed out"
+        },
+        "ru2.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 58.53,
+          "resolved_address": "51.77.225.200"
+        },
+        "ru3.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 48.82,
+          "resolved_address": "51.77.225.200"
+        }
+      },
+      "report_url": "https://check-host.net/check-report/4efbe1f0k1d9",
+      "outbound_tags": [
+        "pool-10"
       ]
     },
     {
@@ -165,324 +274,323 @@
       },
       "diagnostic_error": "API unavailable, invalid response, or measurement incomplete",
       "outbound_tags": [
-        "pool-07"
+        "pool-11"
       ]
     },
     {
-      "endpoint": "132.243.214.203:25947",
-      "status": "unknown",
+      "endpoint": "pl.flen-vpn.xyz:8443",
+      "status": "reachable",
       "probes": {
         "ru1.node.check-host.net": {
-          "status": "unknown"
-        },
-        "ru2.node.check-host.net": {
-          "status": "unknown"
-        },
-        "ru3.node.check-host.net": {
-          "status": "unknown"
-        }
-      },
-      "diagnostic_error": "API unavailable, invalid response, or measurement incomplete",
-      "outbound_tags": [
-        "pool-08"
-      ]
-    },
-    {
-      "endpoint": "82.38.31.180:8080",
-      "status": "unknown",
-      "probes": {
-        "ru1.node.check-host.net": {
-          "status": "unknown"
+          "status": "reachable",
+          "tcp_connect_ms": 107.43,
+          "resolved_address": "2.26.225.89"
         },
         "ru2.node.check-host.net": {
           "status": "reachable",
-          "tcp_connect_ms": 51.21,
-          "resolved_address": "82.38.31.180"
+          "tcp_connect_ms": 63.5,
+          "resolved_address": "2.26.225.89"
         },
         "ru3.node.check-host.net": {
           "status": "reachable",
-          "tcp_connect_ms": 43.05,
-          "resolved_address": "82.38.31.180"
+          "tcp_connect_ms": 91.95,
+          "resolved_address": "2.26.225.89"
         }
       },
-      "diagnostic_error": "API unavailable, invalid response, or measurement incomplete",
-      "outbound_tags": [
-        "pool-09"
-      ]
-    },
-    {
-      "endpoint": "sacred-anemone.rooster465.autos:443",
-      "status": "unknown",
-      "probes": {
-        "ru1.node.check-host.net": {
-          "status": "unknown"
-        },
-        "ru2.node.check-host.net": {
-          "status": "unknown"
-        },
-        "ru3.node.check-host.net": {
-          "status": "unknown"
-        }
-      },
-      "diagnostic_error": "API unavailable, invalid response, or measurement incomplete",
-      "outbound_tags": [
-        "pool-10"
-      ]
-    },
-    {
-      "endpoint": "188.225.35.207:443",
-      "status": "unknown",
-      "probes": {
-        "ru1.node.check-host.net": {
-          "status": "unknown"
-        },
-        "ru2.node.check-host.net": {
-          "status": "unknown"
-        },
-        "ru3.node.check-host.net": {
-          "status": "unknown"
-        }
-      },
-      "diagnostic_error": "API unavailable, invalid response, or measurement incomplete",
-      "outbound_tags": [
-        "pool-11",
-        "pool-14"
-      ]
-    },
-    {
-      "endpoint": "82.38.31.216:8080",
-      "status": "unknown",
-      "probes": {
-        "ru1.node.check-host.net": {
-          "status": "unknown"
-        },
-        "ru2.node.check-host.net": {
-          "status": "unknown"
-        },
-        "ru3.node.check-host.net": {
-          "status": "unknown"
-        }
-      },
-      "diagnostic_error": "API unavailable, invalid response, or measurement incomplete",
+      "report_url": "https://check-host.net/check-report/4efbe247k22",
       "outbound_tags": [
         "pool-12"
       ]
     },
     {
-      "endpoint": "meet-goshawk.rooster465.autos:443",
-      "status": "unknown",
+      "endpoint": "loved-shark.rooster465.autos:443",
+      "status": "reachable",
       "probes": {
         "ru1.node.check-host.net": {
-          "status": "unknown"
+          "status": "reachable",
+          "tcp_connect_ms": 139.57,
+          "resolved_address": "3.253.106.233"
         },
         "ru2.node.check-host.net": {
-          "status": "unknown"
+          "status": "reachable",
+          "tcp_connect_ms": 194.34,
+          "resolved_address": "3.253.106.233"
         },
         "ru3.node.check-host.net": {
-          "status": "unknown"
+          "status": "reachable",
+          "tcp_connect_ms": 99.2,
+          "resolved_address": "3.253.106.233"
         }
       },
-      "diagnostic_error": "API unavailable, invalid response, or measurement incomplete",
+      "report_url": "https://check-host.net/check-report/4efbe285kba5",
       "outbound_tags": [
         "pool-13"
       ]
     },
     {
-      "endpoint": "82.38.31.2:8080",
-      "status": "unknown",
+      "endpoint": "82.38.31.46:8080",
+      "status": "reachable",
       "probes": {
         "ru1.node.check-host.net": {
-          "status": "unknown"
+          "status": "unreachable",
+          "error": "Connection timed out"
         },
         "ru2.node.check-host.net": {
-          "status": "unknown"
+          "status": "reachable",
+          "tcp_connect_ms": 1066.24,
+          "resolved_address": "82.38.31.46"
         },
         "ru3.node.check-host.net": {
-          "status": "unknown"
+          "status": "unreachable",
+          "error": "Connection timed out"
         }
       },
-      "diagnostic_error": "API unavailable, invalid response, or measurement incomplete",
+      "report_url": "https://check-host.net/check-report/4efbe2ack18a",
+      "outbound_tags": [
+        "pool-14"
+      ]
+    },
+    {
+      "endpoint": "166.1.36.83:443",
+      "status": "reachable",
+      "probes": {
+        "ru1.node.check-host.net": {
+          "status": "unreachable",
+          "error": "Connection timed out"
+        },
+        "ru2.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 76.08,
+          "resolved_address": "166.1.36.83"
+        },
+        "ru3.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 34.2,
+          "resolved_address": "166.1.36.83"
+        }
+      },
+      "report_url": "https://check-host.net/check-report/4efbe2cdkfca",
       "outbound_tags": [
         "pool-15"
       ]
     },
     {
-      "endpoint": "russia.com:443",
+      "endpoint": "51.255.13.232:8388",
       "status": "reachable",
       "probes": {
         "ru1.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 126.21,
-          "resolved_address": "104.26.4.57"
+          "status": "unreachable",
+          "error": "Connection timed out"
         },
         "ru2.node.check-host.net": {
           "status": "reachable",
-          "tcp_connect_ms": 71.64,
-          "resolved_address": "8.47.69.6"
+          "tcp_connect_ms": 42.74,
+          "resolved_address": "51.255.13.232"
         },
         "ru3.node.check-host.net": {
           "status": "reachable",
-          "tcp_connect_ms": 96.56,
-          "resolved_address": "104.26.4.57"
+          "tcp_connect_ms": 35.57,
+          "resolved_address": "51.255.13.232"
         }
       },
-      "report_url": "https://check-host.net/check-report/4ef1d9c5ka",
+      "report_url": "https://check-host.net/check-report/4efbe35dk7cf",
       "outbound_tags": [
         "pool-16"
       ]
     },
     {
-      "endpoint": "188.225.57.78:443",
-      "status": "unknown",
+      "endpoint": "guided-ferret.rooster465.autos:443",
+      "status": "reachable",
       "probes": {
         "ru1.node.check-host.net": {
-          "status": "unknown"
+          "status": "reachable",
+          "tcp_connect_ms": 206.83,
+          "resolved_address": "34.220.15.24"
         },
         "ru2.node.check-host.net": {
-          "status": "unknown"
+          "status": "reachable",
+          "tcp_connect_ms": 264.03,
+          "resolved_address": "34.220.15.24"
         },
         "ru3.node.check-host.net": {
-          "status": "unknown"
+          "status": "reachable",
+          "tcp_connect_ms": 214.93,
+          "resolved_address": "34.220.15.24"
         }
       },
-      "diagnostic_error": "API unavailable, invalid response, or measurement incomplete",
+      "report_url": "https://check-host.net/check-report/4efbe374k5a4",
       "outbound_tags": [
         "pool-17"
       ]
     },
     {
       "endpoint": "82.38.31.149:8080",
-      "status": "unknown",
+      "status": "reachable",
       "probes": {
         "ru1.node.check-host.net": {
-          "status": "unknown"
+          "status": "unreachable",
+          "error": "Connection timed out"
         },
         "ru2.node.check-host.net": {
-          "status": "unknown"
+          "status": "reachable",
+          "tcp_connect_ms": 77.3,
+          "resolved_address": "82.38.31.149"
         },
         "ru3.node.check-host.net": {
-          "status": "unknown"
+          "status": "reachable",
+          "tcp_connect_ms": 41.41,
+          "resolved_address": "82.38.31.149"
         }
       },
-      "diagnostic_error": "API unavailable, invalid response, or measurement incomplete",
+      "report_url": "https://check-host.net/check-report/4efbe3b1kfec",
       "outbound_tags": [
         "pool-18"
       ]
     },
     {
-      "endpoint": "guided-ferret.rooster465.autos:443",
-      "status": "unknown",
+      "endpoint": "obliging-louse.rooster465.autos:443",
+      "status": "reachable",
       "probes": {
         "ru1.node.check-host.net": {
-          "status": "unknown"
+          "status": "reachable",
+          "tcp_connect_ms": 352.81,
+          "resolved_address": "54.238.153.132"
         },
         "ru2.node.check-host.net": {
-          "status": "unknown"
+          "status": "reachable",
+          "tcp_connect_ms": 304.85,
+          "resolved_address": "54.238.153.132"
         },
         "ru3.node.check-host.net": {
-          "status": "unknown"
+          "status": "reachable",
+          "tcp_connect_ms": 318.37,
+          "resolved_address": "54.238.153.132"
         }
       },
-      "diagnostic_error": "API unavailable, invalid response, or measurement incomplete",
+      "report_url": "https://check-host.net/check-report/4efbe3cbk36a",
       "outbound_tags": [
         "pool-19"
       ]
     },
     {
-      "endpoint": "stsr.hospitaldt.ir:8443",
-      "status": "unknown",
+      "endpoint": "140.174.184.5:8388",
+      "status": "reachable",
       "probes": {
         "ru1.node.check-host.net": {
-          "status": "unknown"
+          "status": "unreachable",
+          "error": "Connection timed out"
         },
         "ru2.node.check-host.net": {
-          "status": "unknown"
+          "status": "reachable",
+          "tcp_connect_ms": 118.21,
+          "resolved_address": "140.174.184.5"
         },
         "ru3.node.check-host.net": {
-          "status": "unknown"
+          "status": "reachable",
+          "tcp_connect_ms": 54.18,
+          "resolved_address": "140.174.184.5"
         }
       },
-      "diagnostic_error": "API unavailable, invalid response, or measurement incomplete",
+      "report_url": "https://check-host.net/check-report/4efbe413k835",
       "outbound_tags": [
         "pool-20"
       ]
     },
     {
-      "endpoint": "82.38.31.10:8080",
-      "status": "unknown",
+      "endpoint": "fancy-javelin.rooster465.autos:443",
+      "status": "reachable",
       "probes": {
         "ru1.node.check-host.net": {
-          "status": "unknown"
+          "status": "reachable",
+          "tcp_connect_ms": 314.79,
+          "resolved_address": "43.207.198.39"
         },
         "ru2.node.check-host.net": {
           "status": "reachable",
-          "tcp_connect_ms": 44.53,
-          "resolved_address": "82.38.31.10"
+          "tcp_connect_ms": 439.86,
+          "resolved_address": "43.207.198.39"
         },
         "ru3.node.check-host.net": {
           "status": "reachable",
-          "tcp_connect_ms": 50.4,
-          "resolved_address": "82.38.31.10"
+          "tcp_connect_ms": 300.19,
+          "resolved_address": "43.207.198.39"
         }
       },
-      "diagnostic_error": "API unavailable, invalid response, or measurement incomplete",
+      "report_url": "https://check-host.net/check-report/4efbe438kb58",
       "outbound_tags": [
         "pool-21"
       ]
     },
     {
-      "endpoint": "www.calmlunch.com:443",
-      "status": "unknown",
+      "endpoint": "51.195.126.38:8388",
+      "status": "reachable",
       "probes": {
         "ru1.node.check-host.net": {
-          "status": "unknown"
+          "status": "unreachable",
+          "error": "Connection timed out"
         },
         "ru2.node.check-host.net": {
-          "status": "unknown"
+          "status": "reachable",
+          "tcp_connect_ms": 44.2,
+          "resolved_address": "51.195.126.38"
         },
         "ru3.node.check-host.net": {
-          "status": "unknown"
+          "status": "reachable",
+          "tcp_connect_ms": 35.66,
+          "resolved_address": "51.195.126.38"
         }
       },
-      "diagnostic_error": "API unavailable, invalid response, or measurement incomplete",
+      "report_url": "https://check-host.net/check-report/4efbe48ak397",
       "outbound_tags": [
         "pool-22"
       ]
     },
     {
-      "endpoint": "208.69.78.217:2053",
-      "status": "unknown",
+      "endpoint": "integral-rodent.rooster465.autos:443",
+      "status": "reachable",
       "probes": {
         "ru1.node.check-host.net": {
-          "status": "unknown"
+          "status": "reachable",
+          "tcp_connect_ms": 323.53,
+          "resolved_address": "54.199.66.128"
         },
         "ru2.node.check-host.net": {
-          "status": "unknown"
+          "status": "reachable",
+          "tcp_connect_ms": 287.59,
+          "resolved_address": "54.199.66.128"
         },
         "ru3.node.check-host.net": {
-          "status": "unknown"
+          "status": "reachable",
+          "tcp_connect_ms": 337.99,
+          "resolved_address": "54.199.66.128"
         }
       },
-      "diagnostic_error": "API unavailable, invalid response, or measurement incomplete",
+      "report_url": "https://check-host.net/check-report/4efbe4bck10d",
       "outbound_tags": [
         "pool-23"
       ]
     },
     {
-      "endpoint": "82.38.31.174:8080",
-      "status": "unknown",
+      "endpoint": "yyz-ca-01.blncvpn4u.cc:9443",
+      "status": "reachable",
       "probes": {
         "ru1.node.check-host.net": {
-          "status": "unknown"
+          "status": "reachable",
+          "tcp_connect_ms": 235.35,
+          "resolved_address": "138.199.48.82"
         },
         "ru2.node.check-host.net": {
-          "status": "unknown"
+          "status": "reachable",
+          "tcp_connect_ms": 278.55,
+          "resolved_address": "138.199.48.82"
         },
         "ru3.node.check-host.net": {
-          "status": "unknown"
+          "status": "reachable",
+          "tcp_connect_ms": 138.81,
+          "resolved_address": "138.199.48.82"
         }
       },
-      "diagnostic_error": "API unavailable, invalid response, or measurement incomplete",
+      "report_url": "https://check-host.net/check-report/4efbe502k677",
       "outbound_tags": [
         "pool-24"
       ]
