@@ -30,17 +30,23 @@ jobs:
         run: python setup_singbox.py
       - name: Generate and check actual exits
         run: python generate.py --xray .runtime/xray --verify-exits
+      - name: Generate ordinary internet pool and check exits
+        run: python generate.py --xray .runtime/xray --verify-exits --pool normal
+      - name: Diagnose TCP reachability from Russian probes
+        run: python check_ru.py
       - name: Generate Karing profile with RU direct
         run: python karing.py --xray .runtime/xray --singbox .runtime/sing-box
       - name: Check FakeDNS startup and local DNS TCP exchange
         run: python check_fakedns.py --xray .runtime/xray
       - name: Check standalone Happ config without geofiles
-        run: python check_fakedns.py --xray .runtime/xray --config ru-karing-happ.txt
+        run: |
+          python check_fakedns.py --xray .runtime/xray --config ru-karing-happ.txt --profile-index 0
+          python check_fakedns.py --xray .runtime/xray --config ru-karing-happ.txt --profile-index 1
       - name: Publish validated files
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add ru.json servers.txt report.json ru-karing.json ru-karing-incy.txt ru-karing-happ.txt karing-routing.json karing-report.json karing-geoip.dat karing-geosite.dat
+          git add ru.json servers.txt report.json normal.json normal-servers.txt normal-report.json ru-reachability.json normal-reachability.json ru-karing.json ru-karing-incy.txt ru-karing-happ.txt karing-routing.json karing-report.json karing-geoip.dat karing-geosite.dat
           if ! git diff --cached --quiet; then
             git commit -m "Update validated rjsxrd subscription"
             git push
