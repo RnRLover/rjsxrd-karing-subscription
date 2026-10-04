@@ -2,7 +2,7 @@
   "Name": "rjsxrd Karing geodata",
   "GlobalProxy": "true",
   "DomainStrategy": "IPOnDemand",
-  "LastUpdated": "1791149798",
+  "LastUpdated": "1791151579",
   "Geoipurl": "https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/karing-geoip.dat",
   "Geositeurl": "https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/karing-geosite.dat",
   "DirectSites": [
@@ -1136,7 +1136,7 @@
   ],
   "FakeDNS": "true",
   "DomesticDNSType": "DoU",
-  "DomesticDNSIP": "77.88.8.8",
+  "DomesticDNSIP": "8.8.8.8",
   "DomesticDNSDomain": "",
   "RemoteDNSType": "DoH",
   "RemoteDNSIP": "8.8.8.8",

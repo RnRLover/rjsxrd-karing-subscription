@@ -91,21 +91,21 @@
   },
   "requires_geodata_import": true,
   "preserved_ru_direct": true,
-  "generated_at_utc": "2026-10-04T21:36:40Z",
+  "generated_at_utc": "2026-10-04T22:06:20Z",
   "variants": [
     {
       "name": "Для обычного интернета",
       "servers": 24,
-      "config_utf16_bytes": 180796
+      "config_utf16_bytes": 180764
     },
     {
       "name": "Для белых списков (если не работает)",
       "servers": 24,
-      "config_utf16_bytes": 175536
+      "config_utf16_bytes": 175504
     }
   ],
   "fakedns": true,
   "happ_import_verified": false,
   "happ_self_contained": true,
-  "happ_bytes": 1568304
+  "happ_bytes": 1568272
 }
