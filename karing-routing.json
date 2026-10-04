@@ -2,9 +2,9 @@
   "Name": "rjsxrd Karing geodata",
   "GlobalProxy": "true",
   "DomainStrategy": "IPOnDemand",
-  "LastUpdated": "1791109320",
-  "Geoipurl": "https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/karing-geoip.dat?v=db3afd4cdc368a7f118d34629977d1c70b82568877ae4d85f535543f81f0a0fe",
-  "Geositeurl": "https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/karing-geosite.dat?v=db3afd4cdc368a7f118d34629977d1c70b82568877ae4d85f535543f81f0a0fe",
+  "LastUpdated": "1791114523",
+  "Geoipurl": "https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/karing-geoip.dat?v=90bf63409379efe6896127f076f097fd73663ec842ecd4428f00fafe66f6d897",
+  "Geositeurl": "https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/karing-geosite.dat?v=90bf63409379efe6896127f076f097fd73663ec842ecd4428f00fafe66f6d897",
   "DirectSites": [
     "geosite:kg05",
     "geosite:kg07",
@@ -1125,37 +1125,14 @@
     "fe80::/10",
     "geoip:ru"
   ],
-  "ProxySites": [
-    "geosite:kg04",
-    "geosite:kg06",
-    "geosite:kg08",
-    "geosite:kg09",
-    "geosite:kg10",
-    "geosite:kg11",
-    "geosite:kg12",
-    "geosite:kg13",
-    "geosite:kg14",
-    "geosite:kg15",
-    "geosite:kg16",
-    "geosite:kg17",
-    "geosite:kg18"
-  ],
-  "ProxyIp": [
-    "geoip:kg08",
-    "geoip:kg12",
-    "geoip:kg13",
-    "geoip:kg14",
-    "geoip:kg16",
-    "geoip:kg18"
-  ],
+  "ProxySites": [],
+  "ProxyIp": [],
   "BlockSites": [
     "geosite:kg01",
-    "geosite:kg02",
-    "geosite:kg03"
+    "geosite:kg02"
   ],
   "BlockIp": [
-    "geoip:kg02",
-    "geoip:kg03"
+    "geoip:kg02"
   ],
   "FakeDNS": "true",
   "LocalDNSType": "DoU",

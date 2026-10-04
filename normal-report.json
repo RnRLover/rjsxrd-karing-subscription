@@ -1,19 +1,19 @@
 {
-  "generated_at_utc": "2026-10-04T10:21:50Z",
+  "generated_at_utc": "2026-10-04T11:47:40Z",
   "pool": "normal",
   "source": "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS.txt",
-  "source_sha256": "5db1eb92794dd5a40820f248adb35fe19774334240a32b3bceb47619475cd8d8",
+  "source_sha256": "34bcfccd603083d33cca08249b7abdca6c85d3ec8fc0f241a69d401383ae418d",
   "counts": {
-    "source_nodes": 161,
-    "unsupported_or_invalid": 42,
-    "duplicate": 22,
+    "source_nodes": 148,
+    "unsupported_or_invalid": 45,
+    "duplicate": 11,
     "nonpublic_or_unresolved_endpoint": 0
   },
-  "eligible": 97,
+  "eligible": 92,
   "selected": 24,
   "xray_validated": true,
   "actual_egress_checked": true,
-  "service_acl": true,
+  "service_acl": false,
   "country_data": {
     "url": "https://raw.githubusercontent.com/KaringX/karing-ruleset/sing/geo/geoip/ru.json",
     "sha256": "417956306d9d7f6e208be76109095c19b6c90dce892a265ceee0833191da87f0",
@@ -31,21 +31,9 @@
       "url": "https://raw.githubusercontent.com/KaringX/karing-ruleset/sing/geo/geosite/category-ru.json",
       "sha256": "e1ec25b00128124ae6dc5d5af0f1187486363008eae2978fc231d9363d4a61cb",
       "entries": 1105
-    },
-    {
-      "category": "category-ads-all",
-      "url": "https://raw.githubusercontent.com/KaringX/karing-ruleset/sing/geo/geosite/category-ads-all.json",
-      "sha256": "d06efcf17d30eb9f3c6b39047eb5fed6bb5ad17a88ff0e653b76f2d615c0a796",
-      "entries": 911
-    },
-    {
-      "category": "google-gemini",
-      "url": "https://raw.githubusercontent.com/KaringX/karing-ruleset/sing/geo/geosite/google-gemini.json",
-      "sha256": "aa03dacc19b6a190ca2216481e06f918314874caafe3df0e403a865b42ec1fe7",
-      "entries": 46
     }
   ],
   "client_geoip": "geoip:ru from INCY installed geoip.dat; updated by INCY, not this JSON",
-  "config_utf16_bytes": 123820,
-  "config_utf8_bytes": 61910
+  "config_utf16_bytes": 74030,
+  "config_utf8_bytes": 37015
 }
