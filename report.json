@@ -12,7 +12,7 @@
     "ru_reachable_candidates": 70
   },
   "eligible": 398,
-  "selected": 24,
+  "selected": 18,
   "xray_validated": true,
   "actual_egress_checked": true,
   "service_acl": false,
@@ -42,5 +42,7 @@
   ],
   "client_geoip": "geoip:ru from INCY installed geoip.dat; updated by INCY, not this JSON",
   "config_utf16_bytes": 66498,
-  "config_utf8_bytes": 33249
+  "config_utf8_bytes": 33249,
+  "local_preview": true,
+  "ru_reachability_inherited_from_published_pool": true
 }

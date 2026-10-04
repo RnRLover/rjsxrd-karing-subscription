@@ -1,0 +1,29 @@
+{
+  "source": "https://raw.githubusercontent.com/whoahaow/rjsxrd/main/githubmirror/bypass/bypass-all.txt",
+  "source_sha256": "d2dd1ff967c535a00d316862b6481725d212aa4c602a1ee51f128203a04e6671",
+  "generated_at_utc": "2026-10-04T22:42:01Z",
+  "required_exit_country": "US",
+  "actual_egress_checked": true,
+  "xray_validated": true,
+  "ru_reachability_required": true,
+  "ru_reachability_inherited_from_published_pool": true,
+  "ru_reachability_checked_at_utc": "2026-10-04T19:58:28Z",
+  "country_data": {
+    "url": "https://raw.githubusercontent.com/KaringX/karing-ruleset/sing/geo/geoip/us.json",
+    "sha256": "656bb77b61c44790b790a13307106285fba1d7764def24498374faf86f3c2880"
+  },
+  "selected": 2,
+  "config_sha256": "679f882086f3a22ebfc36d99253b28bcb724f79523756d7da8f7bbf23931b040",
+  "exits": [
+    {
+      "tag": "pool-01",
+      "ip": "34.220.15.24",
+      "country": "US"
+    },
+    {
+      "tag": "pool-02",
+      "ip": "54.213.238.59",
+      "country": "US"
+    }
+  ]
+}

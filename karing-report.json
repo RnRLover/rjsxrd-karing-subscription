@@ -84,28 +84,78 @@
     }
   ],
   "xray_validated": true,
-  "config_utf16_bytes": 67446,
+  "config_utf16_bytes": 63526,
   "geofiles_sha256": {
     "geosite.dat": "b54c1291a94f94d94a95a95a4c45301f95b160f98a638c1f1ff828151848fb66",
     "geoip.dat": "0be9883b286295e0a9f89809e096bc38e660807a0302e210c931d6f635c0158e"
   },
   "requires_geodata_import": true,
   "preserved_ru_direct": true,
-  "generated_at_utc": "2026-10-04T22:06:20Z",
+  "generated_at_utc": "2026-10-04T22:42:45Z",
   "variants": [
     {
-      "name": "Для обычного интернета",
-      "servers": 24,
-      "config_utf16_bytes": 180764
+      "name": "Основной",
+      "servers": 18,
+      "config_utf16_bytes": 172016
     },
     {
-      "name": "Для белых списков (если не работает)",
-      "servers": 24,
-      "config_utf16_bytes": 175504
+      "name": "Резерв",
+      "servers": 18,
+      "config_utf16_bytes": 172032
+    },
+    {
+      "name": "Премиум",
+      "servers": 2,
+      "config_utf16_bytes": 161550
     }
   ],
   "fakedns": true,
+  "premium_exit_evidence": {
+    "source": "https://raw.githubusercontent.com/whoahaow/rjsxrd/main/githubmirror/bypass/bypass-all.txt",
+    "source_sha256": "d2dd1ff967c535a00d316862b6481725d212aa4c602a1ee51f128203a04e6671",
+    "generated_at_utc": "2026-10-04T22:42:01Z",
+    "required_exit_country": "US",
+    "actual_egress_checked": true,
+    "xray_validated": true,
+    "ru_reachability_required": true,
+    "ru_reachability_inherited_from_published_pool": true,
+    "ru_reachability_checked_at_utc": "2026-10-04T19:58:28Z",
+    "country_data": {
+      "url": "https://raw.githubusercontent.com/KaringX/karing-ruleset/sing/geo/geoip/us.json",
+      "sha256": "656bb77b61c44790b790a13307106285fba1d7764def24498374faf86f3c2880"
+    },
+    "selected": 2,
+    "config_sha256": "679f882086f3a22ebfc36d99253b28bcb724f79523756d7da8f7bbf23931b040",
+    "exits": [
+      {
+        "tag": "pool-01",
+        "ip": "34.220.15.24",
+        "country": "US"
+      },
+      {
+        "tag": "pool-02",
+        "ip": "54.213.238.59",
+        "country": "US"
+      }
+    ]
+  },
+  "same_main_reserve_pool": true,
+  "dns_policy": {
+    "Основной": [
+      "8.8.8.8",
+      "8.8.4.4"
+    ],
+    "Резерв": [
+      "77.88.8.8",
+      "77.88.8.1"
+    ],
+    "Премиум": [
+      "8.8.8.8",
+      "8.8.4.4"
+    ],
+    "proxy": "https://dns.google/dns-query"
+  },
   "happ_import_verified": false,
   "happ_self_contained": true,
-  "happ_bytes": 1568272
+  "happ_bytes": 2337795
 }
