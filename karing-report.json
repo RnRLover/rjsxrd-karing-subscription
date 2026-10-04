@@ -369,23 +369,23 @@
     }
   ],
   "xray_validated": true,
-  "config_utf16_bytes": 72980,
+  "config_utf16_bytes": 74448,
   "geofiles_sha256": {
     "geosite.dat": "bf2492dc2a0ea6c4d130977549481337695f1a5fc52c0a196c112b6c5c4b61fb",
     "geoip.dat": "de9124a06fe55c94c5f92e5c5abf5b669cd3dfca568f6d2664d1813b613d1c3e"
   },
   "requires_geodata_import": true,
   "preserved_ru_direct": true,
-  "generated_at_utc": "2026-10-03T23:47:34Z",
+  "generated_at_utc": "2026-10-04T05:52:39Z",
   "variants": [
     {
       "name": "Автовыбор",
       "servers": 24,
-      "config_utf16_bytes": 74808
+      "config_utf16_bytes": 76276
     }
   ],
   "fakedns": true,
   "happ_import_verified": false,
   "happ_self_contained": true,
-  "happ_bytes": 5976564
+  "happ_bytes": 5977298
 }
