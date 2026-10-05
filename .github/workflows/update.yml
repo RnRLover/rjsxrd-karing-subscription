@@ -45,12 +45,11 @@ jobs:
         run: |
           python check_fakedns.py --xray .runtime/xray --config ru-karing-happ.txt --profile-index 0
           python check_fakedns.py --xray .runtime/xray --config ru-karing-happ.txt --profile-index 1
-          python check_fakedns.py --xray .runtime/xray --config ru-karing-happ.txt --profile-index 2
       - name: Publish validated files
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add ru.json servers.txt report.json premium.json premium-servers.txt premium-report.json ru-reachability.json ru-karing.json ru-karing-incy.txt ru-karing-happ.txt karing-routing.json karing-report.json karing-geoip.dat karing-geosite.dat karing-geoip.dat.sha256 karing-geosite.dat.sha256
+          git add ru.json servers.txt report.json ru-reachability.json ru-karing.json ru-karing-incy.txt ru-karing-happ.txt karing-routing.json karing-report.json karing-geoip.dat karing-geosite.dat karing-geoip.dat.sha256 karing-geosite.dat.sha256
           if ! git diff --cached --quiet; then
             git commit -m "Update validated rjsxrd subscription"
             git push
