@@ -2,43 +2,31 @@
   "profile_url": "https://raw.githubusercontent.com/KaringX/karing-ruleset/sing/recommend/ru.json",
   "profile_sha256": "8978492de62f849d5a54a714bd8dea1e8f3d5b71e352c88697596c3526a47598",
   "all_groups_enabled": false,
-  "selection": "direct groups plus Adblock and AdblockPlus; no Anticensor or custom advertising/Google additions",
+  "selection": "Adblock/AdblockPlus block; OpenCCK main/beta proxy; OpenCCK Russia direct; default proxy",
   "groups": [
     {
-      "tag": "kg01",
-      "name": "🛑 Adblock",
+      "tag": "ads",
+      "name": "Adblock + AdblockPlus",
       "action": "block",
       "enabled": true,
-      "upstream_switch": false,
-      "sites": 851,
-      "cidrs": 0
-    },
-    {
-      "tag": "kg02",
-      "name": "🍃 AdblockPlus",
-      "action": "block",
-      "enabled": true,
-      "upstream_switch": false,
-      "sites": 1110,
+      "sites": 1749,
       "cidrs": 17
     },
     {
-      "tag": "kg05",
-      "name": "Ⓜ️ OneDrive",
-      "action": "direct",
+      "tag": "cckproxy",
+      "name": "OpenCCK main + beta",
+      "action": "proxy",
       "enabled": true,
-      "upstream_switch": false,
-      "sites": 19,
-      "cidrs": 0
+      "sites": 8085,
+      "cidrs": 6352
     },
     {
-      "tag": "kg07",
-      "name": "🍎 Apple",
+      "tag": "cckdirect",
+      "name": "OpenCCK Russia",
       "action": "direct",
       "enabled": true,
-      "upstream_switch": false,
-      "sites": 1816,
-      "cidrs": 0
+      "sites": 467,
+      "cidrs": 1500
     }
   ],
   "sources": [
@@ -58,50 +46,71 @@
       "sha256": "d4a44c1f2dcee3ec83bb5ba7538ba9e51feded79cbdc3c455af9cc837bc2ce32"
     },
     {
-      "reference": "geosite:onedrive",
-      "url": "https://raw.githubusercontent.com/KaringX/karing-ruleset/sing/geo/geosite/onedrive.srs",
-      "sha256": "ecf26c6c2f999cc409fd2053128e361b48c1d7cdce130056f3cd2a6a74b0251c"
+      "reference": "cckproxy:domains",
+      "url": "https://iplist.opencck.org/?format=singbox&data=domains",
+      "sha256": "3a853cc70dbd10230e5ad4507a183df72ab1fb64a3ae80381313bfd339e533b9"
     },
     {
-      "reference": "geosite:apple",
-      "url": "https://raw.githubusercontent.com/KaringX/karing-ruleset/sing/geo/geosite/apple.srs",
-      "sha256": "3993417e868f49f4375771139a7c243e34977e73fb2389dff635b4098735579f"
+      "reference": "cckproxy:cidr4",
+      "url": "https://iplist.opencck.org/?format=singbox&data=cidr4",
+      "sha256": "cfcec952c1e73f336d23efa1b2a24e0b68fc1305c7ae3c1693ec728046b86ba7"
     },
     {
-      "reference": "geosite:apple-dev",
-      "url": "https://raw.githubusercontent.com/KaringX/karing-ruleset/sing/geo/geosite/apple-dev.srs",
-      "sha256": "a9247b7a3b23beda7763258fb83c367cd2af904954be6dde9b81de0cf3c1ab9a"
+      "reference": "cckproxy:cidr6",
+      "url": "https://iplist.opencck.org/?format=singbox&data=cidr6",
+      "sha256": "651b3162cd499419dfd0468e64881b701ba617d790affcb6432a06dc2bb5e9f2"
     },
     {
-      "reference": "geosite:apple-pki",
-      "url": "https://raw.githubusercontent.com/KaringX/karing-ruleset/sing/geo/geosite/apple-pki.srs",
-      "sha256": "d5762afcee5ba16749b879f1720e4da683834dee4f57b92aad69eaff18c11f76"
+      "reference": "cckbeta:domains",
+      "url": "https://beta.iplist.opencck.org/?format=singbox&data=domains",
+      "sha256": "9e83c208532fb2e8e96df160d9d0f80a86714bc857fc7b133407361a508af1b5"
     },
     {
-      "reference": "geosite:apple-update",
-      "url": "https://raw.githubusercontent.com/KaringX/karing-ruleset/sing/geo/geosite/apple-update.srs",
-      "sha256": "3776acf4ab5e11d3324b20f870e969357aff7d0fdf620b2053f77221f8932c62"
+      "reference": "cckbeta:cidr4",
+      "url": "https://beta.iplist.opencck.org/?format=singbox&data=cidr4",
+      "sha256": "c84cbdf362022488588e81c04f064b2b8576cae5df1647faa299d7664fbc1302"
+    },
+    {
+      "reference": "cckbeta:cidr6",
+      "url": "https://beta.iplist.opencck.org/?format=singbox&data=cidr6",
+      "sha256": "b7ce31b247ad0197a8d0d833abaaab7a1535d85d62418934992577bb62fcee63"
+    },
+    {
+      "reference": "cckdirect:domains",
+      "url": "https://russia.iplist.opencck.org/?format=singbox&data=domains",
+      "sha256": "51522040054fca52d6172a1561346f222f1d46f2d65269e389556f3c349d52bf"
+    },
+    {
+      "reference": "cckdirect:cidr4",
+      "url": "https://russia.iplist.opencck.org/?format=singbox&data=cidr4",
+      "sha256": "04aaa1bc0d68887756150fa2213a148fc4f310fb3f63a30c2be6102b707c877f"
+    },
+    {
+      "reference": "cckdirect:cidr6",
+      "url": "https://russia.iplist.opencck.org/?format=singbox&data=cidr6",
+      "sha256": "47495b2f28c33f7e21cdbadffa91f92e0657714c57d1e88e613624ebf54a3c85"
     }
   ],
   "xray_validated": true,
-  "config_utf16_bytes": 63526,
+  "config_utf16_bytes": 72756,
   "geofiles_sha256": {
-    "geosite.dat": "b54c1291a94f94d94a95a95a4c45301f95b160f98a638c1f1ff828151848fb66",
-    "geoip.dat": "0be9883b286295e0a9f89809e096bc38e660807a0302e210c931d6f635c0158e"
+    "geosite.dat": "e99325ce6f9207eb2e63b0b26454f4d48cf2d78c682b9ca84e2b89d92a2a843d",
+    "geoip.dat": "ad11c2363060ea354cb8b957ffab20d099c8685cde1444c50dc25edb166ab0f7"
   },
   "requires_geodata_import": true,
-  "preserved_ru_direct": true,
-  "generated_at_utc": "2026-10-04T22:42:45Z",
+  "preserved_ru_direct": false,
+  "local_exceptions": false,
+  "generated_at_utc": "2026-10-05T21:41:29Z",
   "variants": [
     {
       "name": "Основной",
-      "servers": 18,
-      "config_utf16_bytes": 171988
+      "servers": 100,
+      "config_utf16_bytes": 83982
     },
     {
       "name": "Резерв",
-      "servers": 18,
-      "config_utf16_bytes": 172004
+      "servers": 100,
+      "config_utf16_bytes": 83982
     }
   ],
   "fakedns": true,
@@ -122,5 +131,5 @@
   },
   "happ_import_verified": false,
   "happ_self_contained": true,
-  "happ_bytes": 1561994
+  "happ_bytes": 1970772
 }
