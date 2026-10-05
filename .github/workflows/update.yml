@@ -8,7 +8,7 @@ on:
         default: true
         type: boolean
   schedule:
-    - cron: '*/5 * * * *'
+    - cron: '7,22,37,52 * * * *'
   push:
     paths:
       - '*.py'
@@ -34,9 +34,21 @@ jobs:
         run: python setup_xray.py
       - name: Prepare official sing-box rule converter
         run: python setup_singbox.py
-      - name: Filter whitelist candidates from RU then verify foreign exits
+      - name: Restore recent exit-country evidence
+        uses: actions/cache/restore@v4
+        with:
+          path: .runtime/exit-cache.json
+          key: exit-country-v1-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: exit-country-v1-
+      - name: Select diverse pool with foreign exit evidence (no public RU probes)
         if: github.event_name != 'workflow_dispatch' || inputs.refresh_pools
         run: python generate.py --xray .runtime/xray --verify-exits
+      - name: Save exit-country evidence outside subscription commits
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: .runtime/exit-cache.json
+          key: exit-country-v1-${{ github.run_id }}-${{ github.run_attempt }}
       - name: Generate Karing profile with RU direct
         run: python karing.py --xray .runtime/xray --singbox .runtime/sing-box
       - name: Check FakeDNS startup and local DNS TCP exchange
@@ -49,8 +61,8 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add ru.json servers.txt report.json ru-reachability.json ru-karing.json ru-karing-incy.txt ru-karing-happ.txt karing-routing.json karing-report.json karing-geoip.dat karing-geosite.dat karing-geoip.dat.sha256 karing-geosite.dat.sha256
-          if ! git diff --cached --quiet; then
+          if python publication_changed.py; then
+            git add ru.json servers.txt report.json ru-karing.json ru-karing-incy.txt ru-karing-happ.txt karing-routing.json karing-report.json karing-geoip.dat karing-geosite.dat karing-geoip.dat.sha256 karing-geosite.dat.sha256
             git commit -m "Update validated rjsxrd subscription"
             git push
           fi
