@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-10-05T01:15:28Z",
+  "generated_at_utc": "2026-10-04T19:58:28Z",
   "service": "https://check-host.net",
   "measurement": "TCP connection to entry host:port from Russian probes",
   "filters_pool": true,
@@ -39,163 +39,35 @@
   "accepted_configs": 70,
   "results": [
     {
-      "endpoint": "109.68.214.220:443",
+      "endpoint": "89.23.117.99:443",
       "status": "reachable",
       "probes": {
         "ru1.node.check-host.net": {
           "status": "reachable",
-          "tcp_connect_ms": 11.11,
-          "resolved_address": "109.68.214.220"
+          "tcp_connect_ms": 15.03,
+          "resolved_address": "89.23.117.99"
         },
         "ru2.node.check-host.net": {
           "status": "reachable",
-          "tcp_connect_ms": 10.79,
-          "resolved_address": "109.68.214.220"
+          "tcp_connect_ms": 15.04,
+          "resolved_address": "89.23.117.99"
         },
         "ru3.node.check-host.net": {
           "status": "reachable",
-          "tcp_connect_ms": 2.1,
-          "resolved_address": "109.68.214.220"
+          "tcp_connect_ms": 2.6,
+          "resolved_address": "89.23.117.99"
         }
       },
-      "report_url": "https://check-host.net/check-report/4f0a8f45k3c2",
+      "report_url": "https://check-host.net/check-report/4f005c31k8de",
       "candidate_indices": [
         "0",
-        "14",
-        "17",
-        "20"
-      ],
-      "published": false,
-      "profiles": [],
-      "outbound_tags": []
-    },
-    {
-      "endpoint": "82.38.31.11:8080",
-      "status": "reachable",
-      "probes": {
-        "ru1.node.check-host.net": {
-          "status": "unreachable",
-          "error": "Connection timed out"
-        },
-        "ru2.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 44.03,
-          "resolved_address": "82.38.31.11"
-        },
-        "ru3.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 44.24,
-          "resolved_address": "82.38.31.11"
-        }
-      },
-      "report_url": "https://check-host.net/check-report/4f0a8f48k5ae",
-      "candidate_indices": [
-        "1"
-      ],
-      "published": true,
-      "profiles": [
-        "Основной",
-        "Резерв"
-      ],
-      "outbound_tags": [
-        "pool-01"
-      ]
-    },
-    {
-      "endpoint": "104.21.70.21:443",
-      "status": "reachable",
-      "probes": {
-        "ru1.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 39.19,
-          "resolved_address": "104.21.70.21"
-        },
-        "ru2.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 21.44,
-          "resolved_address": "104.21.70.21"
-        },
-        "ru3.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 26.93,
-          "resolved_address": "104.21.70.21"
-        }
-      },
-      "report_url": "https://check-host.net/check-report/4f0a8fb3k614",
-      "candidate_indices": [
-        "2"
-      ],
-      "published": true,
-      "profiles": [
-        "Основной",
-        "Резерв"
-      ],
-      "outbound_tags": [
-        "pool-02"
-      ]
-    },
-    {
-      "endpoint": "104.17.77.77:8443",
-      "status": "reachable",
-      "probes": {
-        "ru1.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 40.51,
-          "resolved_address": "104.17.77.77"
-        },
-        "ru2.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 36.88,
-          "resolved_address": "104.17.77.77"
-        },
-        "ru3.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 26.81,
-          "resolved_address": "104.17.77.77"
-        }
-      },
-      "report_url": "https://check-host.net/check-report/4f0a9024k57",
-      "candidate_indices": [
-        "3"
-      ],
-      "published": true,
-      "profiles": [
-        "Основной",
-        "Резерв"
-      ],
-      "outbound_tags": [
-        "pool-03"
-      ]
-    },
-    {
-      "endpoint": "185.104.114.92:443",
-      "status": "reachable",
-      "probes": {
-        "ru1.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 10.76,
-          "resolved_address": "185.104.114.92"
-        },
-        "ru2.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 10.37,
-          "resolved_address": "185.104.114.92"
-        },
-        "ru3.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 1.96,
-          "resolved_address": "185.104.114.92"
-        }
-      },
-      "report_url": "https://check-host.net/check-report/4f0a9040kc95",
-      "candidate_indices": [
         "4",
-        "8",
-        "23"
+        "11",
+        "32"
       ],
       "published": false,
-      "profiles": [],
-      "outbound_tags": []
+      "outbound_tags": [],
+      "profiles": []
     },
     {
       "endpoint": "104.249.22.75:43377",
@@ -207,54 +79,147 @@
         },
         "ru2.node.check-host.net": {
           "status": "reachable",
-          "tcp_connect_ms": 54.28,
+          "tcp_connect_ms": 44.73,
           "resolved_address": "104.249.22.75"
         },
         "ru3.node.check-host.net": {
           "status": "reachable",
-          "tcp_connect_ms": 34.56,
+          "tcp_connect_ms": 38.41,
           "resolved_address": "104.249.22.75"
         }
       },
-      "report_url": "https://check-host.net/check-report/4f0a90a9k957",
+      "report_url": "https://check-host.net/check-report/4f005c2dk4c8",
       "candidate_indices": [
-        "5"
+        "1"
       ],
       "published": false,
-      "profiles": [],
-      "outbound_tags": []
+      "outbound_tags": [],
+      "profiles": []
     },
     {
-      "endpoint": "meet-goshawk.rooster465.autos:443",
+      "endpoint": "3.253.106.233:443",
       "status": "reachable",
       "probes": {
         "ru1.node.check-host.net": {
           "status": "reachable",
-          "tcp_connect_ms": 76.82,
-          "resolved_address": "3.75.93.113"
+          "tcp_connect_ms": 58.81,
+          "resolved_address": "3.253.106.233"
         },
         "ru2.node.check-host.net": {
           "status": "reachable",
-          "tcp_connect_ms": 80.47,
-          "resolved_address": "3.75.93.113"
+          "tcp_connect_ms": 58.6,
+          "resolved_address": "3.253.106.233"
         },
         "ru3.node.check-host.net": {
           "status": "reachable",
-          "tcp_connect_ms": 76.93,
-          "resolved_address": "3.75.93.113"
+          "tcp_connect_ms": 47.42,
+          "resolved_address": "3.253.106.233"
         }
       },
-      "report_url": "https://check-host.net/check-report/4f0a90bek28c",
+      "report_url": "https://check-host.net/check-report/4f005c79kf3a",
+      "candidate_indices": [
+        "2"
+      ],
+      "published": true,
+      "outbound_tags": [
+        "pool-01"
+      ],
+      "profiles": [
+        "Основной",
+        "Резерв"
+      ]
+    },
+    {
+      "endpoint": "104.17.77.77:8443",
+      "status": "reachable",
+      "probes": {
+        "ru1.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 53.4,
+          "resolved_address": "104.17.77.77"
+        },
+        "ru2.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 20.67,
+          "resolved_address": "104.17.77.77"
+        },
+        "ru3.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 42.28,
+          "resolved_address": "104.17.77.77"
+        }
+      },
+      "report_url": "https://check-host.net/check-report/4f005cc5k611",
+      "candidate_indices": [
+        "3"
+      ],
+      "published": false,
+      "outbound_tags": [],
+      "profiles": []
+    },
+    {
+      "endpoint": "82.38.31.207:8080",
+      "status": "reachable",
+      "probes": {
+        "ru1.node.check-host.net": {
+          "status": "unreachable",
+          "error": "Connection timed out"
+        },
+        "ru2.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 51.61,
+          "resolved_address": "82.38.31.207"
+        },
+        "ru3.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 52.5,
+          "resolved_address": "82.38.31.207"
+        }
+      },
+      "report_url": "https://check-host.net/check-report/4f005ce2k812",
+      "candidate_indices": [
+        "5"
+      ],
+      "published": true,
+      "outbound_tags": [
+        "pool-02"
+      ],
+      "profiles": [
+        "Основной",
+        "Резерв"
+      ]
+    },
+    {
+      "endpoint": "loved-shark.rooster465.autos:443",
+      "status": "reachable",
+      "probes": {
+        "ru1.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 104.8,
+          "resolved_address": "3.253.106.233"
+        },
+        "ru2.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 101.17,
+          "resolved_address": "3.253.106.233"
+        },
+        "ru3.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 72.46,
+          "resolved_address": "3.253.106.233"
+        }
+      },
+      "report_url": "https://check-host.net/check-report/4f005d76kb16",
       "candidate_indices": [
         "6"
       ],
       "published": true,
+      "outbound_tags": [
+        "pool-03"
+      ],
       "profiles": [
         "Основной",
         "Резерв"
-      ],
-      "outbound_tags": [
-        "pool-06"
       ]
     },
     {
@@ -263,31 +228,115 @@
       "probes": {
         "ru1.node.check-host.net": {
           "status": "reachable",
-          "tcp_connect_ms": 20.27,
+          "tcp_connect_ms": 45.01,
           "resolved_address": "172.64.80.1"
         },
         "ru2.node.check-host.net": {
           "status": "reachable",
-          "tcp_connect_ms": 19.62,
+          "tcp_connect_ms": 52.96,
           "resolved_address": "172.64.80.1"
         },
         "ru3.node.check-host.net": {
           "status": "reachable",
-          "tcp_connect_ms": 47.09,
+          "tcp_connect_ms": 45.7,
           "resolved_address": "172.64.80.1"
         }
       },
-      "report_url": "https://check-host.net/check-report/4f0a910ckf3f",
+      "report_url": "https://check-host.net/check-report/4f005df2k6bd",
       "candidate_indices": [
         "7"
       ],
+      "published": false,
+      "outbound_tags": [],
+      "profiles": []
+    },
+    {
+      "endpoint": "ru-1-9.imnotgay.party:443",
+      "status": "reachable",
+      "probes": {
+        "ru1.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 33.93,
+          "resolved_address": "89.23.117.99"
+        },
+        "ru2.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 46.28,
+          "resolved_address": "89.23.117.99"
+        },
+        "ru3.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 29.4,
+          "resolved_address": "89.23.117.99"
+        }
+      },
+      "report_url": "https://check-host.net/check-report/4f005df9ke12",
+      "candidate_indices": [
+        "8",
+        "20"
+      ],
+      "published": false,
+      "outbound_tags": [],
+      "profiles": []
+    },
+    {
+      "endpoint": "51.195.126.38:8388",
+      "status": "reachable",
+      "probes": {
+        "ru1.node.check-host.net": {
+          "status": "unreachable",
+          "error": "Connection timed out"
+        },
+        "ru2.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 41.08,
+          "resolved_address": "51.195.126.38"
+        },
+        "ru3.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 32.75,
+          "resolved_address": "51.195.126.38"
+        }
+      },
+      "report_url": "https://check-host.net/check-report/4f005e47k8d4",
+      "candidate_indices": [
+        "9"
+      ],
+      "published": false,
+      "outbound_tags": [],
+      "profiles": []
+    },
+    {
+      "endpoint": "sacred-anemone.rooster465.autos:443",
+      "status": "reachable",
+      "probes": {
+        "ru1.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 96.23,
+          "resolved_address": "34.242.77.118"
+        },
+        "ru2.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 66.18,
+          "resolved_address": "34.242.77.118"
+        },
+        "ru3.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 72.67,
+          "resolved_address": "34.242.77.118"
+        }
+      },
+      "report_url": "https://check-host.net/check-report/4f005e4bk4f8",
+      "candidate_indices": [
+        "10"
+      ],
       "published": true,
+      "outbound_tags": [
+        "pool-04"
+      ],
       "profiles": [
         "Основной",
         "Резерв"
-      ],
-      "outbound_tags": [
-        "pool-07"
       ]
     },
     {
@@ -307,45 +356,45 @@
           "error": "Connection timed out"
         }
       },
-      "report_url": "https://check-host.net/check-report/4f0a9139k5d0",
+      "report_url": "https://check-host.net/check-report/4f005e88k35e",
       "candidate_indices": [
-        "9"
+        "12"
       ],
       "published": false,
-      "profiles": [],
-      "outbound_tags": []
+      "outbound_tags": [],
+      "profiles": []
     },
     {
-      "endpoint": "104.21.13.204:443",
+      "endpoint": "guided-ferret.rooster465.autos:443",
       "status": "reachable",
       "probes": {
         "ru1.node.check-host.net": {
           "status": "reachable",
-          "tcp_connect_ms": 42.34,
-          "resolved_address": "104.21.13.204"
+          "tcp_connect_ms": 195.62,
+          "resolved_address": "34.220.15.24"
         },
         "ru2.node.check-host.net": {
           "status": "reachable",
-          "tcp_connect_ms": 38.25,
-          "resolved_address": "104.21.13.204"
+          "tcp_connect_ms": 182.24,
+          "resolved_address": "34.220.15.24"
         },
         "ru3.node.check-host.net": {
           "status": "reachable",
-          "tcp_connect_ms": 46.8,
-          "resolved_address": "104.21.13.204"
+          "tcp_connect_ms": 187.4,
+          "resolved_address": "34.220.15.24"
         }
       },
-      "report_url": "https://check-host.net/check-report/4f0a9149k416",
+      "report_url": "https://check-host.net/check-report/4f005ebckf40",
       "candidate_indices": [
-        "10"
+        "13"
       ],
       "published": true,
+      "outbound_tags": [
+        "pool-07"
+      ],
       "profiles": [
         "Основной",
         "Резерв"
-      ],
-      "outbound_tags": [
-        "pool-10"
       ]
     },
     {
@@ -354,28 +403,29 @@
       "probes": {
         "ru1.node.check-host.net": {
           "status": "reachable",
-          "tcp_connect_ms": 11.82,
+          "tcp_connect_ms": 10.78,
           "resolved_address": "94.228.123.217"
         },
         "ru2.node.check-host.net": {
           "status": "reachable",
-          "tcp_connect_ms": 9.69,
+          "tcp_connect_ms": 11.77,
           "resolved_address": "94.228.123.217"
         },
         "ru3.node.check-host.net": {
           "status": "reachable",
-          "tcp_connect_ms": 2.31,
+          "tcp_connect_ms": 3.28,
           "resolved_address": "94.228.123.217"
         }
       },
-      "report_url": "https://check-host.net/check-report/4f0a91a7k68e",
+      "report_url": "https://check-host.net/check-report/4f005efckcb7",
       "candidate_indices": [
-        "11",
-        "32"
+        "14",
+        "35",
+        "50"
       ],
       "published": false,
-      "profiles": [],
-      "outbound_tags": []
+      "outbound_tags": [],
+      "profiles": []
     },
     {
       "endpoint": "158.173.24.73:443",
@@ -387,123 +437,87 @@
         },
         "ru2.node.check-host.net": {
           "status": "reachable",
-          "tcp_connect_ms": 49.99,
+          "tcp_connect_ms": 49.92,
           "resolved_address": "158.173.24.73"
         },
         "ru3.node.check-host.net": {
           "status": "reachable",
-          "tcp_connect_ms": 40.47,
+          "tcp_connect_ms": 40.72,
           "resolved_address": "158.173.24.73"
         }
       },
-      "report_url": "https://check-host.net/check-report/4f0a91d6k159",
-      "candidate_indices": [
-        "12"
-      ],
-      "published": false,
-      "profiles": [],
-      "outbound_tags": []
-    },
-    {
-      "endpoint": "3.253.106.233:443",
-      "status": "reachable",
-      "probes": {
-        "ru1.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 57.77,
-          "resolved_address": "3.253.106.233"
-        },
-        "ru2.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 51.5,
-          "resolved_address": "3.253.106.233"
-        },
-        "ru3.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 46.1,
-          "resolved_address": "3.253.106.233"
-        }
-      },
-      "report_url": "https://check-host.net/check-report/4f0a91eek50e",
-      "candidate_indices": [
-        "13"
-      ],
-      "published": true,
-      "profiles": [
-        "Основной",
-        "Резерв"
-      ],
-      "outbound_tags": [
-        "pool-13"
-      ]
-    },
-    {
-      "endpoint": "82.38.31.211:8080",
-      "status": "reachable",
-      "probes": {
-        "ru1.node.check-host.net": {
-          "status": "unreachable",
-          "error": "Connection timed out"
-        },
-        "ru2.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 62.57,
-          "resolved_address": "82.38.31.211"
-        },
-        "ru3.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 53.09,
-          "resolved_address": "82.38.31.211"
-        }
-      },
-      "report_url": "https://check-host.net/check-report/4f0a9238k4e",
+      "report_url": "https://check-host.net/check-report/4f005f06kb39",
       "candidate_indices": [
         "15"
       ],
-      "published": true,
-      "profiles": [
-        "Основной",
-        "Резерв"
-      ],
-      "outbound_tags": [
-        "pool-05"
-      ]
+      "published": false,
+      "outbound_tags": [],
+      "profiles": []
     },
     {
-      "endpoint": "www.speedtest.net:443",
+      "endpoint": "ultimate-jaguar.rooster465.autos:443",
       "status": "reachable",
       "probes": {
         "ru1.node.check-host.net": {
           "status": "reachable",
-          "tcp_connect_ms": 79.14,
-          "resolved_address": "104.17.148.22"
+          "tcp_connect_ms": 218.94,
+          "resolved_address": "54.213.238.59"
         },
         "ru2.node.check-host.net": {
           "status": "reachable",
-          "tcp_connect_ms": 57.19,
-          "resolved_address": "104.17.148.22"
+          "tcp_connect_ms": 201.77,
+          "resolved_address": "54.213.238.59"
         },
         "ru3.node.check-host.net": {
           "status": "reachable",
-          "tcp_connect_ms": 55.52,
-          "resolved_address": "104.17.147.22"
+          "tcp_connect_ms": 192.12,
+          "resolved_address": "54.213.238.59"
         }
       },
-      "report_url": "https://check-host.net/check-report/4f0a9268k4c3",
+      "report_url": "https://check-host.net/check-report/4f005f4bk801",
       "candidate_indices": [
         "16"
       ],
       "published": true,
+      "outbound_tags": [
+        "pool-09"
+      ],
       "profiles": [
         "Основной",
         "Резерв"
-      ],
-      "outbound_tags": [
-        "pool-15"
       ]
     },
     {
-      "endpoint": "51.195.126.38:8388",
+      "endpoint": "62.152.58.90:443",
+      "status": "reachable",
+      "probes": {
+        "ru1.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 6.4,
+          "resolved_address": "62.152.58.90"
+        },
+        "ru2.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 3.36,
+          "resolved_address": "62.152.58.90"
+        },
+        "ru3.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 16.92,
+          "resolved_address": "62.152.58.90"
+        }
+      },
+      "report_url": "https://check-host.net/check-report/4f005fa9k769",
+      "candidate_indices": [
+        "17",
+        "53"
+      ],
+      "published": false,
+      "outbound_tags": [],
+      "profiles": []
+    },
+    {
+      "endpoint": "51.77.225.200:8388",
       "status": "reachable",
       "probes": {
         "ru1.node.check-host.net": {
@@ -512,59 +526,59 @@
         },
         "ru2.node.check-host.net": {
           "status": "reachable",
-          "tcp_connect_ms": 43.33,
-          "resolved_address": "51.195.126.38"
+          "tcp_connect_ms": 56.75,
+          "resolved_address": "51.77.225.200"
         },
         "ru3.node.check-host.net": {
           "status": "reachable",
-          "tcp_connect_ms": 35.34,
-          "resolved_address": "51.195.126.38"
+          "tcp_connect_ms": 51.83,
+          "resolved_address": "51.77.225.200"
         }
       },
-      "report_url": "https://check-host.net/check-report/4f0a92b6k50",
+      "report_url": "https://check-host.net/check-report/4f005faek7ad",
       "candidate_indices": [
         "18"
       ],
       "published": true,
+      "outbound_tags": [
+        "pool-05"
+      ],
       "profiles": [
         "Основной",
         "Резерв"
-      ],
-      "outbound_tags": [
-        "pool-09"
       ]
     },
     {
-      "endpoint": "172.67.231.254:443",
+      "endpoint": "meet-goshawk.rooster465.autos:443",
       "status": "reachable",
       "probes": {
         "ru1.node.check-host.net": {
           "status": "reachable",
-          "tcp_connect_ms": 39.9,
-          "resolved_address": "172.67.231.254"
+          "tcp_connect_ms": 78.43,
+          "resolved_address": "3.75.93.113"
         },
         "ru2.node.check-host.net": {
           "status": "reachable",
-          "tcp_connect_ms": 39.47,
-          "resolved_address": "172.67.231.254"
+          "tcp_connect_ms": 47.43,
+          "resolved_address": "3.75.93.113"
         },
         "ru3.node.check-host.net": {
           "status": "reachable",
-          "tcp_connect_ms": 41.72,
-          "resolved_address": "172.67.231.254"
+          "tcp_connect_ms": 78.29,
+          "resolved_address": "3.75.93.113"
         }
       },
-      "report_url": "https://check-host.net/check-report/4f0a92d4k5a2",
+      "report_url": "https://check-host.net/check-report/4f005ffekd89",
       "candidate_indices": [
         "19"
       ],
       "published": true,
+      "outbound_tags": [
+        "pool-11"
+      ],
       "profiles": [
         "Основной",
         "Резерв"
-      ],
-      "outbound_tags": [
-        "pool-17"
       ]
     },
     {
@@ -577,63 +591,93 @@
         },
         "ru2.node.check-host.net": {
           "status": "reachable",
-          "tcp_connect_ms": 45.15,
+          "tcp_connect_ms": 42.82,
           "resolved_address": "51.255.13.232"
         },
         "ru3.node.check-host.net": {
           "status": "reachable",
-          "tcp_connect_ms": 34.27,
+          "tcp_connect_ms": 34.41,
           "resolved_address": "51.255.13.232"
         }
       },
-      "report_url": "https://check-host.net/check-report/4f0a930akd88",
+      "report_url": "https://check-host.net/check-report/4f006039kb7",
       "candidate_indices": [
         "21"
       ],
       "published": true,
+      "outbound_tags": [
+        "pool-08"
+      ],
       "profiles": [
         "Основной",
         "Резерв"
-      ],
-      "outbound_tags": [
-        "pool-12"
       ]
     },
     {
-      "endpoint": "172.67.217.240:443",
+      "endpoint": "comic-poodle.rooster465.autos:443",
       "status": "reachable",
       "probes": {
         "ru1.node.check-host.net": {
           "status": "reachable",
-          "tcp_connect_ms": 40.52,
-          "resolved_address": "172.67.217.240"
+          "tcp_connect_ms": 297.68,
+          "resolved_address": "54.249.36.167"
         },
         "ru2.node.check-host.net": {
           "status": "reachable",
-          "tcp_connect_ms": 35.87,
-          "resolved_address": "172.67.217.240"
+          "tcp_connect_ms": 385.28,
+          "resolved_address": "54.249.36.167"
         },
         "ru3.node.check-host.net": {
           "status": "reachable",
-          "tcp_connect_ms": 27.01,
-          "resolved_address": "172.67.217.240"
+          "tcp_connect_ms": 295.5,
+          "resolved_address": "54.249.36.167"
         }
       },
-      "report_url": "https://check-host.net/check-report/4f0a932dkd31",
+      "report_url": "https://check-host.net/check-report/4f00603ck13c",
       "candidate_indices": [
         "22"
       ],
       "published": true,
+      "outbound_tags": [
+        "pool-13"
+      ],
       "profiles": [
         "Основной",
         "Резерв"
-      ],
-      "outbound_tags": [
-        "pool-19"
       ]
     },
     {
-      "endpoint": "51.77.225.200:8388",
+      "endpoint": "109.68.214.220:443",
+      "status": "reachable",
+      "probes": {
+        "ru1.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 11.24,
+          "resolved_address": "109.68.214.220"
+        },
+        "ru2.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 12.81,
+          "resolved_address": "109.68.214.220"
+        },
+        "ru3.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 2.34,
+          "resolved_address": "109.68.214.220"
+        }
+      },
+      "report_url": "https://check-host.net/check-report/4f006072ka5d",
+      "candidate_indices": [
+        "23",
+        "26",
+        "29"
+      ],
+      "published": false,
+      "outbound_tags": [],
+      "profiles": []
+    },
+    {
+      "endpoint": "82.38.31.11:8080",
       "status": "reachable",
       "probes": {
         "ru1.node.check-host.net": {
@@ -642,90 +686,754 @@
         },
         "ru2.node.check-host.net": {
           "status": "reachable",
-          "tcp_connect_ms": 59.39,
-          "resolved_address": "51.77.225.200"
+          "tcp_connect_ms": 1060.69,
+          "resolved_address": "82.38.31.11"
         },
         "ru3.node.check-host.net": {
           "status": "reachable",
-          "tcp_connect_ms": 48.34,
-          "resolved_address": "51.77.225.200"
+          "tcp_connect_ms": 59.31,
+          "resolved_address": "82.38.31.11"
         }
       },
-      "report_url": "https://check-host.net/check-report/4f0a9366k2ee",
+      "report_url": "https://check-host.net/check-report/4f0060aek57b",
       "candidate_indices": [
         "24"
       ],
       "published": true,
+      "outbound_tags": [
+        "pool-10"
+      ],
       "profiles": [
         "Основной",
         "Резерв"
-      ],
-      "outbound_tags": [
-        "pool-14"
       ]
     },
     {
-      "endpoint": "sacred-anemone.rooster465.autos:443",
+      "endpoint": "intense-sole.rooster465.autos:443",
       "status": "reachable",
       "probes": {
         "ru1.node.check-host.net": {
           "status": "reachable",
-          "tcp_connect_ms": 94.7,
-          "resolved_address": "34.242.77.118"
+          "tcp_connect_ms": 313.62,
+          "resolved_address": "18.176.61.69"
         },
         "ru2.node.check-host.net": {
           "status": "reachable",
-          "tcp_connect_ms": 74.5,
-          "resolved_address": "34.242.77.118"
+          "tcp_connect_ms": 269.41,
+          "resolved_address": "18.176.61.69"
         },
         "ru3.node.check-host.net": {
           "status": "reachable",
-          "tcp_connect_ms": 74.19,
-          "resolved_address": "34.242.77.118"
+          "tcp_connect_ms": 298.23,
+          "resolved_address": "18.176.61.69"
         }
       },
-      "report_url": "https://check-host.net/check-report/4f0a9378kfc7",
+      "report_url": "https://check-host.net/check-report/4f0060bbkde1",
       "candidate_indices": [
         "25"
       ],
       "published": true,
+      "outbound_tags": [
+        "pool-15"
+      ],
       "profiles": [
         "Основной",
         "Резерв"
-      ],
-      "outbound_tags": [
-        "pool-21"
       ]
     },
     {
-      "endpoint": "89.23.117.99:443",
+      "endpoint": "82.38.31.192:8080",
+      "status": "reachable",
+      "probes": {
+        "ru1.node.check-host.net": {
+          "status": "unreachable",
+          "error": "Connection timed out"
+        },
+        "ru2.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 65.11,
+          "resolved_address": "82.38.31.192"
+        },
+        "ru3.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 40.52,
+          "resolved_address": "82.38.31.192"
+        }
+      },
+      "report_url": "https://check-host.net/check-report/4f0060fbk656",
+      "candidate_indices": [
+        "27"
+      ],
+      "published": true,
+      "outbound_tags": [
+        "pool-12"
+      ],
+      "profiles": [
+        "Основной",
+        "Резерв"
+      ]
+    },
+    {
+      "endpoint": "evolving-platypus.rooster465.autos:443",
       "status": "reachable",
       "probes": {
         "ru1.node.check-host.net": {
           "status": "reachable",
-          "tcp_connect_ms": 10.51,
-          "resolved_address": "89.23.117.99"
+          "tcp_connect_ms": 328.53,
+          "resolved_address": "52.192.217.187"
         },
         "ru2.node.check-host.net": {
           "status": "reachable",
-          "tcp_connect_ms": 10.44,
-          "resolved_address": "89.23.117.99"
+          "tcp_connect_ms": 213.4,
+          "resolved_address": "52.192.217.187"
         },
         "ru3.node.check-host.net": {
           "status": "reachable",
-          "tcp_connect_ms": 2.05,
-          "resolved_address": "89.23.117.99"
+          "tcp_connect_ms": 284.9,
+          "resolved_address": "52.192.217.187"
         }
       },
-      "report_url": "https://check-host.net/check-report/4f0a93c6kc20",
+      "report_url": "https://check-host.net/check-report/4f006142kb6b",
       "candidate_indices": [
-        "26",
-        "47",
-        "65"
+        "28"
+      ],
+      "published": true,
+      "outbound_tags": [
+        "pool-17"
+      ],
+      "profiles": [
+        "Основной",
+        "Резерв"
+      ]
+    },
+    {
+      "endpoint": "140.174.184.5:8388",
+      "status": "reachable",
+      "probes": {
+        "ru1.node.check-host.net": {
+          "status": "unreachable",
+          "error": "Connection timed out"
+        },
+        "ru2.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 61.4,
+          "resolved_address": "140.174.184.5"
+        },
+        "ru3.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 54.58,
+          "resolved_address": "140.174.184.5"
+        }
+      },
+      "report_url": "https://check-host.net/check-report/4f00617ck7a5",
+      "candidate_indices": [
+        "30"
+      ],
+      "published": true,
+      "outbound_tags": [
+        "pool-14"
+      ],
+      "profiles": [
+        "Основной",
+        "Резерв"
+      ]
+    },
+    {
+      "endpoint": "delicate-buck.rooster465.autos:443",
+      "status": "reachable",
+      "probes": {
+        "ru1.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 324.24,
+          "resolved_address": "52.78.203.191"
+        },
+        "ru2.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 235.96,
+          "resolved_address": "52.78.203.191"
+        },
+        "ru3.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 315.04,
+          "resolved_address": "52.78.203.191"
+        }
+      },
+      "report_url": "https://check-host.net/check-report/4f006186kd05",
+      "candidate_indices": [
+        "31"
+      ],
+      "published": true,
+      "outbound_tags": [
+        "pool-18"
+      ],
+      "profiles": [
+        "Основной",
+        "Резерв"
+      ]
+    },
+    {
+      "endpoint": "yyz-ca-01.blncvpn4u.cc:9443",
+      "status": "reachable",
+      "probes": {
+        "ru1.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 183.95,
+          "resolved_address": "185.156.47.97"
+        },
+        "ru2.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 150.07,
+          "resolved_address": "185.156.47.97"
+        },
+        "ru3.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 124.19,
+          "resolved_address": "185.156.47.97"
+        }
+      },
+      "report_url": "https://check-host.net/check-report/4f0061bcke65",
+      "candidate_indices": [
+        "33"
+      ],
+      "published": true,
+      "outbound_tags": [
+        "pool-16"
+      ],
+      "profiles": [
+        "Основной",
+        "Резерв"
+      ]
+    },
+    {
+      "endpoint": "winning-marten.rooster465.autos:443",
+      "status": "reachable",
+      "probes": {
+        "ru1.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 286.28,
+          "resolved_address": "54.65.177.190"
+        },
+        "ru2.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 214.91,
+          "resolved_address": "54.65.177.190"
+        },
+        "ru3.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 292.57,
+          "resolved_address": "54.65.177.190"
+        }
+      },
+      "report_url": "https://check-host.net/check-report/4f0061e3kbbd",
+      "candidate_indices": [
+        "34"
       ],
       "published": false,
-      "profiles": [],
-      "outbound_tags": []
+      "outbound_tags": [],
+      "profiles": []
+    },
+    {
+      "endpoint": "64.176.2.21:8388",
+      "status": "reachable",
+      "probes": {
+        "ru1.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 249.49,
+          "resolved_address": "64.176.2.21"
+        },
+        "ru2.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 235.13,
+          "resolved_address": "64.176.2.21"
+        },
+        "ru3.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 237.81,
+          "resolved_address": "64.176.2.21"
+        }
+      },
+      "report_url": "https://check-host.net/check-report/4f0061edkb45",
+      "candidate_indices": [
+        "36"
+      ],
+      "published": false,
+      "outbound_tags": [],
+      "profiles": []
+    },
+    {
+      "endpoint": "fancy-javelin.rooster465.autos:443",
+      "status": "reachable",
+      "probes": {
+        "ru1.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 280.75,
+          "resolved_address": "43.207.198.39"
+        },
+        "ru2.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 215.34,
+          "resolved_address": "43.207.198.39"
+        },
+        "ru3.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 277.46,
+          "resolved_address": "43.207.198.39"
+        }
+      },
+      "report_url": "https://check-host.net/check-report/4f00621ak5c0",
+      "candidate_indices": [
+        "37"
+      ],
+      "published": false,
+      "outbound_tags": [],
+      "profiles": []
+    },
+    {
+      "endpoint": "194.87.143.165:8443",
+      "status": "reachable",
+      "probes": {
+        "ru1.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 4.23,
+          "resolved_address": "194.87.143.165"
+        },
+        "ru2.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 11.87,
+          "resolved_address": "194.87.143.165"
+        },
+        "ru3.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 11.27,
+          "resolved_address": "194.87.143.165"
+        }
+      },
+      "report_url": "https://check-host.net/check-report/4f006233ke37",
+      "candidate_indices": [
+        "38"
+      ],
+      "published": false,
+      "outbound_tags": [],
+      "profiles": []
+    },
+    {
+      "endpoint": "84.247.155.196:443",
+      "status": "reachable",
+      "probes": {
+        "ru1.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 275.58,
+          "resolved_address": "84.247.155.196"
+        },
+        "ru2.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 253.88,
+          "resolved_address": "84.247.155.196"
+        },
+        "ru3.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 245.8,
+          "resolved_address": "84.247.155.196"
+        }
+      },
+      "report_url": "https://check-host.net/check-report/4f00625ck68c",
+      "candidate_indices": [
+        "39"
+      ],
+      "published": false,
+      "outbound_tags": [],
+      "profiles": []
+    },
+    {
+      "endpoint": "integral-rodent.rooster465.autos:443",
+      "status": "reachable",
+      "probes": {
+        "ru1.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 283.6,
+          "resolved_address": "54.199.66.128"
+        },
+        "ru2.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 262.59,
+          "resolved_address": "54.199.66.128"
+        },
+        "ru3.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 296.32,
+          "resolved_address": "54.199.66.128"
+        }
+      },
+      "report_url": "https://check-host.net/check-report/4f00626ekf2f",
+      "candidate_indices": [
+        "40"
+      ],
+      "published": false,
+      "outbound_tags": [],
+      "profiles": []
+    },
+    {
+      "endpoint": "185.147.26.210:443",
+      "status": "reachable",
+      "probes": {
+        "ru1.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 4.76,
+          "resolved_address": "185.147.26.210"
+        },
+        "ru2.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 10.14,
+          "resolved_address": "185.147.26.210"
+        },
+        "ru3.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 10.57,
+          "resolved_address": "185.147.26.210"
+        }
+      },
+      "report_url": "https://check-host.net/check-report/4f0062b7k8bc",
+      "candidate_indices": [
+        "41",
+        "47"
+      ],
+      "published": false,
+      "outbound_tags": [],
+      "profiles": []
+    },
+    {
+      "endpoint": "82.38.31.174:8080",
+      "status": "reachable",
+      "probes": {
+        "ru1.node.check-host.net": {
+          "status": "unreachable",
+          "error": "Connection timed out"
+        },
+        "ru2.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 44.83,
+          "resolved_address": "82.38.31.174"
+        },
+        "ru3.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 51.21,
+          "resolved_address": "82.38.31.174"
+        }
+      },
+      "report_url": "https://check-host.net/check-report/4f0062cak5b6",
+      "candidate_indices": [
+        "42"
+      ],
+      "published": false,
+      "outbound_tags": [],
+      "profiles": []
+    },
+    {
+      "endpoint": "glowing-marmoset.rooster465.autos:443",
+      "status": "reachable",
+      "probes": {
+        "ru1.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 295.0,
+          "resolved_address": "18.143.92.167"
+        },
+        "ru2.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 230.87,
+          "resolved_address": "18.143.92.167"
+        },
+        "ru3.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 291.9,
+          "resolved_address": "18.143.92.167"
+        }
+      },
+      "report_url": "https://check-host.net/check-report/4f0062f9k781",
+      "candidate_indices": [
+        "43"
+      ],
+      "published": false,
+      "outbound_tags": [],
+      "profiles": []
+    },
+    {
+      "endpoint": "ru-1-7.imnotgay.party:443",
+      "status": "reachable",
+      "probes": {
+        "ru1.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 29.02,
+          "resolved_address": "109.68.214.220"
+        },
+        "ru2.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 80.62,
+          "resolved_address": "109.68.214.220"
+        },
+        "ru3.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 32.34,
+          "resolved_address": "109.68.214.220"
+        }
+      },
+      "report_url": "https://check-host.net/check-report/4f006337kb4b",
+      "candidate_indices": [
+        "44",
+        "62"
+      ],
+      "published": false,
+      "outbound_tags": [],
+      "profiles": []
+    },
+    {
+      "endpoint": "139.84.166.47:8388",
+      "status": "reachable",
+      "probes": {
+        "ru1.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 186.31,
+          "resolved_address": "139.84.166.47"
+        },
+        "ru2.node.check-host.net": {
+          "status": "unreachable",
+          "error": "Connection timed out"
+        },
+        "ru3.node.check-host.net": {
+          "status": "unreachable",
+          "error": "Connection timed out"
+        }
+      },
+      "report_url": "https://check-host.net/check-report/4f00633ekc86",
+      "candidate_indices": [
+        "45"
+      ],
+      "published": false,
+      "outbound_tags": [],
+      "profiles": []
+    },
+    {
+      "endpoint": "evolving-ewe.rooster465.autos:443",
+      "status": "reachable",
+      "probes": {
+        "ru1.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 276.58,
+          "resolved_address": "54.180.236.195"
+        },
+        "ru2.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 228.15,
+          "resolved_address": "54.180.236.195"
+        },
+        "ru3.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 291.48,
+          "resolved_address": "54.180.236.195"
+        }
+      },
+      "report_url": "https://check-host.net/check-report/4f00637fke3c",
+      "candidate_indices": [
+        "46"
+      ],
+      "published": false,
+      "outbound_tags": [],
+      "profiles": []
+    },
+    {
+      "endpoint": "5.78.51.123:1080",
+      "status": "reachable",
+      "probes": {
+        "ru1.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 198.25,
+          "resolved_address": "5.78.51.123"
+        },
+        "ru2.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 185.75,
+          "resolved_address": "5.78.51.123"
+        },
+        "ru3.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 187.32,
+          "resolved_address": "5.78.51.123"
+        }
+      },
+      "report_url": "https://check-host.net/check-report/4f0063adk61d",
+      "candidate_indices": [
+        "48"
+      ],
+      "published": false,
+      "outbound_tags": [],
+      "profiles": []
+    },
+    {
+      "endpoint": "real-cardinal.rooster465.autos:443",
+      "status": "reachable",
+      "probes": {
+        "ru1.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 281.45,
+          "resolved_address": "52.221.218.179"
+        },
+        "ru2.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 280.15,
+          "resolved_address": "52.221.218.179"
+        },
+        "ru3.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 220.79,
+          "resolved_address": "52.221.218.179"
+        }
+      },
+      "report_url": "https://check-host.net/check-report/4f0063b3k894",
+      "candidate_indices": [
+        "49"
+      ],
+      "published": false,
+      "outbound_tags": [],
+      "profiles": []
+    },
+    {
+      "endpoint": "139.84.247.164:8388",
+      "status": "reachable",
+      "probes": {
+        "ru1.node.check-host.net": {
+          "status": "unreachable",
+          "error": "Connection timed out"
+        },
+        "ru2.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 202.01,
+          "resolved_address": "139.84.247.164"
+        },
+        "ru3.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 201.38,
+          "resolved_address": "139.84.247.164"
+        }
+      },
+      "report_url": "https://check-host.net/check-report/4f0063fbkee0",
+      "candidate_indices": [
+        "51"
+      ],
+      "published": false,
+      "outbound_tags": [],
+      "profiles": []
+    },
+    {
+      "endpoint": "desired-boxer.rooster465.autos:443",
+      "status": "reachable",
+      "probes": {
+        "ru1.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 224.87,
+          "resolved_address": "54.254.59.149"
+        },
+        "ru2.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 254.63,
+          "resolved_address": "54.254.59.149"
+        },
+        "ru3.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 218.78,
+          "resolved_address": "54.254.59.149"
+        }
+      },
+      "report_url": "https://check-host.net/check-report/4f006402k874",
+      "candidate_indices": [
+        "52"
+      ],
+      "published": false,
+      "outbound_tags": [],
+      "profiles": []
+    },
+    {
+      "endpoint": "84.247.155.196:80",
+      "status": "reachable",
+      "probes": {
+        "ru1.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 273.54,
+          "resolved_address": "84.247.155.196"
+        },
+        "ru2.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 267.34,
+          "resolved_address": "84.247.155.196"
+        },
+        "ru3.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 248.39,
+          "resolved_address": "84.247.155.196"
+        }
+      },
+      "report_url": "https://check-host.net/check-report/4f006485k2ca",
+      "candidate_indices": [
+        "54"
+      ],
+      "published": false,
+      "outbound_tags": [],
+      "profiles": []
+    },
+    {
+      "endpoint": "strong-haddock.rooster465.autos:443",
+      "status": "reachable",
+      "probes": {
+        "ru1.node.check-host.net": {
+          "status": "unreachable",
+          "error": "Connection timed out"
+        },
+        "ru2.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 234.93,
+          "resolved_address": "185.244.208.69"
+        },
+        "ru3.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 251.18,
+          "resolved_address": "185.244.208.69"
+        }
+      },
+      "report_url": "https://check-host.net/check-report/4f0064d8kbe9",
+      "candidate_indices": [
+        "55"
+      ],
+      "published": false,
+      "outbound_tags": [],
+      "profiles": []
+    },
+    {
+      "endpoint": "176.57.218.235:443",
+      "status": "reachable",
+      "probes": {
+        "ru1.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 13.97,
+          "resolved_address": "176.57.218.235"
+        },
+        "ru2.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 14.89,
+          "resolved_address": "176.57.218.235"
+        },
+        "ru3.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 6.71,
+          "resolved_address": "176.57.218.235"
+        }
+      },
+      "report_url": "https://check-host.net/check-report/4f0064e8k1f4",
+      "candidate_indices": [
+        "56",
+        "59",
+        "71"
+      ],
+      "published": false,
+      "outbound_tags": [],
+      "profiles": []
     },
     {
       "endpoint": "57.131.48.45:8388",
@@ -744,135 +1452,41 @@
           "error": "Connection timed out"
         }
       },
-      "report_url": "https://check-host.net/check-report/4f0a93e0k2d8",
+      "report_url": "https://check-host.net/check-report/4f006533k70d",
       "candidate_indices": [
-        "27"
+        "57"
       ],
       "published": false,
-      "profiles": [],
-      "outbound_tags": []
+      "outbound_tags": [],
+      "profiles": []
     },
     {
-      "endpoint": "162.159.244.91:443",
+      "endpoint": "obliging-louse.rooster465.autos:443",
       "status": "reachable",
       "probes": {
         "ru1.node.check-host.net": {
           "status": "reachable",
-          "tcp_connect_ms": 40.37,
-          "resolved_address": "162.159.244.91"
+          "tcp_connect_ms": 323.28,
+          "resolved_address": "54.238.153.132"
         },
         "ru2.node.check-host.net": {
           "status": "reachable",
-          "tcp_connect_ms": 19.92,
-          "resolved_address": "162.159.244.91"
+          "tcp_connect_ms": 279.11,
+          "resolved_address": "54.238.153.132"
         },
         "ru3.node.check-host.net": {
           "status": "reachable",
-          "tcp_connect_ms": 39.81,
-          "resolved_address": "162.159.244.91"
+          "tcp_connect_ms": 281.58,
+          "resolved_address": "54.238.153.132"
         }
       },
-      "report_url": "https://check-host.net/check-report/4f0a93f4k625",
+      "report_url": "https://check-host.net/check-report/4f006564k665",
       "candidate_indices": [
-        "28"
-      ],
-      "published": true,
-      "profiles": [
-        "Основной",
-        "Резерв"
-      ],
-      "outbound_tags": [
-        "pool-23"
-      ]
-    },
-    {
-      "endpoint": "ru-1-2.imnotgay.party:443",
-      "status": "reachable",
-      "probes": {
-        "ru1.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 42.62,
-          "resolved_address": "94.228.123.217"
-        },
-        "ru2.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 127.41,
-          "resolved_address": "94.228.123.217"
-        },
-        "ru3.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 29.61,
-          "resolved_address": "94.228.123.217"
-        }
-      },
-      "report_url": "https://check-host.net/check-report/4f0a9443kee0",
-      "candidate_indices": [
-        "29",
-        "38"
+        "58"
       ],
       "published": false,
-      "profiles": [],
-      "outbound_tags": []
-    },
-    {
-      "endpoint": "108.181.121.226:8388",
-      "status": "reachable",
-      "probes": {
-        "ru1.node.check-host.net": {
-          "status": "unreachable",
-          "error": "Connection timed out"
-        },
-        "ru2.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 53.39,
-          "resolved_address": "108.181.121.226"
-        },
-        "ru3.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 54.1,
-          "resolved_address": "108.181.121.226"
-        }
-      },
-      "report_url": "https://check-host.net/check-report/4f0a9457kfcc",
-      "candidate_indices": [
-        "30"
-      ],
-      "published": true,
-      "profiles": [
-        "Основной",
-        "Резерв"
-      ],
-      "outbound_tags": [
-        "pool-16"
-      ]
-    },
-    {
-      "endpoint": "loved-shark.rooster465.autos:443",
-      "status": "reachable",
-      "probes": {
-        "ru1.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 86.98,
-          "resolved_address": "3.253.106.233"
-        },
-        "ru2.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 99.3,
-          "resolved_address": "3.253.106.233"
-        },
-        "ru3.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 95.56,
-          "resolved_address": "3.253.106.233"
-        }
-      },
-      "report_url": "https://check-host.net/check-report/4f0a9475k8e1",
-      "candidate_indices": [
-        "31"
-      ],
-      "published": false,
-      "profiles": [],
-      "outbound_tags": []
+      "outbound_tags": [],
+      "profiles": []
     },
     {
       "endpoint": "51.222.141.125:445",
@@ -880,301 +1494,55 @@
       "probes": {
         "ru1.node.check-host.net": {
           "status": "reachable",
-          "tcp_connect_ms": 128.99,
+          "tcp_connect_ms": 129.75,
           "resolved_address": "51.222.141.125"
         },
         "ru2.node.check-host.net": {
           "status": "reachable",
-          "tcp_connect_ms": 134.62,
+          "tcp_connect_ms": 132.84,
           "resolved_address": "51.222.141.125"
         },
         "ru3.node.check-host.net": {
           "status": "reachable",
-          "tcp_connect_ms": 122.13,
+          "tcp_connect_ms": 124.7,
           "resolved_address": "51.222.141.125"
         }
       },
-      "report_url": "https://check-host.net/check-report/4f0a94c3k6bc",
+      "report_url": "https://check-host.net/check-report/4f00659ekd0f",
       "candidate_indices": [
-        "33"
-      ],
-      "published": true,
-      "profiles": [
-        "Основной",
-        "Резерв"
-      ],
-      "outbound_tags": [
-        "pool-18"
-      ]
-    },
-    {
-      "endpoint": "185.220.100.168:443",
-      "status": "reachable",
-      "probes": {
-        "ru1.node.check-host.net": {
-          "status": "unreachable",
-          "error": "Connection timed out"
-        },
-        "ru2.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 41.08,
-          "resolved_address": "185.220.100.168"
-        },
-        "ru3.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 45.06,
-          "resolved_address": "185.220.100.168"
-        }
-      },
-      "report_url": "https://check-host.net/check-report/4f0a94efk980",
-      "candidate_indices": [
-        "34"
+        "60"
       ],
       "published": false,
-      "profiles": [],
-      "outbound_tags": []
+      "outbound_tags": [],
+      "profiles": []
     },
     {
-      "endpoint": "ru-1-5.imnotgay.party:443",
+      "endpoint": "liked-eft.rooster465.autos:443",
       "status": "reachable",
       "probes": {
         "ru1.node.check-host.net": {
           "status": "reachable",
-          "tcp_connect_ms": 36.51,
-          "resolved_address": "185.104.114.92"
+          "tcp_connect_ms": 306.27,
+          "resolved_address": "13.125.197.117"
         },
         "ru2.node.check-host.net": {
           "status": "reachable",
-          "tcp_connect_ms": 27.77,
-          "resolved_address": "185.104.114.92"
+          "tcp_connect_ms": 290.4,
+          "resolved_address": "13.125.197.117"
         },
         "ru3.node.check-host.net": {
           "status": "reachable",
-          "tcp_connect_ms": 31.23,
-          "resolved_address": "185.104.114.92"
+          "tcp_connect_ms": 324.33,
+          "resolved_address": "13.125.197.117"
         }
       },
-      "report_url": "https://check-host.net/check-report/4f0a9514k57b",
+      "report_url": "https://check-host.net/check-report/4f0065a9kaa2",
       "candidate_indices": [
-        "35"
+        "61"
       ],
       "published": false,
-      "profiles": [],
-      "outbound_tags": []
-    },
-    {
-      "endpoint": "yyz-ca-01.blncvpn4u.cc:9443",
-      "status": "reachable",
-      "probes": {
-        "ru1.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 156.72,
-          "resolved_address": "138.199.48.82"
-        },
-        "ru2.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 143.59,
-          "resolved_address": "138.199.48.82"
-        },
-        "ru3.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 147.84,
-          "resolved_address": "185.156.47.97"
-        }
-      },
-      "report_url": "https://check-host.net/check-report/4f0a9562k9ef",
-      "candidate_indices": [
-        "36"
-      ],
-      "published": true,
-      "profiles": [
-        "Основной",
-        "Резерв"
-      ],
-      "outbound_tags": [
-        "pool-20"
-      ]
-    },
-    {
-      "endpoint": "104.17.121.71:443",
-      "status": "reachable",
-      "probes": {
-        "ru1.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 40.47,
-          "resolved_address": "104.17.121.71"
-        },
-        "ru2.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 20.72,
-          "resolved_address": "104.17.121.71"
-        },
-        "ru3.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 45.19,
-          "resolved_address": "104.17.121.71"
-        }
-      },
-      "report_url": "https://check-host.net/check-report/4f0a9579k307",
-      "candidate_indices": [
-        "37"
-      ],
-      "published": false,
-      "profiles": [],
-      "outbound_tags": []
-    },
-    {
-      "endpoint": "51.222.155.32:5003",
-      "status": "reachable",
-      "probes": {
-        "ru1.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 129.22,
-          "resolved_address": "51.222.155.32"
-        },
-        "ru2.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 135.47,
-          "resolved_address": "51.222.155.32"
-        },
-        "ru3.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 127.95,
-          "resolved_address": "51.222.155.32"
-        }
-      },
-      "report_url": "https://check-host.net/check-report/4f0a95b2k4d2",
-      "candidate_indices": [
-        "39"
-      ],
-      "published": true,
-      "profiles": [
-        "Основной",
-        "Резерв"
-      ],
-      "outbound_tags": [
-        "pool-22"
-      ]
-    },
-    {
-      "endpoint": "ultimate-jaguar.rooster465.autos:443",
-      "status": "reachable",
-      "probes": {
-        "ru1.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 195.01,
-          "resolved_address": "54.213.238.59"
-        },
-        "ru2.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 197.53,
-          "resolved_address": "54.213.238.59"
-        },
-        "ru3.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 191.48,
-          "resolved_address": "54.213.238.59"
-        }
-      },
-      "report_url": "https://check-host.net/check-report/4f0a95c5kd87",
-      "candidate_indices": [
-        "40"
-      ],
-      "published": false,
-      "profiles": [],
-      "outbound_tags": []
-    },
-    {
-      "endpoint": "31.130.155.114:443",
-      "status": "reachable",
-      "probes": {
-        "ru1.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 3.34,
-          "resolved_address": "31.130.155.114"
-        },
-        "ru2.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 1.21,
-          "resolved_address": "31.130.155.114"
-        },
-        "ru3.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 11.25,
-          "resolved_address": "31.130.155.114"
-        }
-      },
-      "report_url": "https://check-host.net/check-report/4f0a95f5kfb8",
-      "candidate_indices": [
-        "41",
-        "44",
-        "50",
-        "56"
-      ],
-      "published": false,
-      "profiles": [],
-      "outbound_tags": []
-    },
-    {
-      "endpoint": "5.78.51.123:1080",
-      "status": "reachable",
-      "probes": {
-        "ru1.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 192.45,
-          "resolved_address": "5.78.51.123"
-        },
-        "ru2.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 182.09,
-          "resolved_address": "5.78.51.123"
-        },
-        "ru3.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 185.88,
-          "resolved_address": "5.78.51.123"
-        }
-      },
-      "report_url": "https://check-host.net/check-report/4f0a9606k973",
-      "candidate_indices": [
-        "42"
-      ],
-      "published": true,
-      "profiles": [
-        "Основной",
-        "Резерв"
-      ],
-      "outbound_tags": [
-        "pool-24"
-      ]
-    },
-    {
-      "endpoint": "guided-ferret.rooster465.autos:443",
-      "status": "reachable",
-      "probes": {
-        "ru1.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 211.73,
-          "resolved_address": "34.220.15.24"
-        },
-        "ru2.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 184.49,
-          "resolved_address": "34.220.15.24"
-        },
-        "ru3.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 208.02,
-          "resolved_address": "34.220.15.24"
-        }
-      },
-      "report_url": "https://check-host.net/check-report/4f0a9632k631",
-      "candidate_indices": [
-        "43"
-      ],
-      "published": false,
-      "profiles": [],
-      "outbound_tags": []
+      "outbound_tags": [],
+      "profiles": []
     },
     {
       "endpoint": "51.222.12.127:445",
@@ -1186,53 +1554,81 @@
         },
         "ru2.node.check-host.net": {
           "status": "reachable",
-          "tcp_connect_ms": 134.63,
+          "tcp_connect_ms": 135.19,
           "resolved_address": "51.222.12.127"
         },
         "ru3.node.check-host.net": {
           "status": "reachable",
-          "tcp_connect_ms": 129.36,
+          "tcp_connect_ms": 123.71,
           "resolved_address": "51.222.12.127"
         }
       },
-      "report_url": "https://check-host.net/check-report/4f0a9648kea",
+      "report_url": "https://check-host.net/check-report/4f0065f1k8fb",
       "candidate_indices": [
-        "45"
+        "63"
       ],
       "published": false,
-      "profiles": [],
-      "outbound_tags": []
+      "outbound_tags": [],
+      "profiles": []
     },
     {
-      "endpoint": "ikr100b.zxom.eu.org:20007",
+      "endpoint": "noted-cougar.rooster465.autos:443",
       "status": "reachable",
       "probes": {
         "ru1.node.check-host.net": {
           "status": "reachable",
-          "tcp_connect_ms": 362.52,
-          "resolved_address": "150.230.254.41"
+          "tcp_connect_ms": 273.82,
+          "resolved_address": "3.35.168.225"
         },
         "ru2.node.check-host.net": {
           "status": "reachable",
-          "tcp_connect_ms": 347.14,
-          "resolved_address": "150.230.254.41"
+          "tcp_connect_ms": 260.66,
+          "resolved_address": "3.35.168.225"
         },
         "ru3.node.check-host.net": {
           "status": "reachable",
-          "tcp_connect_ms": 317.08,
-          "resolved_address": "150.230.254.41"
+          "tcp_connect_ms": 299.45,
+          "resolved_address": "3.35.168.225"
         }
       },
-      "report_url": "https://check-host.net/check-report/4f0a9678k168",
+      "report_url": "https://check-host.net/check-report/4f0065fak7d1",
       "candidate_indices": [
-        "46"
+        "64"
       ],
       "published": false,
-      "profiles": [],
-      "outbound_tags": []
+      "outbound_tags": [],
+      "profiles": []
     },
     {
-      "endpoint": "139.84.247.164:8388",
+      "endpoint": "78.159.246.110:443",
+      "status": "reachable",
+      "probes": {
+        "ru1.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 19.16,
+          "resolved_address": "78.159.246.110"
+        },
+        "ru2.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 1.41,
+          "resolved_address": "78.159.246.110"
+        },
+        "ru3.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 14.76,
+          "resolved_address": "78.159.246.110"
+        }
+      },
+      "report_url": "https://check-host.net/check-report/4f006648kcfe",
+      "candidate_indices": [
+        "65"
+      ],
+      "published": false,
+      "outbound_tags": [],
+      "profiles": []
+    },
+    {
+      "endpoint": "82.38.31.200:8080",
       "status": "reachable",
       "probes": {
         "ru1.node.check-host.net": {
@@ -1241,228 +1637,22 @@
         },
         "ru2.node.check-host.net": {
           "status": "reachable",
-          "tcp_connect_ms": 202.45,
-          "resolved_address": "139.84.247.164"
+          "tcp_connect_ms": 47.05,
+          "resolved_address": "82.38.31.200"
         },
         "ru3.node.check-host.net": {
           "status": "reachable",
-          "tcp_connect_ms": 195.48,
-          "resolved_address": "139.84.247.164"
+          "tcp_connect_ms": 40.9,
+          "resolved_address": "82.38.31.200"
         }
       },
-      "report_url": "https://check-host.net/check-report/4f0a96b8k6ac",
+      "report_url": "https://check-host.net/check-report/4f006693k536",
       "candidate_indices": [
-        "48"
+        "66"
       ],
       "published": false,
-      "profiles": [],
-      "outbound_tags": []
-    },
-    {
-      "endpoint": "integral-rodent.rooster465.autos:443",
-      "status": "reachable",
-      "probes": {
-        "ru1.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 307.9,
-          "resolved_address": "54.199.66.128"
-        },
-        "ru2.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 220.97,
-          "resolved_address": "54.199.66.128"
-        },
-        "ru3.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 303.59,
-          "resolved_address": "54.199.66.128"
-        }
-      },
-      "report_url": "https://check-host.net/check-report/4f0a96c5ka00",
-      "candidate_indices": [
-        "49"
-      ],
-      "published": false,
-      "profiles": [],
-      "outbound_tags": []
-    },
-    {
-      "endpoint": "15.204.247.124:2375",
-      "status": "reachable",
-      "probes": {
-        "ru1.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 127.88,
-          "resolved_address": "15.204.247.124"
-        },
-        "ru2.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 127.6,
-          "resolved_address": "15.204.247.124"
-        },
-        "ru3.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 118.18,
-          "resolved_address": "15.204.247.124"
-        }
-      },
-      "report_url": "https://check-host.net/check-report/4f0a97a2k3a",
-      "candidate_indices": [
-        "51"
-      ],
-      "published": false,
-      "profiles": [],
-      "outbound_tags": []
-    },
-    {
-      "endpoint": "organic-caribou.rooster465.autos:443",
-      "status": "reachable",
-      "probes": {
-        "ru1.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 315.38,
-          "resolved_address": "43.207.89.91"
-        },
-        "ru2.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 218.72,
-          "resolved_address": "43.207.89.91"
-        },
-        "ru3.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 343.41,
-          "resolved_address": "43.207.89.91"
-        }
-      },
-      "report_url": "https://check-host.net/check-report/4f0a9853kf89",
-      "candidate_indices": [
-        "52"
-      ],
-      "published": false,
-      "profiles": [],
-      "outbound_tags": []
-    },
-    {
-      "endpoint": "62.152.58.90:443",
-      "status": "reachable",
-      "probes": {
-        "ru1.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 3.43,
-          "resolved_address": "62.152.58.90"
-        },
-        "ru2.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 2.71,
-          "resolved_address": "62.152.58.90"
-        },
-        "ru3.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 12.35,
-          "resolved_address": "62.152.58.90"
-        }
-      },
-      "report_url": "https://check-host.net/check-report/4f0a98a0k507",
-      "candidate_indices": [
-        "53",
-        "59",
-        "62",
-        "68"
-      ],
-      "published": true,
-      "profiles": [
-        "Основной",
-        "Резерв"
-      ],
-      "outbound_tags": [
-        "pool-04",
-        "pool-08",
-        "pool-11"
-      ]
-    },
-    {
-      "endpoint": "45.207.207.25:443",
-      "status": "reachable",
-      "probes": {
-        "ru1.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 209.89,
-          "resolved_address": "45.207.207.25"
-        },
-        "ru2.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 207.37,
-          "resolved_address": "45.207.207.25"
-        },
-        "ru3.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 199.54,
-          "resolved_address": "45.207.207.25"
-        }
-      },
-      "report_url": "https://check-host.net/check-report/4f0a998ak734",
-      "candidate_indices": [
-        "54"
-      ],
-      "published": false,
-      "profiles": [],
-      "outbound_tags": []
-    },
-    {
-      "endpoint": "evolving-platypus.rooster465.autos:443",
-      "status": "reachable",
-      "probes": {
-        "ru1.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 283.18,
-          "resolved_address": "52.192.217.187"
-        },
-        "ru2.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 340.3,
-          "resolved_address": "52.192.217.187"
-        },
-        "ru3.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 294.26,
-          "resolved_address": "52.192.217.187"
-        }
-      },
-      "report_url": "https://check-host.net/check-report/4f0a99a7k2c0",
-      "candidate_indices": [
-        "55"
-      ],
-      "published": false,
-      "profiles": [],
-      "outbound_tags": []
-    },
-    {
-      "endpoint": "84.247.155.196:80",
-      "status": "reachable",
-      "probes": {
-        "ru1.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 267.16,
-          "resolved_address": "84.247.155.196"
-        },
-        "ru2.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 265.26,
-          "resolved_address": "84.247.155.196"
-        },
-        "ru3.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 297.03,
-          "resolved_address": "84.247.155.196"
-        }
-      },
-      "report_url": "https://check-host.net/check-report/4f0a9a45k387",
-      "candidate_indices": [
-        "57"
-      ],
-      "published": false,
-      "profiles": [],
-      "outbound_tags": []
+      "outbound_tags": [],
+      "profiles": []
     },
     {
       "endpoint": "assuring-skink.rooster465.autos:443",
@@ -1470,303 +1660,134 @@
       "probes": {
         "ru1.node.check-host.net": {
           "status": "reachable",
-          "tcp_connect_ms": 300.32,
+          "tcp_connect_ms": 300.54,
           "resolved_address": "176.34.5.100"
         },
         "ru2.node.check-host.net": {
           "status": "reachable",
-          "tcp_connect_ms": 239.74,
+          "tcp_connect_ms": 305.54,
           "resolved_address": "176.34.5.100"
         },
         "ru3.node.check-host.net": {
           "status": "reachable",
-          "tcp_connect_ms": 337.29,
+          "tcp_connect_ms": 297.2,
           "resolved_address": "176.34.5.100"
         }
       },
-      "report_url": "https://check-host.net/check-report/4f0a9a75ka4a",
-      "candidate_indices": [
-        "58"
-      ],
-      "published": false,
-      "profiles": [],
-      "outbound_tags": []
-    },
-    {
-      "endpoint": "103.160.63.199:31348",
-      "status": "reachable",
-      "probes": {
-        "ru1.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 201.47,
-          "resolved_address": "103.160.63.199"
-        },
-        "ru2.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 200.22,
-          "resolved_address": "103.160.63.199"
-        },
-        "ru3.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 198.03,
-          "resolved_address": "103.160.63.199"
-        }
-      },
-      "report_url": "https://check-host.net/check-report/4f0a9acfk2ae",
-      "candidate_indices": [
-        "60"
-      ],
-      "published": false,
-      "profiles": [],
-      "outbound_tags": []
-    },
-    {
-      "endpoint": "intense-sole.rooster465.autos:443",
-      "status": "reachable",
-      "probes": {
-        "ru1.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 302.07,
-          "resolved_address": "18.176.61.69"
-        },
-        "ru2.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 242.86,
-          "resolved_address": "18.176.61.69"
-        },
-        "ru3.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 279.04,
-          "resolved_address": "18.176.61.69"
-        }
-      },
-      "report_url": "https://check-host.net/check-report/4f0a9afek45d",
-      "candidate_indices": [
-        "61"
-      ],
-      "published": false,
-      "profiles": [],
-      "outbound_tags": []
-    },
-    {
-      "endpoint": "64.177.90.30:8388",
-      "status": "reachable",
-      "probes": {
-        "ru1.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 179.22,
-          "resolved_address": "64.177.90.30"
-        },
-        "ru2.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 171.56,
-          "resolved_address": "64.177.90.30"
-        },
-        "ru3.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 168.5,
-          "resolved_address": "64.177.90.30"
-        }
-      },
-      "report_url": "https://check-host.net/check-report/4f0a9b23kff8",
-      "candidate_indices": [
-        "63"
-      ],
-      "published": false,
-      "profiles": [],
-      "outbound_tags": []
-    },
-    {
-      "endpoint": "fancy-javelin.rooster465.autos:443",
-      "status": "reachable",
-      "probes": {
-        "ru1.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 289.19,
-          "resolved_address": "43.207.198.39"
-        },
-        "ru2.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 271.59,
-          "resolved_address": "43.207.198.39"
-        },
-        "ru3.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 293.49,
-          "resolved_address": "43.207.198.39"
-        }
-      },
-      "report_url": "https://check-host.net/check-report/4f0a9b5bkc69",
-      "candidate_indices": [
-        "64"
-      ],
-      "published": false,
-      "profiles": [],
-      "outbound_tags": []
-    },
-    {
-      "endpoint": "45.149.114.171:777",
-      "status": "reachable",
-      "probes": {
-        "ru1.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 17.64,
-          "resolved_address": "45.149.114.171"
-        },
-        "ru2.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 21.33,
-          "resolved_address": "45.149.114.171"
-        },
-        "ru3.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 5.83,
-          "resolved_address": "45.149.114.171"
-        }
-      },
-      "report_url": "https://check-host.net/check-report/4f0a9b90kc8d",
-      "candidate_indices": [
-        "66"
-      ],
-      "published": false,
-      "profiles": [],
-      "outbound_tags": []
-    },
-    {
-      "endpoint": "obliging-louse.rooster465.autos:443",
-      "status": "reachable",
-      "probes": {
-        "ru1.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 293.83,
-          "resolved_address": "54.238.153.132"
-        },
-        "ru2.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 219.16,
-          "resolved_address": "54.238.153.132"
-        },
-        "ru3.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 286.73,
-          "resolved_address": "54.238.153.132"
-        }
-      },
-      "report_url": "https://check-host.net/check-report/4f0a9bc6kba7",
+      "report_url": "https://check-host.net/check-report/4f0066a6kb3e",
       "candidate_indices": [
         "67"
       ],
       "published": false,
-      "profiles": [],
-      "outbound_tags": []
+      "outbound_tags": [],
+      "profiles": []
     },
     {
-      "endpoint": "45.128.12.20:14249",
+      "endpoint": "pl.flen-vpn.xyz:8443",
       "status": "reachable",
       "probes": {
         "ru1.node.check-host.net": {
           "status": "reachable",
-          "tcp_connect_ms": 327.06,
-          "resolved_address": "45.128.12.20"
+          "tcp_connect_ms": 110.88,
+          "resolved_address": "2.26.225.89"
         },
         "ru2.node.check-host.net": {
           "status": "reachable",
-          "tcp_connect_ms": 650.01,
-          "resolved_address": "45.128.12.20"
+          "tcp_connect_ms": 59.87,
+          "resolved_address": "2.26.225.89"
         },
         "ru3.node.check-host.net": {
           "status": "reachable",
-          "tcp_connect_ms": 379.14,
-          "resolved_address": "45.128.12.20"
+          "tcp_connect_ms": 61.12,
+          "resolved_address": "2.26.225.89"
         }
       },
-      "report_url": "https://check-host.net/check-report/4f0a9bf7k337",
+      "report_url": "https://check-host.net/check-report/4f0066ebk1b6",
+      "candidate_indices": [
+        "68"
+      ],
+      "published": true,
+      "outbound_tags": [
+        "pool-06"
+      ],
+      "profiles": [
+        "Основной",
+        "Резерв"
+      ]
+    },
+    {
+      "endpoint": "82.38.31.26:8080",
+      "status": "reachable",
+      "probes": {
+        "ru1.node.check-host.net": {
+          "status": "unknown"
+        },
+        "ru2.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 45.29,
+          "resolved_address": "82.38.31.26"
+        },
+        "ru3.node.check-host.net": {
+          "status": "reachable",
+          "tcp_connect_ms": 51.21,
+          "resolved_address": "82.38.31.26"
+        }
+      },
+      "report_url": "https://check-host.net/check-report/4f00670bk505",
       "candidate_indices": [
         "69"
       ],
       "published": false,
-      "profiles": [],
-      "outbound_tags": []
+      "outbound_tags": [],
+      "profiles": []
     },
     {
-      "endpoint": "delicate-buck.rooster465.autos:443",
+      "endpoint": "inviting-ferret.rooster465.autos:443",
       "status": "reachable",
       "probes": {
         "ru1.node.check-host.net": {
           "status": "reachable",
-          "tcp_connect_ms": 303.45,
-          "resolved_address": "52.78.203.191"
+          "tcp_connect_ms": 267.92,
+          "resolved_address": "56.10.9.77"
         },
         "ru2.node.check-host.net": {
           "status": "reachable",
-          "tcp_connect_ms": 291.08,
-          "resolved_address": "52.78.203.191"
+          "tcp_connect_ms": 255.72,
+          "resolved_address": "56.10.9.77"
         },
         "ru3.node.check-host.net": {
           "status": "reachable",
-          "tcp_connect_ms": 349.35,
-          "resolved_address": "52.78.203.191"
+          "tcp_connect_ms": 338.35,
+          "resolved_address": "56.10.9.77"
         }
       },
-      "report_url": "https://check-host.net/check-report/4f0a9c2ak70f",
+      "report_url": "https://check-host.net/check-report/4f006722kbce",
       "candidate_indices": [
         "70"
       ],
       "published": false,
-      "profiles": [],
-      "outbound_tags": []
-    },
-    {
-      "endpoint": "144.31.62.224:443",
-      "status": "reachable",
-      "probes": {
-        "ru1.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 38.93,
-          "resolved_address": "144.31.62.224"
-        },
-        "ru2.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 39.27,
-          "resolved_address": "144.31.62.224"
-        },
-        "ru3.node.check-host.net": {
-          "status": "reachable",
-          "tcp_connect_ms": 41.99,
-          "resolved_address": "144.31.62.224"
-        }
-      },
-      "report_url": "https://check-host.net/check-report/4f0a9c4bkd9e",
-      "candidate_indices": [
-        "71"
-      ],
-      "published": false,
-      "profiles": [],
-      "outbound_tags": []
+      "outbound_tags": [],
+      "profiles": []
     }
   ],
   "published_endpoints": [
-    "82.38.31.11:8080",
-    "104.21.70.21:443",
-    "104.17.77.77:8443",
-    "62.152.58.90:443",
-    "82.38.31.211:8080",
-    "meet-goshawk.rooster465.autos:443",
-    "172.64.80.1:8443",
-    "51.195.126.38:8388",
-    "104.21.13.204:443",
-    "51.255.13.232:8388",
     "3.253.106.233:443",
-    "51.77.225.200:8388",
-    "www.speedtest.net:443",
-    "108.181.121.226:8388",
-    "172.67.231.254:443",
-    "51.222.141.125:445",
-    "172.67.217.240:443",
-    "yyz-ca-01.blncvpn4u.cc:9443",
+    "82.38.31.207:8080",
+    "loved-shark.rooster465.autos:443",
     "sacred-anemone.rooster465.autos:443",
-    "51.222.155.32:5003",
-    "162.159.244.91:443",
-    "5.78.51.123:1080"
+    "51.77.225.200:8388",
+    "pl.flen-vpn.xyz:8443",
+    "guided-ferret.rooster465.autos:443",
+    "51.255.13.232:8388",
+    "ultimate-jaguar.rooster465.autos:443",
+    "82.38.31.11:8080",
+    "meet-goshawk.rooster465.autos:443",
+    "82.38.31.192:8080",
+    "comic-poodle.rooster465.autos:443",
+    "140.174.184.5:8388",
+    "intense-sole.rooster465.autos:443",
+    "yyz-ca-01.blncvpn4u.cc:9443",
+    "evolving-platypus.rooster465.autos:443",
+    "delicate-buck.rooster465.autos:443"
   ]
 }

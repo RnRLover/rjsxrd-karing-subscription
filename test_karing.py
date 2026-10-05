@@ -1,6 +1,6 @@
 import json
 import unittest
-from karing import selected_groups, assemble, matchers, incy_subscription, automatic_config, with_fakedns, happ_config, happ_subscription, PUBLIC, REMOTE_DOH, client_routing_profile, subscription_variants, RESERVE_DNS
+from karing import selected_groups, assemble, matchers, incy_subscription, automatic_config, with_fakedns, happ_config, happ_subscription, PUBLIC, PROXY_DNS, client_routing_profile, subscription_variants, RESERVE_DNS
 from routing import policy
 from geo_dat import geoip, geosite, geoip_cidrs
 from generate import diverse_pool
@@ -23,7 +23,7 @@ class KaringTests(unittest.TestCase):
             direct = [s for s in config['dns']['servers'] if s.get('tag') == 'dns-bootstrap']
             self.assertEqual(sorted({s['address'] for s in direct}), sorted(dns))
             self.assertTrue(all('full:entry.example' in s['domains'] for s in direct[:2]))
-            self.assertEqual(config['dns']['servers'][-1], {'address': REMOTE_DOH, 'tag': 'dns-proxy'})
+            self.assertEqual(config['dns']['servers'][-2:], [{'address': address, 'tag': 'dns-proxy'} for address in PROXY_DNS])
         self.assertEqual(len(json.loads(incy_subscription(configs).splitlines()[0])), 2)
         self.assertEqual(len(json.loads(happ_subscription(configs))), 2)
 
@@ -62,7 +62,7 @@ class KaringTests(unittest.TestCase):
         original = {'inbounds': [{'tag': 'socks-in', 'sniffing': {'destOverride': ['tls'], 'routeOnly': True}}], 'outbounds': [{'tag': 'direct', 'protocol': 'freedom'}], 'routing': {'rules': [{'ip': ['geoip:ru'], 'outboundTag': 'direct'}, {'network': 'tcp,udp', 'balancerTag': 'auto'}]}}
         config = with_fakedns(original)
         self.assertEqual(config['dns']['servers'][0], {'address': 'fakedns', 'domains': ['regexp:.*']})
-        self.assertEqual(config['dns']['servers'][-1], {'address': REMOTE_DOH, 'tag': 'dns-proxy'})
+        self.assertEqual(config['dns']['servers'][-2:], [{'address': address, 'tag': 'dns-proxy'} for address in PROXY_DNS])
         self.assertEqual(config['routing']['rules'][3:], original['routing']['rules'])
         self.assertFalse(config['inbounds'][0]['sniffing']['routeOnly'])
         self.assertIn('fakedns', config['inbounds'][0]['sniffing']['destOverride'])
@@ -97,15 +97,15 @@ class KaringTests(unittest.TestCase):
             {'network': 'tcp,udp', 'balancerTag': 'auto'}]}}
         config = with_fakedns(original)
         servers = config['dns']['servers']
-        self.assertEqual([s['address'] for s in servers[:-1]], ['fakedns', '8.8.8.8', '8.8.4.4', REMOTE_DOH, '8.8.8.8', '8.8.4.4'])
-        self.assertEqual(servers[3]['domains'], ['geosite:google'])
-        self.assertEqual(servers[3]['tag'], 'dns-proxy')
-        self.assertEqual(servers[4]['domains'], ['geosite:ru'])
-        self.assertEqual(servers[4]['tag'], 'dns-bootstrap')
-        self.assertTrue(servers[4]['skipFallback'])
+        self.assertEqual([s['address'] for s in servers], ['fakedns', '8.8.8.8', '8.8.4.4', *PROXY_DNS, '8.8.8.8', '8.8.4.4', *PROXY_DNS])
+        self.assertEqual([s['domains'] for s in servers[3:5]], [['geosite:google']] * 2)
+        self.assertTrue(all(s['tag'] == 'dns-proxy' and s['skipFallback'] for s in servers[3:5]))
+        self.assertEqual(servers[5]['domains'], ['geosite:ru'])
+        self.assertEqual(servers[5]['tag'], 'dns-bootstrap')
+        self.assertTrue(servers[5]['skipFallback'])
         self.assertEqual(config['routing']['rules'][3:], original['routing']['rules'])
         expanded = happ_config(config, {'google': ['domain:google.test'], 'ru': ['domain:yandex.test']}, {'ru': ['5.0.0.0/8']})
-        self.assertEqual(expanded['dns']['servers'][4]['domains'], ['domain:yandex.test'])
+        self.assertEqual(expanded['dns']['servers'][5]['domains'], ['domain:yandex.test'])
         self.assertNotIn('geosite:', happ_subscription(expanded))
 
     def test_client_profile_uses_documented_domestic_dns_and_retains_routes(self):
@@ -123,7 +123,7 @@ class KaringTests(unittest.TestCase):
         result = with_fakedns(config)
         bootstrap = result['dns']['servers'][1:3]
         self.assertTrue(all('full:entry.example' in s['domains'] and 'full:www.gstatic.com' in s['domains'] and s['tag'] == 'dns-bootstrap' and s['skipFallback'] for s in bootstrap))
-        self.assertEqual(result['dns']['hosts'], {'dns.google': '8.8.8.8'})
+        self.assertNotIn('hosts', result['dns'])
         self.assertEqual(result['outbounds'][0]['streamSettings']['sockopt']['domainStrategy'], 'UseIPv4')
 
     def test_geoip_export_preserves_exact_ipv4_ipv6_and_rejects_missing(self):

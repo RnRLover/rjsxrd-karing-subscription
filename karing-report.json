@@ -84,24 +84,24 @@
     }
   ],
   "xray_validated": true,
-  "config_utf16_bytes": 68632,
+  "config_utf16_bytes": 63526,
   "geofiles_sha256": {
     "geosite.dat": "b54c1291a94f94d94a95a95a4c45301f95b160f98a638c1f1ff828151848fb66",
     "geoip.dat": "0be9883b286295e0a9f89809e096bc38e660807a0302e210c931d6f635c0158e"
   },
   "requires_geodata_import": true,
   "preserved_ru_direct": true,
-  "generated_at_utc": "2026-10-05T01:15:47Z",
+  "generated_at_utc": "2026-10-04T22:42:45Z",
   "variants": [
     {
       "name": "Основной",
-      "servers": 24,
-      "config_utf16_bytes": 175752
+      "servers": 18,
+      "config_utf16_bytes": 171988
     },
     {
       "name": "Резерв",
-      "servers": 24,
-      "config_utf16_bytes": 175768
+      "servers": 18,
+      "config_utf16_bytes": 172004
     }
   ],
   "fakedns": true,
@@ -115,9 +115,12 @@
       "77.88.8.8",
       "77.88.8.1"
     ],
-    "proxy": "https://dns.google/dns-query"
+    "proxy": [
+      "8.8.8.8",
+      "8.8.4.4"
+    ]
   },
   "happ_import_verified": false,
   "happ_self_contained": true,
-  "happ_bytes": 1565758
+  "happ_bytes": 1561994
 }

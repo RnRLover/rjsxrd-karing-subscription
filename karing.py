@@ -23,7 +23,7 @@ from geo_dat import geosite, geoip, geoip_cidrs
 ROOT = Path(__file__).resolve().parent
 BASE = 'https://raw.githubusercontent.com/KaringX/karing-ruleset/sing/'
 PUBLIC = 'https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/'
-REMOTE_DOH = 'https://dns.google/dns-query'
+PROXY_DNS = ['8.8.8.8', '8.8.4.4']
 DIRECT_DNS = ['8.8.8.8', '8.8.4.4']
 RESERVE_DNS = ['77.88.8.8', '77.88.8.1']
 
@@ -155,13 +155,13 @@ def with_fakedns(config, direct_dns=None):
         if rule.get('outboundTag') == 'direct':
             addresses, tag = direct_dns, 'dns-bootstrap'
         elif rule.get('balancerTag') == 'auto':
-            addresses, tag = [REMOTE_DOH], 'dns-proxy'
+            addresses, tag = PROXY_DNS, 'dns-proxy'
         else:
             continue
         servers.extend({'address': address, 'domains': names[:], 'skipFallback': True, 'tag': tag} for address in addresses)
-    servers.append({'address': REMOTE_DOH, 'tag': 'dns-proxy'})
+    servers.extend({'address': address, 'tag': 'dns-proxy'} for address in PROXY_DNS)
     variant['dns'] = {'tag': 'dns-bootstrap', 'queryStrategy': 'UseIPv4',
-                      'hosts': {'dns.google': '8.8.8.8'}, 'servers': servers}
+                      'servers': servers}
     for inbound in variant['inbounds']:
         sniffing = inbound.setdefault('sniffing', {})
         sniffing.update({'enabled': True, 'routeOnly': False})
@@ -327,7 +327,7 @@ def main():
         report['fakedns'] = True
         report['same_main_reserve_pool'] = True
         report['dns_policy'] = {'Основной': DIRECT_DNS, 'Резерв': RESERVE_DNS,
-                                'proxy': REMOTE_DOH}
+                                'proxy': PROXY_DNS}
         report['happ_import_verified'] = False
         report['happ_self_contained'] = True
         report['happ_bytes'] = len(happ_body.encode('utf-8'))
