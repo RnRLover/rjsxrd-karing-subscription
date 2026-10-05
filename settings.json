@@ -4,6 +4,7 @@
   "geosite_urls": {
     "category-ru": "https://raw.githubusercontent.com/KaringX/karing-ruleset/sing/geo/geosite/category-ru.json"
   },
-  "max_nodes": 24,
+  "max_nodes": 100,
+  "exit_country_cache_seconds": 86400,
   "excluded_country": "ru"
 }

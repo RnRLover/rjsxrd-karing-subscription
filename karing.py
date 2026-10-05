@@ -15,6 +15,7 @@ import subprocess
 import tempfile
 import time
 import urllib.request
+from collections import Counter
 
 from generate import atomic_write, serialized_config, xray_validate
 from routing import domains, LOCAL_IPS
@@ -119,6 +120,23 @@ def automatic_config(config, label='Автовыбор'):
             variant[key]['subjectSelector'] = tags[:]
     serialized_config(variant)
     return variant
+
+
+def fit_client_pool(config, budget=240_000):
+    """Leave room under the Android guard; trim the same tail in both profiles."""
+    result = copy.deepcopy(config)
+    while True:
+        try:
+            variants = subscription_variants(result)
+            if max(len(serialized_config(v).encode('utf-16-le')) for v in variants) <= budget:
+                return result, variants
+        except ValueError as error:
+            if 'publication size budget' not in str(error):
+                raise
+        proxies = [o for o in result['outbounds'] if o.get('tag', '').startswith('pool-')]
+        if len(proxies) <= 2:
+            raise ValueError('routing alone exceeds Android budget')
+        result['outbounds'].remove(proxies[-1])
 
 
 def with_fakedns(config, direct_dns=None):
@@ -304,7 +322,8 @@ def main():
         for filename, content in geo_files.items():
             (temp / filename).write_bytes(content)
         text = serialized_config(config)
-        variants = subscription_variants(config)
+        config, variants = fit_client_pool(config)
+        text = serialized_config(config)
         incy_body = incy_subscription(variants)
         # Validation needs these specific custom assets, never a global install.
         prior = os.environ.get('XRAY_LOCATION_ASSET')
@@ -343,6 +362,29 @@ def main():
         atomic_write(ROOT / 'ru-karing-incy.txt', incy_body)
         atomic_write(ROOT / 'ru-karing-happ.txt', happ_body)
         atomic_write(ROOT / 'karing-routing.json', json.dumps(route_profile, ensure_ascii=False, indent=2) + '\n')
+        # Keep the source pool, raw links and report consistent after size trimming.
+        retained = {o['tag'] for o in config['outbounds']}
+        old['outbounds'] = [o for o in old['outbounds'] if o['tag'] in retained]
+        proxies = [o for o in old['outbounds'] if o.get('tag', '').startswith('pool-')]
+        from pool_selection import node_key
+        from generate import parse_node
+        keys = {node_key({'outbound': o}) for o in proxies}
+        links = []
+        for link in (ROOT / 'servers.txt').read_text(encoding='utf-8').splitlines():
+            node = parse_node(link)
+            if node is not None and node_key(node) in keys:
+                links.append(link)
+        atomic_write(ROOT / 'ru.json', serialized_config(old))
+        atomic_write(ROOT / 'servers.txt', '\n'.join(links) + '\n')
+        source_report = json.loads((ROOT / 'report.json').read_bytes())
+        before_limit = source_report['selected']
+        source_report['selected_before_size_limit'] = before_limit
+        source_report['selected'] = len(proxies)
+        source_report['selected_protocols'] = dict(Counter(o['protocol'] for o in proxies))
+        source_report['config_utf16_bytes'] = len(serialized_config(old).encode('utf-16-le'))
+        source_report['config_utf8_bytes'] = len(serialized_config(old).encode('utf-8'))
+        source_report['client_size_trimmed'] = before_limit > len(proxies)
+        atomic_write(ROOT / 'report.json', json.dumps(source_report, ensure_ascii=False, indent=2) + '\n')
         atomic_write(ROOT / 'karing-report.json', json.dumps(report, ensure_ascii=False, indent=2) + '\n')
         print(json.dumps({'groups': len(groups), 'config_bytes': len(text.encode()), 'geofiles_bytes': {name: len(content) for name, content in geo_files.items()}, 'xray_validated': True}))
 

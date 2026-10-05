@@ -19,6 +19,7 @@ from pathlib import Path
 
 from rjsxrd_parser import parse_url
 from routing import domains, policy
+from pool_selection import node_key, select_pool, recent_exit
 
 ROOT = Path(__file__).resolve().parent
 
@@ -162,7 +163,7 @@ def build(nodes, routing, minimum=2):
         "inbounds": [{"tag": "socks-in", "listen": "127.0.0.1", "port": 10808, "protocol": "socks", "settings": {"udp": True}, "sniffing": {"enabled": True, "destOverride": ["http", "tls", "quic"], "routeOnly": True}}, {"tag": "http-in", "listen": "127.0.0.1", "port": 10809, "protocol": "http"}],
         "outbounds": [{"tag": "block", "protocol": "blackhole"}, *proxies, {"tag": "direct", "protocol": "freedom"}],
         "routing": copy.deepcopy(routing),
-        "burstObservatory": {"subjectSelector": ["pool-"], "pingConfig": {"destination": "https://www.gstatic.com/generate_204", "interval": "30s", "sampling": 2, "timeout": "5s"}},
+        "burstObservatory": {"subjectSelector": ["pool-"], "pingConfig": {"destination": "https://www.gstatic.com/generate_204", "interval": "60s", "sampling": 2, "timeout": "5s"}},
         "stats": {},
         "meta": {"serverDescription": "rjsxrd: RU/local direct; ads blocked; all other TCP/UDP via automatic proxy"}
     }
@@ -182,7 +183,7 @@ def atomic_write(path, content):
     os.replace(temporary, path)
 
 def verify_exits(nodes, ranges, xray):
-    """Check actual egress via HTTPS through each proxy, not just TCP reachability."""
+    """Collect actual HTTPS egress IPs; country filtering is done by the caller."""
     held, ports = [], []
     for node in nodes:
         sock = socket.socket()
@@ -216,7 +217,6 @@ def verify_exits(nodes, ranges, xray):
                 try:
                     with opener.open("https://api.ipify.org?format=json", timeout=12) as response:
                         ip = json.loads(response.read(1000))["ip"]
-                    if not egress_allowed(ip, ranges): return None
                     return {**node, 'exit_ip': str(ipaddress.ip_address(ip))}
                 except Exception: return None
             with concurrent.futures.ThreadPoolExecutor(max_workers=12) as executor:
@@ -277,30 +277,50 @@ def main():
         allowed = dict(zip(hosts, executor.map(endpoint_allowed, hosts)))
     eligible = [n for n in candidates if allowed[n["host"]]]
     counters["nonpublic_or_unresolved_endpoint"] = len(candidates) - len(eligible)
-    # Keep upstream quality order within each protocol, without starving types
-    # that appear later in the source. All selections still need exit checks.
-    checked = diverse_pool(eligible, max(settings["max_nodes"] * 3, 72))
-    from check_ru import filter_candidates, endpoints
-    checked, ru_report = filter_candidates(checked)
-    counters['ru_reachable_candidates'] = len(checked)
-    if args.verify_exits:
-        if not args.xray: raise ValueError("--verify-exits requires --xray")
-        checked = verify_exits(checked, ranges, args.xray)
-    selected = diverse_pool(checked, settings["max_nodes"])
+    cache_path = ROOT / '.runtime' / 'exit-cache.json'
+    exit_cache = json.loads(cache_path.read_text()) if cache_path.exists() else {}
+    now = int(time.time())
+    ttl = settings.get('exit_country_cache_seconds', 86400)
+    checked, pending = [], []
+    for node in eligible:
+        cached = recent_exit(node, exit_cache, now, ranges, ttl)
+        if cached:
+            checked.append(cached)
+        else:
+            entry = exit_cache.get(node_key(node), {})
+            # Known RU exits need no repeated probe; unknown exits retry hourly.
+            fresh = 0 <= now - entry.get('verified_at', 0) < ttl
+            failed_recently = 0 <= now - entry.get('failed_at', 0) < 3600
+            if not fresh and not failed_recently:
+                pending.append(node)
+    counters['cached_foreign_exits'] = len(checked)
+    # Country evidence only: no GitHub ping ranking or Check-Host TCP filter.
+    measured = verify_exits(pending, ranges, args.xray) if pending else []
+    measured_keys = {node_key(node) for node in measured}
+    for node in pending:
+        if node_key(node) not in measured_keys:
+            exit_cache[node_key(node)] = {'failed_at': now}
+    for node in measured:
+        key = node_key(node)
+        exit_cache[key] = {'exit_ip': node['exit_ip'], 'verified_at': now}
+        if egress_allowed(node['exit_ip'], ranges):
+            checked.append(node)
+    cache_path.parent.mkdir(exist_ok=True)
+    atomic_write(cache_path, json.dumps(exit_cache, sort_keys=True) + '\n')
+    previous_path = ROOT / 'ru.json'
+    previous = []
+    if previous_path.exists():
+        previous = [node_key({'outbound': ob}) for ob in json.loads(previous_path.read_bytes())['outbounds'] if ob['protocol'] in ('vless', 'vmess', 'trojan', 'shadowsocks')]
+    selected = select_pool(checked, settings['max_nodes'], previous)
     config = build(selected, routing)
     config_text = serialized_config(config)
     if args.xray: xray_validate(args.xray, config)
     report = {"generated_at_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "pool": "whitelist", "source": source_url, "source_sha256": hashlib.sha256(original.encode()).hexdigest(), "counts": dict(counters), "eligible": len(eligible), "selected": len(selected), "xray_validated": bool(args.xray), "actual_egress_checked": args.verify_exits, "service_acl": False, "country_data": country_data, "excluded_country": "RU", "exclusion_basis": "mandatory actual HTTPS egress IP against RU CIDRs; public Russian entry IPs and RU labels permitted", "selected_protocols": dict(Counter(n["outbound"]["protocol"] for n in selected))}
     report["service_acl"] = False
     report["routing_policy"] = "local direct; RU direct; everything else proxy"
-    report['ru_reachability_required'] = True
-    report['ru_probe_criterion'] = ru_report['criterion']
-    published_endpoints = endpoints(config)
-    ru_report['published_endpoints'] = list(published_endpoints)
-    for result in ru_report['results']:
-        result['published'] = result['endpoint'] in published_endpoints
-        result['profiles'] = ['Основной', 'Резерв'] if result['published'] else []
-        result['outbound_tags'] = published_endpoints.get(result['endpoint'], [])
+    report['ru_reachability_required'] = False
+    report['pool_selection'] = 'stable network-prefix/host/transport diversity; recent foreign exit evidence; client latency selection'
+    report['foreign_exit_candidates'] = len(checked)
     report["geosite_sources"] = geo_sources
     report["client_geoip"] = "geoip:ru from INCY installed geoip.dat; updated by INCY, not this JSON"
     report["config_utf16_bytes"] = len(config_text.encode("utf-16-le"))
@@ -310,8 +330,6 @@ def main():
     atomic_write(args.output / config_name, config_text)
     atomic_write(args.output / servers_name, "\n".join(n["uri"] for n in selected) + "\n")
     atomic_write(args.output / report_name, json.dumps(report, ensure_ascii=False, indent=2) + "\n")
-    ru_report_name = 'ru-reachability.json'
-    atomic_write(args.output / ru_report_name, json.dumps(ru_report, ensure_ascii=False, indent=2) + '\n')
     print(json.dumps({"counts": counters, "eligible": len(eligible), "selected": len(selected), "xray_validated": bool(args.xray)}))
 
 if __name__ == "__main__": main()
