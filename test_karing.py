@@ -111,7 +111,10 @@ class KaringTests(unittest.TestCase):
     def test_client_profile_uses_documented_domestic_dns_and_retains_routes(self):
         config = {'routing': {'rules': [{'domain': ['geosite:kg01'], 'outboundTag': 'block'}, {'domain': ['domain:yandex.ru'], 'outboundTag': 'direct'}, {'network': 'tcp,udp', 'balancerTag': 'auto'}]}}
         profile = client_routing_profile(config)
-        self.assertFalse(any('DNS' in key and key != 'FakeDNS' for key in profile))
+        self.assertFalse(any(key.startswith('DomesticDNS') for key in profile))
+        self.assertEqual(profile['RemoteDNSType'], 'DoU')
+        self.assertEqual(profile['RemoteDNSIP'], PROXY_DNS[0])
+        self.assertEqual(profile['RemoteDNSDomain'], '')
         self.assertFalse(any(key.startswith('LocalDNS') for key in profile))
         self.assertEqual(profile['BlockSites'], ['geosite:kg01'])
         self.assertEqual(profile['DirectSites'], ['domain:yandex.ru'])

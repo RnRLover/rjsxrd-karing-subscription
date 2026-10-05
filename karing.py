@@ -182,9 +182,10 @@ def client_routing_profile(config):
         'Geoipurl': PUBLIC + 'karing-geoip.dat', 'Geositeurl': PUBLIC + 'karing-geosite.dat',
         'DirectSites': [], 'DirectIp': LOCAL_IPS + ['geoip:ru'],
         'ProxySites': [], 'ProxyIp': [], 'BlockSites': [], 'BlockIp': [],
-        'FakeDNS': 'true'}
+        'FakeDNS': 'true', 'RemoteDNSType': 'DoU',
+        'RemoteDNSDomain': '', 'RemoteDNSIP': PROXY_DNS[0]}
     # Full configs own their DNS. A shared geodata profile must not dictate
-    # one DomesticDNS value for three different selectable full configs.
+    # one DomesticDNS value for different selectable full configs.
     for rule in config['routing']['rules']:
         prefix = 'Proxy' if 'balancerTag' in rule else ('Direct' if rule.get('outboundTag') == 'direct' else 'Block')
         profile[prefix + 'Sites'].extend(rule.get('domain', []))
