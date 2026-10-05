@@ -1,2 +1,0 @@
-trojan://UX82473651@guided-ferret.rooster465.autos:443?security=tls&type=tcp&sni=guided-ferret.rooster465.autos#%F0%9F%87%BA%F0%9F%87%B8_%E7%BE%8E%E5%9B%BD_100%20t.me%2Frjsxrd
-trojan://UX82473651@ultimate-jaguar.rooster465.autos:443?security=tls&type=tcp&sni=ultimate-jaguar.rooster465.autos#%F0%9F%87%BA%F0%9F%87%B8_%E7%BE%8E%E5%9B%BD_52%20t.me%2Frjsxrd
