@@ -56,6 +56,8 @@ class PoolTests(unittest.TestCase):
         original['outbounds'] = [o for o in original['outbounds'] if o not in proxies]
         for i in range(150):
             ob = copy.deepcopy(proxies[i % len(proxies)]); ob['tag'] = f'pool-{i:04d}'
+            # Force the size boundary regardless of the current routing size.
+            ob['remarks'] = 'size-test-' + 'x' * 2000
             original['outbounds'].append(ob)
         trimmed, variants = fit_client_pool(original)
         self.assertLess(len(trimmed['outbounds']), len(original['outbounds']))

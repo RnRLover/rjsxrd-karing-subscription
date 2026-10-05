@@ -1,8 +1,4 @@
-"""Karing's ordered Russian profile + our existing RU-direct policy.
-
-Publish a separate full config: existing clients need to install the associated
-geofiles once before switching. The current ru.json remains usable throughout.
-"""
+"""OpenCCK routing and upstream Karing advertising lists for INCY/Happ."""
 import argparse
 import concurrent.futures
 import copy
@@ -18,8 +14,8 @@ import urllib.request
 from collections import Counter
 
 from generate import atomic_write, serialized_config, xray_validate
-from routing import domains, LOCAL_IPS
-from geo_dat import geosite, geoip, geoip_cidrs
+from routing import domains
+from geo_dat import geosite, geoip
 
 ROOT = Path(__file__).resolve().parent
 BASE = 'https://raw.githubusercontent.com/KaringX/karing-ruleset/sing/'
@@ -27,13 +23,41 @@ PUBLIC = 'https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/
 PROXY_DNS = ['8.8.8.8', '8.8.4.4']
 DIRECT_DNS = ['8.8.8.8', '8.8.4.4']
 RESERVE_DNS = ['77.88.8.8', '77.88.8.1']
+OPENCCK = [('cckproxy', 'iplist', 'proxy'), ('cckbeta', 'beta.iplist', 'proxy'),
+           ('cckdirect', 'russia.iplist', 'direct')]
 
 
-def download(url):
+def load_opencck(cache=None):
+    lists, sources = {}, []
+    for tag, host, action in OPENCCK:
+        rules = []
+        for kind in ('domains', 'cidr4', 'cidr6'):
+            url = f'https://{host}.opencck.org/?format=singbox&data={kind}'
+            path = cache / 'opencck' / f'{host}-{kind}.json' if cache else None
+            raw = path.read_bytes() if path and path.exists() else download(url, 30_000_000)
+            obj = json.loads(raw)
+            sites, ips = matchers(obj)
+            if kind == 'domains' and (not sites or ips):
+                raise ValueError('invalid OpenCCK domain export')
+            if kind != 'domains':
+                if sites or not ips:
+                    raise ValueError('invalid OpenCCK IP export')
+                for value in ips:
+                    network = ipaddress.ip_network(value, strict=False)
+                    if network.prefixlen == 0 or network.version != (4 if kind == 'cidr4' else 6):
+                        raise ValueError('unsafe OpenCCK IP export')
+            rules.extend(obj['rules'])
+            sources.append({'reference': tag + ':' + kind, 'url': url,
+                            'sha256': hashlib.sha256(raw).hexdigest()})
+        lists[tag] = {'version': 1, 'rules': rules}
+    return lists, sources
+
+
+def download(url, limit=10_000_000):
     with urllib.request.urlopen(url, timeout=40) as response:
-        data = response.read(10_000_001)
-    if len(data) > 10_000_000:
-        raise ValueError('upstream rules exceed 10 MB')
+        data = response.read(limit + 1)
+    if len(data) > limit:
+        raise ValueError('upstream rules exceed download budget')
     return data
 
 
@@ -54,51 +78,56 @@ def matchers(raw):
 
 
 def selected_groups(profile):
-    """Reuse upstream direct routes and two ad filters, in original order."""
+    """Reuse only the two upstream ad filters."""
     result = []
     for number, group in enumerate(profile['rules'], 1):
         if group['outbound'] not in ('block', 'direct', 'currentSelected'):
             raise ValueError('unknown Karing action')
         ad_filter = group['outbound'] == 'block' and any(ref in (
             'geosite:category-ads', 'acl:BanProgramAD', 'acl:BanADCompany') for ref in group['rule_set'])
-        if group['outbound'] == 'direct' or ad_filter:
+        if ad_filter:
             result.append((number, group))
     if not result:
-        raise ValueError('no requested Karing routes')
+        raise ValueError('no requested Karing ad filters')
     return result
 
 
-def assemble(profile, lists, old):
-    site_groups, ip_groups, routing_rules, groups = {}, {}, [], []
-    routing_rules.append({'type': 'field', 'ip': LOCAL_IPS, 'outboundTag': 'direct'})
-    for number, group in selected_groups(profile):
-        tag = f'kg{number:02d}'
-        sites, ips = [], []
-        for ref in group['rule_set']:
-            ds, cs = matchers(lists[ref])
-            sites.extend(ds)
-            ips.extend(cs)
-        target = {'balancerTag': 'auto'} if group['outbound'] == 'currentSelected' else {'outboundTag': group['outbound']}
-        # Separate rules preserve domain OR IP; putting both in one Xray rule
-        # would instead require both to match.
-        if sites:
-            site_groups[tag] = list(dict.fromkeys(sites))
-            routing_rules.append({'type': 'field', 'ruleTag': tag + '-sites', 'domain': ['geosite:' + tag], **target})
-        if ips:
-            ip_groups[tag] = list(dict.fromkeys(ips))
-            routing_rules.append({'type': 'field', 'ruleTag': tag + '-ips', 'ip': ['geoip:' + tag], **target})
-        groups.append({'tag': tag, 'name': group['name'], 'action': group['outbound'], 'enabled': True, 'upstream_switch': group['switch'], 'sites': len(set(sites)), 'cidrs': len(set(ips))})
-    # Preserve exactly our two RU-direct rules, without duplicating them.
-    ru_rules = old['routing']['rules'][-3:-1]
-    if len(ru_rules) != 2 or any(rule.get('outboundTag') != 'direct' for rule in ru_rules) or ru_rules[-1].get('ip') != ['geoip:ru']:
-        raise ValueError('existing RU policy changed; review required')
-    routing_rules.extend(copy.deepcopy(ru_rules))
-    routing_rules.append({'type': 'field', 'network': 'tcp,udp', 'balancerTag': 'auto'})
+def assemble(profile, lists, old, opencck):
+    """Three policy groups; separate domain/IP rules implement OR matching."""
+    sites, ips, rules, groups = {}, {}, [], []
+    ads = [lists[ref] for _, group in selected_groups(profile) for ref in group['rule_set']]
+    specs = [('ads', 'Adblock + AdblockPlus', 'block', ads),
+             ('cckproxy', 'OpenCCK main + beta', 'proxy', [opencck['cckproxy'], opencck['cckbeta']]),
+             ('cckdirect', 'OpenCCK Russia', 'direct', [opencck['cckdirect']])]
+    for tag, name, action, exports in specs:
+        ds, cs = [], []
+        for raw in exports:
+            d, c = matchers(raw)
+            ds.extend(d); cs.extend(c)
+        suffixes = {v[7:] for v in ds if v.startswith('domain:')}
+        # A suffix already includes its children. Remove redundant entries
+        # only within the same action group, preserving routing semantics.
+        def covered(value):
+            if not value.startswith(('domain:', 'full:')):
+                return False
+            kind, host = value.split(':', 1)
+            parts = host.split('.')
+            start = 0 if kind == 'full' else 1
+            return any('.'.join(parts[i:]) in suffixes for i in range(start, len(parts)))
+        ds = sorted(set(v for v in ds if not covered(v)))
+        cs = sorted({str(ipaddress.ip_network(v, strict=False)) for v in cs})
+        if ds: sites[tag] = ds
+        if cs: ips[tag] = cs
+        target = {'balancerTag': 'auto'} if action == 'proxy' else {'outboundTag': action}
+        if ds: rules.append({'type': 'field', 'ruleTag': tag + '-sites', 'domain': ['geosite:' + tag], **target})
+        if cs: rules.append({'type': 'field', 'ruleTag': tag + '-ips', 'ip': ['geoip:' + tag], **target})
+        groups.append({'tag': tag, 'name': name, 'action': action, 'enabled': True, 'sites': len(ds), 'cidrs': len(cs)})
+    rules.append({'type': 'field', 'network': 'tcp,udp', 'balancerTag': 'auto'})
     config = copy.deepcopy(old)
-    config['remarks'] = 'rjsxrd + Karing + RU direct'
-    config['routing']['rules'] = routing_rules
+    config['remarks'] = 'rjsxrd + OpenCCK + adblock'
+    config['routing']['rules'] = rules
     config['routing']['domainStrategy'] = 'IPOnDemand'
-    return config, site_groups, ip_groups, groups
+    return config, sites, ips, groups
 
 
 def automatic_config(config, label='Автовыбор'):
@@ -195,10 +224,10 @@ def with_fakedns(config, direct_dns=None):
 
 def client_routing_profile(config):
     """Use INCY's documented field names, keeping UI and full config consistent."""
-    profile = {'Name': 'rjsxrd Karing geodata', 'GlobalProxy': 'true',
+    profile = {'Name': 'rjsxrd OpenCCK + Adblock', 'GlobalProxy': 'true',
         'DomainStrategy': 'IPOnDemand', 'LastUpdated': str(int(time.time())),
         'Geoipurl': PUBLIC + 'karing-geoip.dat', 'Geositeurl': PUBLIC + 'karing-geosite.dat',
-        'DirectSites': [], 'DirectIp': LOCAL_IPS + ['geoip:ru'],
+        'DirectSites': [], 'DirectIp': [],
         'ProxySites': [], 'ProxyIp': [], 'BlockSites': [], 'BlockIp': [],
         'FakeDNS': 'true', 'RemoteDNSType': 'DoU',
         'RemoteDNSDomain': '', 'RemoteDNSIP': PROXY_DNS[0]}
@@ -314,7 +343,9 @@ def main():
         lists = {ref: obj for ref, obj, meta in loaded}
         sources.extend(meta for ref, obj, meta in loaded)
         old = json.loads((ROOT / 'ru.json').read_bytes())
-        config, sites, ips, groups = assemble(profile, lists, old)
+        opencck, cck_sources = load_opencck(cache)
+        sources.extend(cck_sources)
+        config, sites, ips, groups = assemble(profile, lists, old, opencck)
         assets = Path(args.xray).resolve().parent
         # Retain original categories for other INCY profiles; protobuf repeated
         # entry streams can be concatenated without replacing original entries.
@@ -336,13 +367,13 @@ def main():
             if prior is None: os.environ.pop('XRAY_LOCATION_ASSET', None)
             else: os.environ['XRAY_LOCATION_ASSET'] = prior
         route_profile = client_routing_profile(config)
-        happ_ips = {**ips, 'ru': geoip_cidrs(geo_files['geoip.dat'], 'ru')}
+        happ_ips = ips
         happ_variants = [happ_config(v, sites, happ_ips) for v in variants]
         happ_body = happ_subscription(happ_variants)
         # A missing custom database must never break this independent variant.
         for variant in happ_variants:
             xray_validate(args.xray, variant)
-        report = {'profile_url': BASE + 'recommend/ru.json', 'profile_sha256': hashlib.sha256(profile_data).hexdigest(), 'all_groups_enabled': False, 'selection': 'direct groups plus Adblock and AdblockPlus; no Anticensor or custom advertising/Google additions', 'groups': groups, 'sources': sources, 'xray_validated': True, 'config_utf16_bytes': len(text.encode('utf-16-le')), 'geofiles_sha256': {name: hashlib.sha256(content).hexdigest() for name, content in geo_files.items()}, 'requires_geodata_import': True, 'preserved_ru_direct': True, 'generated_at_utc': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())}
+        report = {'profile_url': BASE + 'recommend/ru.json', 'profile_sha256': hashlib.sha256(profile_data).hexdigest(), 'all_groups_enabled': False, 'selection': 'Adblock/AdblockPlus block; OpenCCK main/beta proxy; OpenCCK Russia direct; default proxy', 'groups': groups, 'sources': sources, 'xray_validated': True, 'config_utf16_bytes': len(text.encode('utf-16-le')), 'geofiles_sha256': {name: hashlib.sha256(content).hexdigest() for name, content in geo_files.items()}, 'requires_geodata_import': True, 'preserved_ru_direct': False, 'local_exceptions': False, 'generated_at_utc': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())}
         report['variants'] = [{'name': v['remarks'], 'servers': sum(o['protocol'] in ('vless', 'shadowsocks', 'trojan', 'vmess') for o in v['outbounds']), 'config_utf16_bytes': len(serialized_config(v).encode('utf-16-le'))} for v in variants]
         report['fakedns'] = True
         report['same_main_reserve_pool'] = True

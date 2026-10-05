@@ -38,7 +38,7 @@ class KaringTests(unittest.TestCase):
         profile = {'rules': [{'name': name, 'outbound': action, 'rule_set': [ref], 'switch': False}
             for name, action, ref in specifications]}
         self.assertEqual([(number, group['name']) for number, group in selected_groups(profile)],
-            [(1, 'Adblock'), (2, 'AdblockPlus'), (5, 'OneDrive'), (6, 'Apple')])
+            [(1, 'Adblock'), (2, 'AdblockPlus')])
 
     def test_sampling_does_not_starve_protocols_late_in_source(self):
         nodes = [{'outbound': {'protocol': protocol}, 'id': i} for i, protocol in enumerate(['vless'] * 90 + ['shadowsocks'] * 2 + ['trojan'])]
@@ -145,31 +145,28 @@ class KaringTests(unittest.TestCase):
         # This checks our envelope, not INCY's undocumented mixed-JSON parser.
         self.assertEqual(len(lines), 3)
 
-    def test_profile_order_and_single_ru_tail_are_preserved(self):
-        profile = {'rules': [
-            {'name': 'Ads', 'rule_set': ['ads'], 'outbound': 'block', 'switch': False},
-            {'name': 'Google', 'rule_set': ['google'], 'outbound': 'currentSelected', 'switch': False},
-            {'name': 'OneDrive', 'rule_set': ['onedrive'], 'outbound': 'direct', 'switch': False},
-            {'name': 'Anticensor', 'rule_set': ['geosite:blocked@ru', 'geoip:blocked@ru'], 'outbound': 'currentSelected', 'switch': True},
-        ]}
-        lists = {name: {'version': 1, 'rules': [{'domain_suffix': [name + '.test'], 'ip_cidr': ['1.2.3.0/24']}]} for name in ('ads', 'google', 'onedrive')}
-        lists['geosite:blocked@ru'] = {'version': 1, 'rules': [{'domain_suffix': ['blocked.ru']}]}
-        lists['geoip:blocked@ru'] = {'version': 1, 'rules': [{'ip_cidr': ['5.1.0.0/16']}]}
-        # Removed groups need no downloaded lists at all.
-        del lists['ads'], lists['google']
-        old = {'routing': policy(['domain:example.ru'], ['5.0.0.0/8']), 'outbounds': [{'tag': 'pool-01'}]}
-        config, sites, ips, groups = assemble(profile, lists, old)
+    def test_only_three_groups_no_legacy_ru_or_local_routes(self):
+        profile = {'rules': [{'name': 'Ads', 'rule_set': ['geosite:category-ads'], 'outbound': 'block', 'switch': False},
+                             {'name': 'Apple', 'rule_set': ['apple'], 'outbound': 'direct', 'switch': True}]}
+        lists = {'geosite:category-ads': {'version': 1, 'rules': [{'domain_suffix': ['ads.test']}]}}
+        def export(domain, cidr):
+            return {'version': 1, 'rules': [{'domain_suffix': [domain], 'domain': [domain]}, {'ip_cidr': [cidr]}]}
+        cck = {'cckproxy': export('overlap.test', '192.0.2.0/24'),
+               'cckbeta': export('beta.test', '2001:db8::/32'),
+               'cckdirect': export('overlap.test', '192.0.2.0/24')}
+        old = {'routing': policy(['domain:legacy.ru'], ['5.0.0.0/8']), 'outbounds': []}
+        config, sites, ips, groups = assemble(profile, lists, old, cck)
         rules = config['routing']['rules']
-        self.assertEqual([r['ruleTag'] for r in rules if 'ruleTag' in r], ['kg03-sites', 'kg03-ips'])
-        self.assertTrue(all(not ('ip' in rule and 'domain' in rule) for rule in rules))
-        self.assertEqual(rules[-3:-1], old['routing']['rules'][-3:-1])
-        self.assertEqual(sum(r.get('ip') == ['geoip:ru'] for r in rules), 1)
-        self.assertEqual(rules[-1]['network'], 'tcp,udp')
-        self.assertEqual(rules[1]['outboundTag'], 'direct')
-        self.assertEqual([g['name'] for g in groups], ['OneDrive'])
-        self.assertEqual(sum('balancerTag' in r for r in rules), 1)
-        self.assertTrue(all(g['enabled'] for g in groups))
-        self.assertEqual(len(old['routing']['rules']), 4)
+        self.assertEqual([g['action'] for g in groups], ['block', 'proxy', 'direct'])
+        self.assertEqual([r.get('ruleTag') for r in rules], ['ads-sites', 'cckproxy-sites', 'cckproxy-ips', 'cckdirect-sites', 'cckdirect-ips', None])
+        self.assertEqual(rules[-1]['balancerTag'], 'auto')
+        self.assertTrue(all(not ('ip' in r and 'domain' in r) for r in rules))
+        self.assertNotIn('geoip:ru', json.dumps(config))
+        self.assertNotIn('legacy.ru', json.dumps(config))
+        self.assertNotIn('10.0.0.0/8', json.dumps(config))
+        self.assertEqual(sites['cckproxy'], ['domain:beta.test', 'domain:overlap.test'])
+        self.assertEqual(client_routing_profile(config)['DirectIp'], ['geoip:cckdirect'])
+        self.assertEqual(old['routing']['rules'][0]['ip'][0], '10.0.0.0/8')
 
     def test_no_silent_loss_of_unknown_source_conditions(self):
         with self.assertRaises(ValueError):
