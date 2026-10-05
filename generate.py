@@ -228,23 +228,6 @@ def verify_exits(nodes, ranges, xray):
                 process.kill()
                 process.wait(timeout=5)
 
-def premium_pool(nodes, us_ranges, limit):
-    """Select actual verified US egress; entry address and display flag are irrelevant."""
-    if not us_ranges or not any(us_ranges.ranges[v][0] for v in (4, 6)):
-        raise ValueError('US address table required')
-    selected = []
-    for node in nodes:
-        try:
-            address = ipaddress.ip_address(node.get('exit_ip', ''))
-        except ValueError:
-            continue
-        if address.is_global and us_ranges.contains(str(address)):
-            selected.append(node)
-    if not selected:
-        raise ValueError('no verified US exits; preserve previous subscription')
-    return diverse_pool(selected, limit)
-
-
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", type=Path, default=ROOT)
@@ -263,8 +246,6 @@ def main():
     cidrs = [c for r in obj["rules"] for c in r.get("ip_cidr", [])]
     if not cidrs: raise ValueError("RU address table required")
     ranges = CountryRanges(cidrs)
-    us_raw = read('geo/geoip/us.json', settings['us_cidrs_url'])
-    us_ranges = CountryRanges([c for r in json.loads(us_raw)['rules'] for c in r.get('ip_cidr', [])]) if us_raw else None
     country_data = {"url": settings["ru_cidrs_url"], "sha256": hashlib.sha256(raw.encode()).hexdigest(), "use": "server exclusion; client routing uses INCY geoip:ru"}
     geo_sources = []
     categories = {}
@@ -307,21 +288,6 @@ def main():
         checked = verify_exits(checked, ranges, args.xray)
     selected = diverse_pool(checked, settings["max_nodes"])
     config = build(selected, routing)
-    premium_files = {}
-    if us_ranges:
-        premium_nodes = premium_pool(checked, us_ranges, settings['max_nodes'])
-        premium = build(premium_nodes, routing, minimum=1)
-        xray_validate(args.xray, premium)
-        premium_report = {'source': source_url, 'source_sha256': hashlib.sha256(original.encode()).hexdigest(),
-            'generated_at_utc': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
-            'required_exit_country': 'US', 'actual_egress_checked': True,
-            'ru_reachability_required': True, 'xray_validated': True,
-            'country_data': {'url': settings['us_cidrs_url'], 'sha256': hashlib.sha256(us_raw.encode()).hexdigest()},
-            'selected': len(premium_nodes), 'config_sha256': hashlib.sha256(serialized_config(premium).encode()).hexdigest(),
-            'exits': [{'tag': f'pool-{i:02d}', 'ip': n['exit_ip'], 'country': 'US'} for i, n in enumerate(premium_nodes, 1)]}
-        premium_files = {'premium.json': serialized_config(premium),
-            'premium-servers.txt': '\n'.join(n['uri'] for n in premium_nodes) + '\n',
-            'premium-report.json': json.dumps(premium_report, ensure_ascii=False, indent=2) + '\n'}
     config_text = serialized_config(config)
     if args.xray: xray_validate(args.xray, config)
     report = {"generated_at_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "pool": "whitelist", "source": source_url, "source_sha256": hashlib.sha256(original.encode()).hexdigest(), "counts": dict(counters), "eligible": len(eligible), "selected": len(selected), "xray_validated": bool(args.xray), "actual_egress_checked": args.verify_exits, "service_acl": False, "country_data": country_data, "excluded_country": "RU", "exclusion_basis": "mandatory actual HTTPS egress IP against RU CIDRs; public Russian entry IPs and RU labels permitted", "selected_protocols": dict(Counter(n["outbound"]["protocol"] for n in selected))}
@@ -331,11 +297,9 @@ def main():
     report['ru_probe_criterion'] = ru_report['criterion']
     published_endpoints = endpoints(config)
     ru_report['published_endpoints'] = list(published_endpoints)
-    premium_endpoints = endpoints(premium)
-    ru_report['premium_endpoints'] = list(premium_endpoints)
     for result in ru_report['results']:
-        result['published'] = result['endpoint'] in published_endpoints or result['endpoint'] in premium_endpoints
-        result['profiles'] = (['Основной', 'Резерв'] if result['endpoint'] in published_endpoints else []) + (['Премиум'] if result['endpoint'] in premium_endpoints else [])
+        result['published'] = result['endpoint'] in published_endpoints
+        result['profiles'] = ['Основной', 'Резерв'] if result['published'] else []
         result['outbound_tags'] = published_endpoints.get(result['endpoint'], [])
     report["geosite_sources"] = geo_sources
     report["client_geoip"] = "geoip:ru from INCY installed geoip.dat; updated by INCY, not this JSON"
@@ -348,8 +312,6 @@ def main():
     atomic_write(args.output / report_name, json.dumps(report, ensure_ascii=False, indent=2) + "\n")
     ru_report_name = 'ru-reachability.json'
     atomic_write(args.output / ru_report_name, json.dumps(ru_report, ensure_ascii=False, indent=2) + '\n')
-    for name, body in premium_files.items():
-        atomic_write(args.output / name, body)
     print(json.dumps({"counts": counters, "eligible": len(eligible), "selected": len(selected), "xray_validated": bool(args.xray)}))
 
 if __name__ == "__main__": main()

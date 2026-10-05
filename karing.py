@@ -251,10 +251,9 @@ def incy_subscription(config):
     return body
 
 
-def subscription_variants(config, premium):
+def subscription_variants(config):
     return [with_fakedns(automatic_config(config, 'Основной'), DIRECT_DNS),
-            with_fakedns(automatic_config(config, 'Резерв'), RESERVE_DNS),
-            with_fakedns(automatic_config(premium, 'Премиум'), DIRECT_DNS)]
+            with_fakedns(automatic_config(config, 'Резерв'), RESERVE_DNS)]
 
 
 def main():
@@ -304,18 +303,7 @@ def main():
         for filename, content in geo_files.items():
             (temp / filename).write_bytes(content)
         text = serialized_config(config)
-        premium_old = json.loads((ROOT / 'premium.json').read_bytes())
-        premium_report = json.loads((ROOT / 'premium-report.json').read_bytes())
-        premium_tags = {o['tag'] for o in premium_old['outbounds'] if o.get('tag', '').startswith('pool-')}
-        if (premium_report.get('required_exit_country') != 'US'
-                or premium_report.get('actual_egress_checked') is not True
-                or premium_report.get('xray_validated') is not True
-                or premium_report.get('config_sha256') != hashlib.sha256(serialized_config(premium_old).encode()).hexdigest()
-                or {e['tag'] for e in premium_report.get('exits', []) if e.get('country') == 'US'} != premium_tags
-                or not premium_tags):
-            raise ValueError('Premium requires checked US exit evidence for every proxy')
-        premium_config, _, _, _ = assemble(profile, lists, premium_old)
-        variants = subscription_variants(config, premium_config)
+        variants = subscription_variants(config)
         incy_body = incy_subscription(variants)
         # Validation needs these specific custom assets, never a global install.
         prior = os.environ.get('XRAY_LOCATION_ASSET')
@@ -337,10 +325,9 @@ def main():
         report = {'profile_url': BASE + 'recommend/ru.json', 'profile_sha256': hashlib.sha256(profile_data).hexdigest(), 'all_groups_enabled': False, 'selection': 'direct groups plus Adblock and AdblockPlus; no Anticensor or custom advertising/Google additions', 'groups': groups, 'sources': sources, 'xray_validated': True, 'config_utf16_bytes': len(text.encode('utf-16-le')), 'geofiles_sha256': {name: hashlib.sha256(content).hexdigest() for name, content in geo_files.items()}, 'requires_geodata_import': True, 'preserved_ru_direct': True, 'generated_at_utc': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())}
         report['variants'] = [{'name': v['remarks'], 'servers': sum(o['protocol'] in ('vless', 'shadowsocks', 'trojan', 'vmess') for o in v['outbounds']), 'config_utf16_bytes': len(serialized_config(v).encode('utf-16-le'))} for v in variants]
         report['fakedns'] = True
-        report['premium_exit_evidence'] = premium_report
         report['same_main_reserve_pool'] = True
         report['dns_policy'] = {'Основной': DIRECT_DNS, 'Резерв': RESERVE_DNS,
-                                'Премиум': DIRECT_DNS, 'proxy': REMOTE_DOH}
+                                'proxy': REMOTE_DOH}
         report['happ_import_verified'] = False
         report['happ_self_contained'] = True
         report['happ_bytes'] = len(happ_body.encode('utf-8'))
