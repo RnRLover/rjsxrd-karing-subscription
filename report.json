@@ -1,17 +1,17 @@
 {
-  "generated_at_utc": "2026-10-06T14:27:30Z",
+  "generated_at_utc": "2026-10-06T19:48:33Z",
   "pool": "whitelist",
   "source": "https://raw.githubusercontent.com/whoahaow/rjsxrd/main/githubmirror/bypass/bypass-all.txt",
-  "source_sha256": "35e1f432bd1b996ebb4e0e075f5423f0d5e94a9b5b19d4b6eb8f20dbd92f02fc",
+  "source_sha256": "26173efbbadcd1dbf2f1f9e07a4957e8cfd8482cb7f9a6ca888baf385bff0fa8",
   "counts": {
-    "source_nodes": 349,
-    "russian_label_candidates": 76,
-    "unsupported_or_invalid": 31,
-    "duplicate": 50,
+    "source_nodes": 308,
+    "russian_label_candidates": 57,
+    "duplicate": 38,
+    "unsupported_or_invalid": 29,
     "nonpublic_or_unresolved_endpoint": 0,
-    "cached_foreign_exits": 148
+    "cached_foreign_exits": 124
   },
-  "eligible": 268,
+  "eligible": 241,
   "selected": 100,
   "xray_validated": true,
   "actual_egress_checked": true,
@@ -24,26 +24,26 @@
   "excluded_country": "RU",
   "exclusion_basis": "mandatory actual HTTPS egress IP against RU CIDRs; public Russian entry IPs and RU labels permitted",
   "selected_protocols": {
-    "shadowsocks": 18,
-    "vless": 72,
-    "trojan": 8,
-    "vmess": 2
+    "shadowsocks": 12,
+    "vless": 73,
+    "trojan": 14,
+    "vmess": 1
   },
   "routing_policy": "local direct; RU direct; everything else proxy",
   "ru_reachability_required": false,
   "pool_selection": "stable network-prefix/host/transport diversity; recent foreign exit evidence; client latency selection",
-  "foreign_exit_candidates": 192,
+  "foreign_exit_candidates": 172,
   "geosite_sources": [
     {
       "category": "category-ru",
       "url": "https://raw.githubusercontent.com/KaringX/karing-ruleset/sing/geo/geosite/category-ru.json",
-      "sha256": "f97ecbb8611a7722b737a2806f189b82fd4d5c51a069426e62460bf0c899975a",
+      "sha256": "9a29c81d47811398bb10c73ee8d42ab364bb2f7fdf7f0130e9e63d25a8fd6348",
       "entries": 1105
     }
   ],
   "client_geoip": "geoip:ru from INCY installed geoip.dat; updated by INCY, not this JSON",
-  "config_utf16_bytes": 128270,
-  "config_utf8_bytes": 64135,
+  "config_utf16_bytes": 126046,
+  "config_utf8_bytes": 63023,
   "selected_before_size_limit": 100,
   "client_size_trimmed": false
 }

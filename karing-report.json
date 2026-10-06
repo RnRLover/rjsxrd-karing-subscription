@@ -18,7 +18,7 @@
       "action": "proxy",
       "enabled": true,
       "sites": 8085,
-      "cidrs": 6356
+      "cidrs": 6357
     },
     {
       "tag": "cckdirect",
@@ -53,7 +53,7 @@
     {
       "reference": "cckproxy:cidr4",
       "url": "https://iplist.opencck.org/?format=singbox&data=cidr4",
-      "sha256": "13266bd3d52737ffda3a89dc952b02f421371849a6884aa4a45876f9cd72845e"
+      "sha256": "b7fe1078035301f630b192096688d6fab7b99455667c89ae06ca3cd1d5ae411b"
     },
     {
       "reference": "cckproxy:cidr6",
@@ -68,7 +68,7 @@
     {
       "reference": "cckbeta:cidr4",
       "url": "https://beta.iplist.opencck.org/?format=singbox&data=cidr4",
-      "sha256": "5df9f236b400068117bfb95b8744f08360c5bfc0d338191ce5895f055bafe8e2"
+      "sha256": "59be3ca777cabc19451b492ec9ff386ade1058c865032c74ea6c52bcedc9bb42"
     },
     {
       "reference": "cckbeta:cidr6",
@@ -92,25 +92,25 @@
     }
   ],
   "xray_validated": true,
-  "config_utf16_bytes": 77574,
+  "config_utf16_bytes": 75350,
   "geofiles_sha256": {
     "geosite.dat": "e99325ce6f9207eb2e63b0b26454f4d48cf2d78c682b9ca84e2b89d92a2a843d",
-    "geoip.dat": "51f703716f628afff23bed9326f71298bdc6384b8d10089614dee36ce6cc6608"
+    "geoip.dat": "5fab59648a0bf714b0212ad588212e753c818aa39eb7c85ca51dd8049c7f7c75"
   },
   "requires_geodata_import": true,
   "preserved_ru_direct": false,
   "local_exceptions": false,
-  "generated_at_utc": "2026-10-06T14:27:45Z",
+  "generated_at_utc": "2026-10-06T19:48:52Z",
   "variants": [
     {
       "name": "Основной",
       "servers": 100,
-      "config_utf16_bytes": 88198
+      "config_utf16_bytes": 89066
     },
     {
       "name": "Резерв",
       "servers": 100,
-      "config_utf16_bytes": 88198
+      "config_utf16_bytes": 89066
     }
   ],
   "fakedns": true,
@@ -131,5 +131,5 @@
   },
   "happ_import_verified": false,
   "happ_self_contained": true,
-  "happ_bytes": 1975136
+  "happ_bytes": 1976034
 }
