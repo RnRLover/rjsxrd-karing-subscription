@@ -69,8 +69,7 @@ threading.Thread(target=echo_worker, daemon=True).start()
 config = json.loads((ROOT / args.config).read_bytes())
 if isinstance(config, list):
     config = config[args.profile_index]
-if 'fakedns' not in config:
-    config = with_fakedns(automatic_config(config))
+fake_enabled = bool(config.get('fakedns'))
 # Isolate the DNS round trip from public proxy availability. Full production
 # balancers and routing were validated unchanged by karing.py before this test.
 config['log'] = {'loglevel': 'debug'}
@@ -134,7 +133,7 @@ with tempfile.TemporaryDirectory() as temp:
             udp.sendto(b'\x00\x00\x00\x01' + socket.inet_aton('1.1.1.1') + b'\x00\x35' + query, relay)
             response = udp.recv(4096)
         fake_ip = socket.inet_ntoa(response[-4:])
-        assert ipaddress.ip_address(fake_ip) in ipaddress.ip_network('198.18.0.0/15'), fake_ip
+        assert (ipaddress.ip_address(fake_ip) in ipaddress.ip_network('198.18.0.0/15')) if fake_enabled else fake_ip == '127.0.0.1', fake_ip
         with socket.create_connection(('127.0.0.1', port), timeout=10) as tcp:
             tcp.sendall(b'\x05\x01\x00')
             assert receive(tcp, 2) == b'\x05\x00'
@@ -144,7 +143,7 @@ with tempfile.TemporaryDirectory() as temp:
             assert receive(tcp, 4) == b'PONG'
         assert real_queries, 'internal real DNS fallback was not exercised'
         assert not remote_queries, 'Yandex Music DNS went to the general resolver instead of direct Google DNS'
-        print(json.dumps({'fake_ip': fake_ip, 'tcp_payload_roundtrip': True, 'internal_real_dns_fallback': True, 'direct_site_dns_policy': True}))
+        print(json.dumps({'resolved_ip': fake_ip, 'fakedns': fake_enabled, 'tcp_payload_roundtrip': True, 'internal_real_dns_fallback': True, 'direct_site_dns_policy': True}))
         control.close()
     except Exception:
         log.flush()

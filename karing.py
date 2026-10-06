@@ -300,124 +300,18 @@ def incy_subscription(config):
 
 
 def subscription_variants(config):
-    return [with_fakedns(automatic_config(config, 'Основной'), DIRECT_DNS),
-            with_fakedns(automatic_config(config, 'Резерв'), RESERVE_DNS)]
+    from russia_config import variant
+    return [variant(config)]
 
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--xray', required=True)
-    parser.add_argument('--singbox', required=True)
+    parser.add_argument('--singbox')
     parser.add_argument('--cache', type=Path)
     args = parser.parse_args()
-    cache = args.cache
-    def data(path):
-        return (cache / path).read_bytes() if cache and (cache / path).exists() else download(BASE + path)
-    profile_data = data('recommend/ru.json')
-    profile = json.loads(profile_data)
-    refs = list(dict.fromkeys(ref for _, group in selected_groups(profile) for ref in group['rule_set']))
-    sources = []
-    with tempfile.TemporaryDirectory() as temp:
-        temp = Path(temp)
-        def load(ref):
-            kind, name = ref.split(':', 1)
-            path = f'ACL4SSR/{name}.srs' if kind == 'acl' else f'geo/{kind}/{name}.srs'
-            # Local test cache can use upstream JSON exports when available.
-            # Production always uses the exact compiled lists Karing consumes.
-            if cache and not (cache / path).exists():
-                alternatives = [path[:-4] + '.json']
-                if kind == 'acl': alternatives.append(f'ACL4SSR/Ruleset/{name}.json')
-                for candidate in alternatives:
-                    cached = cache / candidate
-                    if cached.exists():
-                        raw = cached.read_bytes()
-                        return ref, json.loads(raw), {'reference': ref, 'url': BASE + candidate, 'sha256': hashlib.sha256(raw).hexdigest()}
-            raw = data(path)
-            key = hashlib.sha256(ref.encode()).hexdigest()[:16]
-            binary, target = temp / (key + '.srs'), temp / (key + '.json')
-            binary.write_bytes(raw)
-            subprocess.run([str(Path(args.singbox).resolve()), 'rule-set', 'decompile', '--output', str(target), str(binary)], check=True, capture_output=True, timeout=60)
-            return ref, json.loads(target.read_bytes()), {'reference': ref, 'url': BASE + path, 'sha256': hashlib.sha256(raw).hexdigest()}
-        with concurrent.futures.ThreadPoolExecutor(max_workers=8) as pool:
-            loaded = list(pool.map(load, refs))
-        lists = {ref: obj for ref, obj, meta in loaded}
-        sources.extend(meta for ref, obj, meta in loaded)
-        old = json.loads((ROOT / 'ru.json').read_bytes())
-        opencck, cck_sources = load_opencck(cache)
-        sources.extend(cck_sources)
-        config, sites, ips, groups = assemble(profile, lists, old, opencck)
-        assets = Path(args.xray).resolve().parent
-        # Retain original categories for other INCY profiles; protobuf repeated
-        # entry streams can be concatenated without replacing original entries.
-        geo_files = {'geosite.dat': (assets / 'geosite.dat').read_bytes() + geosite(sites), 'geoip.dat': (assets / 'geoip.dat').read_bytes() + geoip(ips)}
-        for filename, content in geo_files.items():
-            (temp / filename).write_bytes(content)
-        text = serialized_config(config)
-        config, variants = fit_client_pool(config)
-        text = serialized_config(config)
-        incy_body = incy_subscription(variants)
-        # Validation needs these specific custom assets, never a global install.
-        prior = os.environ.get('XRAY_LOCATION_ASSET')
-        os.environ['XRAY_LOCATION_ASSET'] = str(temp)
-        try:
-            xray_validate(args.xray, config)
-            for variant in variants:
-                xray_validate(args.xray, variant)
-        finally:
-            if prior is None: os.environ.pop('XRAY_LOCATION_ASSET', None)
-            else: os.environ['XRAY_LOCATION_ASSET'] = prior
-        route_profile = client_routing_profile(config)
-        happ_ips = ips
-        happ_variants = [happ_config(v, sites, happ_ips) for v in variants]
-        happ_body = happ_subscription(happ_variants)
-        # A missing custom database must never break this independent variant.
-        for variant in happ_variants:
-            xray_validate(args.xray, variant)
-        report = {'profile_url': BASE + 'recommend/ru.json', 'profile_sha256': hashlib.sha256(profile_data).hexdigest(), 'all_groups_enabled': False, 'selection': 'Adblock/AdblockPlus block; OpenCCK main/beta proxy; OpenCCK Russia direct; default proxy', 'groups': groups, 'sources': sources, 'xray_validated': True, 'config_utf16_bytes': len(text.encode('utf-16-le')), 'geofiles_sha256': {name: hashlib.sha256(content).hexdigest() for name, content in geo_files.items()}, 'requires_geodata_import': True, 'preserved_ru_direct': False, 'local_exceptions': False, 'generated_at_utc': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())}
-        report['variants'] = [{'name': v['remarks'], 'servers': sum(o['protocol'] in ('vless', 'shadowsocks', 'trojan', 'vmess') for o in v['outbounds']), 'config_utf16_bytes': len(serialized_config(v).encode('utf-16-le'))} for v in variants]
-        report['fakedns'] = True
-        report['same_main_reserve_pool'] = True
-        report['dns_policy'] = {'Основной': DIRECT_DNS, 'Резерв': RESERVE_DNS,
-                                'proxy': PROXY_DNS}
-        report['happ_import_verified'] = False
-        report['happ_self_contained'] = True
-        report['happ_bytes'] = len(happ_body.encode('utf-8'))
-        # Do not touch active ru.json. Publish complete new variant after checks.
-        for filename, content in geo_files.items():
-            out = ROOT / ('karing-' + filename)
-            tmp = out.with_suffix('.tmp')
-            tmp.write_bytes(content)
-            tmp.replace(out)
-            atomic_write(ROOT / ('karing-' + filename + '.sha256'), hashlib.sha256(content).hexdigest() + '\n')
-        atomic_write(ROOT / 'ru-karing.json', text)
-        atomic_write(ROOT / 'ru-karing-incy.txt', incy_body)
-        atomic_write(ROOT / 'ru-karing-happ.txt', happ_body)
-        atomic_write(ROOT / 'karing-routing.json', json.dumps(route_profile, ensure_ascii=False, indent=2) + '\n')
-        # Keep the source pool, raw links and report consistent after size trimming.
-        retained = {o['tag'] for o in config['outbounds']}
-        old['outbounds'] = [o for o in old['outbounds'] if o['tag'] in retained]
-        proxies = [o for o in old['outbounds'] if o.get('tag', '').startswith('pool-')]
-        from pool_selection import node_key
-        from generate import parse_node
-        keys = {node_key({'outbound': o}) for o in proxies}
-        links = []
-        for link in (ROOT / 'servers.txt').read_text(encoding='utf-8').splitlines():
-            node = parse_node(link)
-            if node is not None and node_key(node) in keys:
-                links.append(link)
-        atomic_write(ROOT / 'ru.json', serialized_config(old))
-        atomic_write(ROOT / 'servers.txt', '\n'.join(links) + '\n')
-        source_report = json.loads((ROOT / 'report.json').read_bytes())
-        before_limit = source_report['selected']
-        source_report['selected_before_size_limit'] = before_limit
-        source_report['selected'] = len(proxies)
-        source_report['selected_protocols'] = dict(Counter(o['protocol'] for o in proxies))
-        source_report['config_utf16_bytes'] = len(serialized_config(old).encode('utf-16-le'))
-        source_report['config_utf8_bytes'] = len(serialized_config(old).encode('utf-8'))
-        source_report['client_size_trimmed'] = before_limit > len(proxies)
-        atomic_write(ROOT / 'report.json', json.dumps(source_report, ensure_ascii=False, indent=2) + '\n')
-        atomic_write(ROOT / 'karing-report.json', json.dumps(report, ensure_ascii=False, indent=2) + '\n')
-        print(json.dumps({'groups': len(groups), 'config_bytes': len(text.encode()), 'geofiles_bytes': {name: len(content) for name, content in geo_files.items()}, 'xray_validated': True}))
+    from russia_config import main as generate_russia
+    generate_russia(args.xray)
 
 
 if __name__ == '__main__':

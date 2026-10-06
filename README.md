@@ -1,81 +1,27 @@
-# rjsxrd: OpenCCK + Adblock + автоматический прокси
+# rjsxrd: INCY Russia
 
-## Подписки
+One full Xray profile, Основной, in both subscriptions. Резерв removed.
 
 - INCY: https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/ru-karing-incy.txt
 - Happ: https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/ru-karing-happ.txt
 
-В каждой ссылке два полных Xray-профиля из одного whitelist-источника rjsxrd bypass-all.txt:
+Routing is generated from `russia-routing.json`, adapted from the user-exported built-in INCY China profile:
 
-| Профиль | Пул | DNS прямых сайтов и запуска соединения | DNS через прокси |
-|---|---|---|---|
-| Основной | До 100 зарубежных выходов, с ограничением размера | Google 8.8.8.8 / 8.8.4.4, UDP | Google 8.8.8.8 / 8.8.4.4, UDP через VPN |
-| Резерв | Точно тот же пул | Яндекс 77.88.8.8 / 77.88.8.1, UDP | Google 8.8.8.8 / 8.8.4.4, UDP через VPN |
+- category-ads -> block.
+- category-ru, geoip:ru, private/LAN -> direct.
+- Everything else -> automatic proxy via default loopback outbound.
+- IPIfNonMatch; no final catch-all rule, so GeoIP resolution can run.
+- FakeDNS disabled; HTTP/TLS/QUIC sniffing enabled, routeOnly.
+- Direct DNS: Yandex UDP 77.88.8.8.
+- Proxy DNS: Cloudflare DoH https://cloudflare-dns.com/dns-query through balancer.
+- Entry names and Observatory startup DNS use Yandex directly to avoid a dependency cycle.
 
-Профиль выбирается вручную. Внутри каждого один leastPing-балансировщик; маршруты, рекламные фильтры и FakeDNS одинаковы. Резерв меняет DNS, а не доступность общего пула.
+Both GeoSite/GeoIP files are downloaded from the exact Loyalsoldier URLs in the profile on each build. Required categories are validated before publication. The raw category `ru` does not exist in GeoSite; `category-ru` is used. No OpenCCK or Karing rule lists are downloaded by the active builder.
 
-## Маршрутизация OpenCCK
+GitHub Actions runs every 15 minutes at minutes 7,22,37,52. Up to 100 diverse configurations from rjsxrd; country checks and selection unchanged. Latency/failover run in the client via burstObservatory and leastPing. A failed build preserves the published subscription. Routing/DNS/profile/geodata changes trigger a commit even if the server pool is unchanged.
 
-Три группы политики, в порядке применения:
+INCY gets full JSON plus the existing autorouting URL; Happ gets self-contained domain/IP rules with no geofile dependencies. Subscription URLs are unchanged. Update subscription and reconnect. Client import and device traffic still require a real device check.
 
-1. Реклама: исходные Adblock (`category-ads`) и AdblockPlus (`BanProgramAD`, `BanADCompany`) Karing → блок.
-2. https://iplist.opencck.org/ru и https://beta.iplist.opencck.org/ru → принудительный автоматический прокси.
-3. https://russia.iplist.opencck.org/ru → напрямую.
+Verification: Python unit tests; Xray -test for full config and both client formats; local SOCKS UDP DNS and TCP payload test without FakeDNS. The local test replaces upstream resolvers with local DNS stubs, and does not prove public VPN availability.
 
-Всё остальное TCP/UDP → автоматический прокси по умолчанию. При пересечении списков принудительный прокси имеет приоритет над прямым доступом. Домены и IP внутри группы соединены условием ИЛИ: поэтому Xray использует отдельные технические правила для доменов и IP. Служебные DNS/FakeDNS маршруты сохраняются.
-
-Прежние `category-ru`, `geoip:ru`, прямые группы Karing (Apple/OneDrive) и локальные исключения не включаются в готовые профили. Исключения LAN настраиваются в клиенте. Наличие стандартных категорий в геобазе само по себе не включает маршрутизацию.
-
-GitHub Actions при каждой сборке получает девять JSON-выгрузок OpenCCK: `/?format=singbox&data=domains`, `cidr4`, `cidr6` с каждого из трёх порталов. Домены/IPv4/IPv6 проверяются; пустой, повреждённый ответ или сеть /0 прекращает сборку. Последняя опубликованная версия сохраняется при ошибке. INCY получает подготовленные списки в `karing-geosite.dat` и `karing-geoip.dat` через autorouting, Happ — внутри JSON-подписки. Старые имена файлов и URL сохранены для существующих подписок. Обновление списков публикуется даже при неизменном пуле серверов; клиент получает изменения при своём обновлении подписки/геоданных.
-
-## DNS и FakeDNS
-
-FakeDNS использует 198.18.0.0/15, кэш 4096 имён и восстановление домена при соединении. Реальные адреса прямых доменов и служебные имена входных VPN-серверов/www.gstatic.com разрешаются через DNS выбранного профиля: Google для Основного, Яндекс для Резерва. Запуск Observatory не зависит от ещё не готового балансировщика. Для остальных имён используется Google DNS по UDP на 8.8.8.8 / 8.8.4.4 через автоматический прокси. Домены, классифицируемые только по GeoIP после разрешения, сначала используют общий DNS. Для перехвата DNS устройства нужен VPN/TUN; системный HTTP-прокси этого не обеспечивает.
-
-## Форматы клиентов
-
-INCY получает компактный массив полных конфигов и строку ://autorouting/onadd/ с karing-routing.json. Этот профиль устанавливает и обновляет karing-geosite.dat и karing-geoip.dat. Рядом публикуются .sha256: клиент может пропускать скачивание неизменившихся баз. Общий autorouting-профиль содержит маршруты, FakeDNS и адреса геофайлов с RemoteDNSType=DoU и RemoteDNSIP=8.8.8.8, без DomesticDNS: DNS прямых ресурсов задан отдельно в каждом full-конфиге. Согласно https://docs.incy.cc/full-xray-config/, INCY сохраняет непустой dns.servers из full-конфига. Удалённый DNS в профиле маршрутизации явно задан как Google DoU, чтобы клиент не подставлял Cloudflare DoH по умолчанию; источником DNS прямых ресурсов служит выбранный полный конфиг. Нативное переключение требует проверки в INCY на устройстве. Бюджет каждого full-конфига — 250 КБ UTF-16 из-за ранее наблюдавшегося Android TransactionTooLargeException. Изменение полного конфига требует обновления подписки и переподключения; геофайлы обновляются через autorouting клиента. Совместимость зависит от версии INCY и требует проверки реального импорта.
-
-Happ получает чистый JSON-массив без дополнительных строк: все используемые домены и подсети встроены, внешние геофайлы не требуются. Интервал обновления задаётся в клиенте. Happ на компьютере пользователя не запускается в ходе разработки. Нативный импорт и VPN/TUN не подтверждаются проверкой Xray; расход памяти не измерен.
-
-## Источники и обновление
-
-GitHub Actions получает rjsxrd и обновляет обёртку каждые 15 минут, на 7-й, 22-й, 37-й и 52-й минутах часа. Запуск может задерживаться. Пул — максимум 100 уникальных конфигураций; фактический предел зависит от размера Android JSON. Оба профиля получают одинаковый пул. Прямые DNS, Google DoU для прокси, FakeDNS, OpenCCK и рекламные фильтры сохраняются.
-
-Отбор не использует пинг GitHub или TCP-пробы Check-Host. После удаления дублей он предпочитает разные входные IP-подсети (/24 для IPv4, /48 для IPv6), затем разные адреса и сочетания протокола/транспорта/защиты. IP-подсеть является приближением разнообразия сетей, не ASN. При равных условиях сохраняется прежний состав; хеш конфигурации делает результат независимым от порядка источника.
-
-Для исключения выходов РФ остаётся проверка фактического IP через HTTPS/Xray. Российские входы допускаются при подтверждённом зарубежном выходе. Результат страны действует сутки и хранится в GitHub Actions Cache, отдельно от коммитов подписки. Неизвестные выходы повторно проверяются через час; они не включаются без подтверждения. Эта проверка из GitHub всё ещё может не подтвердить узел, работающий у пользователя; она не ранжирует задержку. По истечении суток требуется новое подтверждение. При ошибке сборки опубликованные файлы сохраняются.
-
-Xray клиента измеряет HTTPS-задержку через каждый переданный сервер: burstObservatory, 60 секунд, две пробы; leastPing выбирает доступный выход. Это не гарантирует доступность Gemini или пригодность для игры/UDP. Смена выхода может разорвать текущую сессию. Бюджет каждого INCY-профиля — 240 000 байт UTF-16 с защитным пределом 250 000; при превышении хвост общего пула удаляется в обоих профилях. Happ использует тот же набор, с доменами и подсетями внутри JSON.
-
-Коммит создаётся только при изменении клиентских файлов: состава/параметров пула, DNS, маршрутов или геофайлов. Время проверки, статистика, новые непопавшие в пул узлы и LastUpdated сами по себе коммит не создают. Изменения рабочих DNS/маршрутов публикуются и при неизменном пуле. Клиент получает новый пул при собственном обновлении подписки; GitHub не меняет уже загруженный конфиг на устройстве. ru-reachability.json — исторический отчёт, больше не обновляется и не влияет на отбор.
-
-## Локальная сборка
-
-Python 3.12+, стандартная библиотека. Xray 26.3.27 и sing-box 1.14.2 скачиваются официальными setup-скриптами с проверкой контрольных сумм.
-
-```text
-python -m unittest discover -v
-python setup_xray.py
-python setup_singbox.py
-python generate.py --xray .runtime/xray --verify-exits
-# check_ru.py — только ручная диагностика, не этап публикации
-python karing.py --xray .runtime/xray --singbox .runtime/sing-box
-python check_fakedns.py --xray .runtime/xray
-python check_fakedns.py --xray .runtime/xray --config ru-karing-happ.txt --profile-index 0
-python check_fakedns.py --xray .runtime/xray --config ru-karing-happ.txt --profile-index 1
-```
-
-Windows использует .runtime/xray.exe и .runtime/sing-box.exe. rjsxrd_parser.py переиспользует MIT-конвертер rjsxrd (source/utils/vpn_config.py, commit 3c6df4dee94c434c19c6e1dfaed3c3f37fc5573d); лицензия сохранена в LICENSE.rjsxrd.
-
-
-
-## Что выполняется на устройстве
-
-DNS и его кэш, FakeDNS, sniffing, маршруты OpenCCK, рекламные блокировки, Observatory каждые 60 секунд и leastPing с переключением работают в Xray клиента; подписка задаёт их параметры. Профиль маршрутизации автоматически обновляется через autorouting; подписка передаёт profile-update-interval: 1 (час). Не задаём неподдерживаемые поля для VPN/TUN, разрешений ОС, автозапуска или авторутинга: эти настройки управляются клиентом. Geo trimming для full Xray пропускается самим INCY; не включаем бесполезный для этого формата useChunkFiles.
-
-GitHub собирает один источник rjsxrd в общий пул, отбирает разнообразные входы и подтверждает реальную страну выхода, конвертирует рекламные SRS Karing и JSON OpenCCK в Xray DAT и встраивает списки для Happ. Это подготовка файлов, а не выполнение маршрутизации или выбор сервера по пингу GitHub. Стандартный клиент не умеет сам объединять эти источники, конвертировать SRS в DAT, фильтровать выходы по подтверждённой стране.
-
-
-Для обновления только DNS/маршрутов можно вручную запустить Actions с refresh_pools=false: используется уже опубликованный проверенный ru.json, без повторного отбора серверов. Тесты, сборка Karing, Xray/FakeDNS-проверки и публикация обязательны. По расписанию refresh_pools не отключается: кандидаты rjsxrd проверяются для общего пула.
-
+Builder: `python karing.py --xray .runtime/xray` (compatibility entry point for russia_config.py).

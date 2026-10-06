@@ -61,15 +61,15 @@ class PoolTests(unittest.TestCase):
             original['outbounds'].append(ob)
         trimmed, variants = fit_client_pool(original)
         self.assertLess(len(trimmed['outbounds']), len(original['outbounds']))
-        self.assertEqual(variants[0]['outbounds'][0]['protocol'], variants[1]['outbounds'][0]['protocol'])
+        self.assertEqual(len(variants), 1)
         for v in variants:
             self.assertLessEqual(len(json.dumps(v, ensure_ascii=False, separators=(',', ':')).encode('utf-16-le')) + 2, 240000)
             tags = {o['tag'] for o in v['outbounds'] if o['protocol'] in ('vless','vmess','trojan','shadowsocks')}
             self.assertEqual(set(v['routing']['balancers'][0]['selector']), tags)
             self.assertEqual(set(v['burstObservatory']['subjectSelector']), tags)
-        for variant, expected in zip(variants, ({'8.8.8.8','8.8.4.4'}, {'77.88.8.8','77.88.8.1'})):
+        for variant, expected in zip(variants, ({'77.88.8.8'},)):
             self.assertEqual({s['address'] for s in variant['dns']['servers'] if s.get('tag') == 'dns-bootstrap'}, expected)
-            self.assertEqual({s['address'] for s in variant['dns']['servers'] if s.get('tag') == 'dns-proxy'}, {'8.8.8.8','8.8.4.4'})
+            self.assertEqual({s['address'] for s in variant['dns']['servers'] if s.get('tag') == 'dns-proxy'}, {'https://cloudflare-dns.com/dns-query'})
 
 
 if __name__ == '__main__':

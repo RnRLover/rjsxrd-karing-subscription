@@ -7,25 +7,24 @@ from generate import diverse_pool
 
 
 class KaringTests(unittest.TestCase):
-    def test_two_profiles_share_pool_but_not_dns(self):
-        def base(count):
-            return {'inbounds': [], 'outbounds': [{'tag': f'pool-{i:02d}', 'protocol': 'vless',
-                'settings': {'vnext': [{'address': 'entry.example', 'port': 443}]}} for i in range(1, count + 1)],
-                'routing': {'rules': [{'domain': ['domain:example.ru'], 'outboundTag': 'direct'},
-                {'network': 'tcp,udp', 'balancerTag': 'auto'}], 'balancers': [{'tag': 'auto', 'selector': ['pool-']}]},
-                'burstObservatory': {'subjectSelector': ['pool-']}}
-        configs = subscription_variants(base(3))
-        self.assertEqual([c['remarks'] for c in configs], ['Основной', 'Резерв'])
-        self.assertEqual([len(c['outbounds']) for c in configs], [4, 4])
-        self.assertEqual([o['settings'] for o in configs[0]['outbounds'] if 'settings' in o],
-                         [o['settings'] for o in configs[1]['outbounds'] if 'settings' in o])
-        for config, dns in zip(configs, [['8.8.8.8', '8.8.4.4'], RESERVE_DNS]):
-            direct = [s for s in config['dns']['servers'] if s.get('tag') == 'dns-bootstrap']
-            self.assertEqual(sorted({s['address'] for s in direct}), sorted(dns))
-            self.assertTrue(all('full:entry.example' in s['domains'] for s in direct[:2]))
-            self.assertEqual(config['dns']['servers'][-2:], [{'address': address, 'tag': 'dns-proxy'} for address in PROXY_DNS])
-        self.assertEqual(len(json.loads(incy_subscription(configs).splitlines()[0])), 2)
-        self.assertEqual(len(json.loads(happ_subscription(configs))), 2)
+    def test_single_profile_matches_export_and_has_geoip_fallback(self):
+        from russia_config import build
+        from pathlib import Path
+        profile = json.loads(Path(__file__).with_name('russia-routing.json').read_bytes())
+        base = {'inbounds': [{'tag': 'socks-in'}], 'outbounds': [{'tag': 'pool-01', 'protocol': 'vless'}, {'tag': 'direct', 'protocol': 'freedom'}, {'tag': 'block', 'protocol': 'blackhole'}],
+                'routing': {'rules': [], 'balancers': [{'tag': 'auto', 'selector': ['pool-']}]}, 'burstObservatory': {'subjectSelector': ['pool-']}}
+        configs = subscription_variants(base)
+        self.assertEqual(len(configs), 1)
+        c = configs[0]
+        self.assertNotIn('fakedns', c)
+        self.assertEqual(c['routing']['domainStrategy'], 'IPIfNonMatch')
+        self.assertEqual(c['outbounds'][0]['protocol'], 'loopback')
+        self.assertFalse(any(r.get('network') == 'tcp,udp' and 'port' not in r for r in c['routing']['rules']))
+        self.assertEqual(c['dns']['servers'][-1]['address'], profile['RemoteDNSDomain'])
+        self.assertEqual(c['dns']['servers'][1]['address'], '77.88.8.8')
+        self.assertEqual(c['routing']['rules'][-2]['domain'], ['geosite:category-ru'])
+        self.assertEqual(len(json.loads(incy_subscription(configs).splitlines()[0])), 1)
+        self.assertEqual(len(json.loads(happ_subscription(configs))), 1)
 
     def test_selection_retains_ads_and_direct_but_rejects_proxy_and_malware(self):
         specifications = [('Adblock', 'block', 'geosite:category-ads'),
