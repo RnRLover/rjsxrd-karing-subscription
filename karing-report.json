@@ -53,7 +53,7 @@
     {
       "reference": "cckproxy:cidr4",
       "url": "https://iplist.opencck.org/?format=singbox&data=cidr4",
-      "sha256": "cfcec952c1e73f336d23efa1b2a24e0b68fc1305c7ae3c1693ec728046b86ba7"
+      "sha256": "76e6841c7aca94b83d70832a4eff7a8d4a2b9385c0ad6970f29a93db8d51b25b"
     },
     {
       "reference": "cckproxy:cidr6",
@@ -92,7 +92,7 @@
     }
   ],
   "xray_validated": true,
-  "config_utf16_bytes": 72756,
+  "config_utf16_bytes": 72908,
   "geofiles_sha256": {
     "geosite.dat": "e99325ce6f9207eb2e63b0b26454f4d48cf2d78c682b9ca84e2b89d92a2a843d",
     "geoip.dat": "ad11c2363060ea354cb8b957ffab20d099c8685cde1444c50dc25edb166ab0f7"
@@ -100,17 +100,17 @@
   "requires_geodata_import": true,
   "preserved_ru_direct": false,
   "local_exceptions": false,
-  "generated_at_utc": "2026-10-05T21:41:29Z",
+  "generated_at_utc": "2026-10-06T00:55:20Z",
   "variants": [
     {
       "name": "Основной",
       "servers": 100,
-      "config_utf16_bytes": 83982
+      "config_utf16_bytes": 83978
     },
     {
       "name": "Резерв",
       "servers": 100,
-      "config_utf16_bytes": 83982
+      "config_utf16_bytes": 83978
     }
   ],
   "fakedns": true,
@@ -131,5 +131,5 @@
   },
   "happ_import_verified": false,
   "happ_self_contained": true,
-  "happ_bytes": 1970772
+  "happ_bytes": 1970768
 }
