@@ -13,6 +13,7 @@ on:
     paths:
       - '*.py'
       - 'settings.json'
+      - 'russia-routing.json'
       - '.github/workflows/update.yml'
 permissions:
   contents: write
@@ -49,14 +50,13 @@ jobs:
         with:
           path: .runtime/exit-cache.json
           key: exit-country-v1-${{ github.run_id }}-${{ github.run_attempt }}
-      - name: Generate Karing profile with RU direct
+      - name: Generate single Russia profile
         run: python karing.py --xray .runtime/xray --singbox .runtime/sing-box
-      - name: Check FakeDNS startup and local DNS TCP exchange
+      - name: Check DNS startup and local DNS TCP exchange
         run: python check_fakedns.py --xray .runtime/xray
       - name: Check standalone Happ config without geofiles
         run: |
           python check_fakedns.py --xray .runtime/xray --config ru-karing-happ.txt --profile-index 0
-          python check_fakedns.py --xray .runtime/xray --config ru-karing-happ.txt --profile-index 1
       - name: Publish validated files
         run: |
           git config user.name "github-actions[bot]"
