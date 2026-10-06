@@ -1,135 +1,18 @@
 {
-  "profile_url": "https://raw.githubusercontent.com/KaringX/karing-ruleset/sing/recommend/ru.json",
-  "profile_sha256": "8978492de62f849d5a54a714bd8dea1e8f3d5b71e352c88697596c3526a47598",
-  "all_groups_enabled": false,
-  "selection": "Adblock/AdblockPlus block; OpenCCK main/beta proxy; OpenCCK Russia direct; default proxy",
-  "groups": [
-    {
-      "tag": "ads",
-      "name": "Adblock + AdblockPlus",
-      "action": "block",
-      "enabled": true,
-      "sites": 1749,
-      "cidrs": 17
-    },
-    {
-      "tag": "cckproxy",
-      "name": "OpenCCK main + beta",
-      "action": "proxy",
-      "enabled": true,
-      "sites": 8085,
-      "cidrs": 6359
-    },
-    {
-      "tag": "cckdirect",
-      "name": "OpenCCK Russia",
-      "action": "direct",
-      "enabled": true,
-      "sites": 467,
-      "cidrs": 1500
-    }
-  ],
-  "sources": [
-    {
-      "reference": "geosite:category-ads",
-      "url": "https://raw.githubusercontent.com/KaringX/karing-ruleset/sing/geo/geosite/category-ads.srs",
-      "sha256": "f16c09fb5923b83820931b4d412bba447e9627877de5ffde876ffb875fa7f311"
-    },
-    {
-      "reference": "acl:BanProgramAD",
-      "url": "https://raw.githubusercontent.com/KaringX/karing-ruleset/sing/ACL4SSR/BanProgramAD.srs",
-      "sha256": "a2eb971b390d0173deebf37f346151a59df0df3303fd7d34d946029bdfac36cd"
-    },
-    {
-      "reference": "acl:BanADCompany",
-      "url": "https://raw.githubusercontent.com/KaringX/karing-ruleset/sing/ACL4SSR/BanADCompany.srs",
-      "sha256": "d4a44c1f2dcee3ec83bb5ba7538ba9e51feded79cbdc3c455af9cc837bc2ce32"
-    },
-    {
-      "reference": "cckproxy:domains",
-      "url": "https://iplist.opencck.org/?format=singbox&data=domains",
-      "sha256": "3a853cc70dbd10230e5ad4507a183df72ab1fb64a3ae80381313bfd339e533b9"
-    },
-    {
-      "reference": "cckproxy:cidr4",
-      "url": "https://iplist.opencck.org/?format=singbox&data=cidr4",
-      "sha256": "b7fe1078035301f630b192096688d6fab7b99455667c89ae06ca3cd1d5ae411b"
-    },
-    {
-      "reference": "cckproxy:cidr6",
-      "url": "https://iplist.opencck.org/?format=singbox&data=cidr6",
-      "sha256": "651b3162cd499419dfd0468e64881b701ba617d790affcb6432a06dc2bb5e9f2"
-    },
-    {
-      "reference": "cckbeta:domains",
-      "url": "https://beta.iplist.opencck.org/?format=singbox&data=domains",
-      "sha256": "9e83c208532fb2e8e96df160d9d0f80a86714bc857fc7b133407361a508af1b5"
-    },
-    {
-      "reference": "cckbeta:cidr4",
-      "url": "https://beta.iplist.opencck.org/?format=singbox&data=cidr4",
-      "sha256": "546ed3a1fb98346b51a27a599b649a13dba6a2ddc9e48ff5a6823cb38ee1bbc3"
-    },
-    {
-      "reference": "cckbeta:cidr6",
-      "url": "https://beta.iplist.opencck.org/?format=singbox&data=cidr6",
-      "sha256": "b7ce31b247ad0197a8d0d833abaaab7a1535d85d62418934992577bb62fcee63"
-    },
-    {
-      "reference": "cckdirect:domains",
-      "url": "https://russia.iplist.opencck.org/?format=singbox&data=domains",
-      "sha256": "51522040054fca52d6172a1561346f222f1d46f2d65269e389556f3c349d52bf"
-    },
-    {
-      "reference": "cckdirect:cidr4",
-      "url": "https://russia.iplist.opencck.org/?format=singbox&data=cidr4",
-      "sha256": "04aaa1bc0d68887756150fa2213a148fc4f310fb3f63a30c2be6102b707c877f"
-    },
-    {
-      "reference": "cckdirect:cidr6",
-      "url": "https://russia.iplist.opencck.org/?format=singbox&data=cidr6",
-      "sha256": "47495b2f28c33f7e21cdbadffa91f92e0657714c57d1e88e613624ebf54a3c85"
-    }
-  ],
-  "xray_validated": true,
-  "config_utf16_bytes": 77010,
-  "geofiles_sha256": {
-    "geosite.dat": "e99325ce6f9207eb2e63b0b26454f4d48cf2d78c682b9ca84e2b89d92a2a843d",
-    "geoip.dat": "2ef1f1edec7eb3ec0a62c0bfe8cd50a4f8d9276f07312cc24f6c774e674b0731"
-  },
-  "requires_geodata_import": true,
-  "preserved_ru_direct": false,
-  "local_exceptions": false,
-  "generated_at_utc": "2026-10-06T23:23:21Z",
+  "profile_url": "https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/russia-routing.json",
   "variants": [
     {
       "name": "Основной",
-      "servers": 100,
-      "config_utf16_bytes": 88552
-    },
-    {
-      "name": "Резерв",
-      "servers": 100,
-      "config_utf16_bytes": 88552
+      "servers": 100
     }
   ],
-  "fakedns": true,
-  "same_main_reserve_pool": true,
+  "fakedns": false,
+  "routing": "INCY China adapted for Russia",
+  "domainStrategy": "IPIfNonMatch",
   "dns_policy": {
-    "Основной": [
-      "8.8.8.8",
-      "8.8.4.4"
-    ],
-    "Резерв": [
-      "77.88.8.8",
-      "77.88.8.1"
-    ],
-    "proxy": [
-      "8.8.8.8",
-      "8.8.4.4"
-    ]
+    "direct": "77.88.8.8",
+    "proxy": "https://cloudflare-dns.com/dns-query"
   },
-  "happ_import_verified": false,
-  "happ_self_contained": true,
-  "happ_bytes": 1975590
+  "xray_validated": true,
+  "generated_at_utc": "2026-10-06T23:32:54Z"
 }

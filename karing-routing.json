@@ -1,30 +1,39 @@
 {
-  "Name": "rjsxrd OpenCCK + Adblock",
-  "GlobalProxy": "true",
-  "DomainStrategy": "IPOnDemand",
-  "LastUpdated": "1791329001",
-  "Geoipurl": "https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/karing-geoip.dat",
-  "Geositeurl": "https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/karing-geosite.dat",
+  "Name": "Россия",
+  "GlobalProxy": true,
+  "RemoteDNSType": "DoH",
+  "RemoteDNSDomain": "https://cloudflare-dns.com/dns-query",
+  "RemoteDNSIP": "1.1.1.1",
+  "DomesticDNSType": "DoU",
+  "DomesticDNSDomain": "",
+  "DomesticDNSIP": "77.88.8.8",
+  "RemoteDns": "https://cloudflare-dns.com/dns-query",
+  "DomesticDns": "77.88.8.8",
+  "FakeDNS": false,
+  "DnsHosts": {
+    "cloudflare-dns.com": "1.1.1.1"
+  },
+  "Geoipurl": "https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geoip.dat",
+  "Geositeurl": "https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geosite.dat",
   "DirectSites": [
-    "geosite:cckdirect"
+    "geosite:category-ru"
+  ],
+  "ProxySites": [],
+  "BlockSites": [
+    "geosite:category-ads"
   ],
   "DirectIp": [
-    "geoip:cckdirect"
+    "geoip:ru",
+    "geoip:private",
+    "10.0.0.0/8",
+    "172.16.0.0/12",
+    "192.168.0.0/16"
   ],
-  "ProxySites": [
-    "geosite:cckproxy"
-  ],
-  "ProxyIp": [
-    "geoip:cckproxy"
-  ],
-  "BlockSites": [
-    "geosite:ads"
-  ],
-  "BlockIp": [
-    "geoip:ads"
-  ],
-  "FakeDNS": "true",
-  "RemoteDNSType": "DoU",
-  "RemoteDNSDomain": "",
-  "RemoteDNSIP": "8.8.8.8"
+  "ProxyIp": [],
+  "BlockIp": [],
+  "DomainStrategy": "IPIfNonMatch",
+  "RouteOrder": "block-proxy-direct",
+  "UseChunkFiles": false,
+  "bypassPrivateIPs": true,
+  "bypassLocalDNS": false
 }
