@@ -7,7 +7,7 @@ One full Xray profile, Основной, in both subscriptions. Резерв rem
 
 Routing is generated from `russia-routing.json`, adapted from the user-exported built-in INCY China profile:
 
-- category-ads -> block.
+- category-ads-all -> block.
 - category-ru, geoip:ru, private/LAN -> direct.
 - Everything else -> automatic proxy via default loopback outbound.
 - IPIfNonMatch; no final catch-all rule, so GeoIP resolution can run.

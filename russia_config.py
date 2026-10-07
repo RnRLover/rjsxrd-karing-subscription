@@ -84,7 +84,7 @@ def main(xray):
     # databases, whose domain categories may differ.
     assets = {name: download(profile[key], 40_000_000) for name, key in
               [('geosite.dat', 'Geositeurl'), ('geoip.dat', 'Geoipurl')]}
-    sites = {tag: geosite_domains(assets['geosite.dat'], tag) for tag in ['category-ru', 'category-ads']}
+    sites = {tag: geosite_domains(assets['geosite.dat'], tag) for tag in ['category-ru', 'category-ads-all']}
     ips = {tag: geoip_cidrs(assets['geoip.dat'], tag) for tag in ['ru', 'private']}
     old = json.loads((ROOT / 'ru.json').read_bytes())
     config = build(old, profile)

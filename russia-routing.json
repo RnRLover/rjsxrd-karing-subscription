@@ -17,7 +17,7 @@
   "Geositeurl": "https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geosite.dat",
   "DirectSites": ["geosite:category-ru"],
   "ProxySites": [],
-  "BlockSites": ["geosite:category-ads"],
+  "BlockSites": ["geosite:category-ads-all"],
   "DirectIp": [
     "geoip:ru",
     "geoip:private",
