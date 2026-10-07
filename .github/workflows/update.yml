@@ -62,7 +62,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           if python publication_changed.py; then
-            git add ru.json servers.txt report.json ru-karing.json ru-karing-incy.txt ru-karing-happ.txt karing-routing.json karing-report.json karing-geoip.dat karing-geosite.dat karing-geoip.dat.sha256 karing-geosite.dat.sha256
+            git add ru.json servers.txt report.json ru-karing.json ru-karing-incy.txt ru-karing-happ.txt ru-karing-happ-routing-test.txt karing-routing.json karing-report.json karing-geoip.dat karing-geosite.dat karing-geoip.dat.sha256 karing-geosite.dat.sha256
             git commit -m "Update validated rjsxrd subscription"
             git push
           fi
