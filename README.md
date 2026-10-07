@@ -18,7 +18,7 @@ Routing is generated from `russia-routing.json`, adapted from the user-exported 
 
 Both GeoSite/GeoIP files are downloaded from the exact Loyalsoldier URLs in the profile on each build. Required categories are validated before publication. The raw category `ru` does not exist in GeoSite; `category-ru` is used. No OpenCCK or Karing rule lists are downloaded by the active builder.
 
-GitHub Actions runs every 15 minutes at minutes 7,22,37,52. Up to 100 diverse configurations from rjsxrd; country checks and selection unchanged. Latency/failover run in the client via burstObservatory and leastPing. A failed build preserves the published subscription. Routing/DNS/profile/geodata changes trigger a commit even if the server pool is unchanged.
+GitHub Actions runs every 15 minutes at minutes 7,22,37,52. Up to 24 diverse configurations from rjsxrd; country checks and selection unchanged. Latency/failover run in the client via burstObservatory and leastPing. A failed build preserves the published subscription. Routing/DNS/profile/geodata changes trigger a commit even if the server pool is unchanged.
 
 INCY gets full JSON plus the existing autorouting URL; Happ gets self-contained domain/IP rules with no geofile dependencies. Subscription URLs are unchanged. Update subscription and reconnect. Client import and device traffic still require a real device check.
 
