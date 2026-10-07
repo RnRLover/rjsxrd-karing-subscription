@@ -3,8 +3,11 @@
 One full Xray profile, Основной, in both subscriptions. Резерв removed.
 
 - INCY: https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/ru-karing-incy.txt
-- Happ: https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/ru-karing-happ.txt
-- Experimental Happ routing profile: https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/ru-karing-happ-routing-test.txt
+- Happ (server and routing profile in one subscription): https://rjsxrd-happ-routing.freedomfightertruthfinder.workers.dev/happ
+- Happ pure JSON fallback (server and embedded Xray rules, without a separate UI routing profile): https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/ru-karing-happ.txt
+- The experimental `ru-karing-happ-routing-test.txt` is broken in Happ: it imports the routing profile but no server. Do not use it for a connection.
+
+Happ's full-Xray JSON subscription must stay a pure JSON array for its server to appear. Its separate routing profile is delivered in the HTTP `routing` response header by `happ-worker.js`. The Worker reads the existing public GitHub files on each request and does not select or test servers. The endpoint was deployed and its response checked in Cloudflare's HTTP tool: HTTP 200, one `Основной` JSON config with 28 outbounds, and a `routing` header. Import in Happ and actual device connection still require a device check. GitHub RAW cannot set this header.
 
 Routing is generated from `russia-routing.json`, adapted from the user-exported built-in INCY China profile:
 
