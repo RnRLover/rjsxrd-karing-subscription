@@ -20,7 +20,7 @@
   ],
   "ProxySites": [],
   "BlockSites": [
-    "geosite:category-ads"
+    "geosite:category-ads-all"
   ],
   "DirectIp": [
     "geoip:ru",
