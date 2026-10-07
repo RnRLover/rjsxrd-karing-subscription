@@ -4,6 +4,7 @@ One full Xray profile, Основной, in both subscriptions. Резерв rem
 
 - INCY: https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/ru-karing-incy.txt
 - Happ: https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/ru-karing-happ.txt
+- Experimental Happ routing profile: https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/ru-karing-happ-routing-test.txt
 
 Routing is generated from `russia-routing.json`, adapted from the user-exported built-in INCY China profile:
 

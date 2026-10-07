@@ -4,7 +4,7 @@ from pathlib import Path
 import subprocess
 
 CLIENT_FILES = ('ru.json', 'ru-karing.json', 'ru-karing-incy.txt',
-                'ru-karing-happ.txt', 'karing-routing.json',
+                'ru-karing-happ.txt', 'ru-karing-happ-routing-test.txt', 'karing-routing.json',
                 'karing-geoip.dat', 'karing-geosite.dat')
 
 
@@ -15,6 +15,11 @@ def canonical(name, data):
     if name == 'ru-karing-incy.txt':
         lines = text.splitlines()
         return json.dumps(json.loads(lines[0]), sort_keys=True, ensure_ascii=False) + '\n' + '\n'.join(lines[1:])
+    if name == 'ru-karing-happ-routing-test.txt':
+        command, body = text.split('\n', 1)
+        if not command.startswith('happ://routing/onadd/'):
+            raise ValueError('missing Happ routing command')
+        return command + '\n' + json.dumps(json.loads(body), sort_keys=True, ensure_ascii=False)
     obj = json.loads(text)
     if name == 'karing-routing.json':
         obj.pop('LastUpdated', None)

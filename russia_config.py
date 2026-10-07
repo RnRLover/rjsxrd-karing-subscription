@@ -1,5 +1,6 @@
 """Translate the exported INCY region profile into our full Xray subscription."""
 import copy
+import base64
 import json
 import os
 from pathlib import Path
@@ -77,6 +78,16 @@ def variant(config):
     return build(result, json.loads((ROOT / 'russia-routing.json').read_bytes()))
 
 
+def happ_routing_test_subscription(configs, profile):
+    """Experimental Happ body: native routing command followed by full Xray JSON."""
+    from karing import happ_subscription
+    routing_profile = copy.deepcopy(profile)
+    routing_profile['Name'] = 'Россия (тест Happ)'
+    encoded = base64.b64encode(json.dumps(routing_profile, ensure_ascii=False,
+        separators=(',', ':')).encode('utf-8')).decode('ascii')
+    return 'happ://routing/onadd/' + encoded + '\n' + happ_subscription(configs)
+
+
 def main(xray):
     from karing import download, fit_client_pool, incy_subscription, happ_config, happ_subscription, PUBLIC
     profile = json.loads((ROOT / 'russia-routing.json').read_bytes())
@@ -107,7 +118,9 @@ def main(xray):
         v['outbounds'].remove(loop); v['outbounds'].insert(0, loop)
         xray_validate(xray, v)
     outputs = {'ru-karing.json': serialized_config(config), 'ru-karing-incy.txt': incy_subscription(variants),
-               'ru-karing-happ.txt': happ_subscription(happ), 'karing-routing.json': json.dumps(profile, ensure_ascii=False, indent=2)}
+               'ru-karing-happ.txt': happ_subscription(happ),
+               'ru-karing-happ-routing-test.txt': happ_routing_test_subscription(happ, profile),
+               'karing-routing.json': json.dumps(profile, ensure_ascii=False, indent=2)}
     outputs['karing-report.json'] = json.dumps({'profile_url': PUBLIC + 'russia-routing.json',
         'variants': [{'name': v['remarks'], 'servers': sum(o.get('tag','').startswith('pool-') or o.get('tag') == 'Основной' for o in v['outbounds'])} for v in variants],
         'fakedns': False, 'routing': 'INCY China adapted for Russia', 'domainStrategy': 'IPIfNonMatch',
