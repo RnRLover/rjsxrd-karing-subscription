@@ -1,47 +1,47 @@
 {
-  "generated_at_utc": "2026-10-08T14:59:19Z",
+  "generated_at_utc": "2026-10-08T20:41:02Z",
   "pool": "whitelist",
   "source": "https://raw.githubusercontent.com/whoahaow/rjsxrd/main/githubmirror/bypass/bypass-all.txt",
-  "source_sha256": "a05375705a7d5659ec0920d04beb3a53f1b92802bacfc77b6835a7255e8c8ac8",
+  "source_sha256": "1d658f25ffbd8461474d6f4df72c9193286ad81608d6db9974ab08b648fc9f3c",
   "counts": {
-    "source_nodes": 376,
-    "russian_label_candidates": 58,
-    "unsupported_or_invalid": 27,
-    "duplicate": 83,
+    "source_nodes": 311,
+    "russian_label_candidates": 53,
+    "unsupported_or_invalid": 23,
+    "duplicate": 62,
     "nonpublic_or_unresolved_endpoint": 0,
-    "cached_foreign_exits": 95
+    "cached_foreign_exits": 118
   },
-  "eligible": 266,
+  "eligible": 226,
   "selected": 24,
   "xray_validated": true,
   "actual_egress_checked": true,
   "service_acl": false,
   "country_data": {
     "url": "https://raw.githubusercontent.com/KaringX/karing-ruleset/sing/geo/geoip/ru.json",
-    "sha256": "417956306d9d7f6e208be76109095c19b6c90dce892a265ceee0833191da87f0",
+    "sha256": "bd6603c50cc7747f3eae6f50cb176dac3cc7b0a3bc4d25b539abbfb5c4e37142",
     "use": "server exclusion; client routing uses INCY geoip:ru"
   },
   "excluded_country": "RU",
   "exclusion_basis": "mandatory actual HTTPS egress IP against RU CIDRs; public Russian entry IPs and RU labels permitted",
   "selected_protocols": {
-    "shadowsocks": 3,
+    "shadowsocks": 4,
     "vless": 15,
-    "vmess": 3,
+    "vmess": 2,
     "trojan": 3
   },
   "routing_policy": "local direct; RU direct; everything else proxy",
   "ru_reachability_required": false,
   "pool_selection": "stable network-prefix/host/transport diversity; recent foreign exit evidence; client latency selection",
-  "foreign_exit_candidates": 201,
+  "foreign_exit_candidates": 167,
   "geosite_sources": [
     {
       "category": "category-ru",
       "url": "https://raw.githubusercontent.com/KaringX/karing-ruleset/sing/geo/geosite/category-ru.json",
-      "sha256": "0ae673ce6db0b87719673342d905bc87631412913a658c111ae45e0c406044d7",
+      "sha256": "83398fc8509f05f9d55266d50a4261b5c6f911505e1baecc0c7a24278266eb97",
       "entries": 1105
     }
   ],
   "client_geoip": "geoip:ru from INCY installed geoip.dat; updated by INCY, not this JSON",
-  "config_utf16_bytes": 70840,
-  "config_utf8_bytes": 35420
+  "config_utf16_bytes": 70718,
+  "config_utf8_bytes": 35359
 }
