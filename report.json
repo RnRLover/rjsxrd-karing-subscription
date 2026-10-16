@@ -1,17 +1,17 @@
 {
-  "generated_at_utc": "2026-10-16T00:43:51Z",
+  "generated_at_utc": "2026-10-16T05:12:07Z",
   "pool": "whitelist",
   "source": "https://raw.githubusercontent.com/whoahaow/rjsxrd/main/githubmirror/bypass/bypass-all.txt",
-  "source_sha256": "dc9a19adf6933295743e68e3d2bef0f3d3980b10bea313f6c00bb9555b645ffb",
+  "source_sha256": "13827aa7feec37ced04e3fc6830543ac2c24e2782b98a3b608c908e5043197f1",
   "counts": {
-    "source_nodes": 1037,
-    "unsupported_or_invalid": 318,
-    "russian_label_candidates": 108,
-    "duplicate": 132,
+    "source_nodes": 1014,
+    "unsupported_or_invalid": 228,
+    "russian_label_candidates": 84,
+    "duplicate": 133,
     "nonpublic_or_unresolved_endpoint": 0,
-    "cached_foreign_exits": 333
+    "cached_foreign_exits": 346
   },
-  "eligible": 587,
+  "eligible": 653,
   "selected": 24,
   "xray_validated": true,
   "actual_egress_checked": true,
@@ -26,13 +26,13 @@
   "selected_protocols": {
     "vless": 13,
     "trojan": 5,
-    "vmess": 3,
-    "shadowsocks": 3
+    "vmess": 4,
+    "shadowsocks": 2
   },
   "routing_policy": "local direct; RU direct; everything else proxy",
   "ru_reachability_required": false,
   "pool_selection": "stable network-prefix/host/transport diversity; recent foreign exit evidence; client latency selection",
-  "foreign_exit_candidates": 462,
+  "foreign_exit_candidates": 497,
   "geosite_sources": [
     {
       "category": "category-ru",
@@ -42,6 +42,6 @@
     }
   ],
   "client_geoip": "geoip:ru from INCY installed geoip.dat; updated by INCY, not this JSON",
-  "config_utf16_bytes": 69362,
-  "config_utf8_bytes": 34681
+  "config_utf16_bytes": 69842,
+  "config_utf8_bytes": 34921
 }
