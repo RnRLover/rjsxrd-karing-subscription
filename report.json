@@ -1,17 +1,17 @@
 {
-  "generated_at_utc": "2026-10-17T15:55:45Z",
+  "generated_at_utc": "2026-10-17T18:26:19Z",
   "pool": "whitelist",
   "source": "https://raw.githubusercontent.com/whoahaow/rjsxrd/main/githubmirror/bypass/bypass-all.txt",
-  "source_sha256": "ed2fbadfd66c53130225da56df89dceb6881a76b4a26692a38596882101c5b32",
+  "source_sha256": "78096fd9e85ae917ea58a7a3c867d5013bb4fd581fde4ac0ddeb0b8589536859",
   "counts": {
-    "source_nodes": 1473,
-    "unsupported_or_invalid": 466,
-    "russian_label_candidates": 112,
-    "duplicate": 197,
+    "source_nodes": 1072,
+    "russian_label_candidates": 90,
+    "unsupported_or_invalid": 357,
+    "duplicate": 137,
     "nonpublic_or_unresolved_endpoint": 0,
-    "cached_foreign_exits": 422
+    "cached_foreign_exits": 399
   },
-  "eligible": 810,
+  "eligible": 578,
   "selected": 24,
   "xray_validated": true,
   "actual_egress_checked": true,
@@ -24,24 +24,24 @@
   "excluded_country": "RU",
   "exclusion_basis": "mandatory actual HTTPS egress IP against RU CIDRs; public Russian entry IPs and RU labels permitted",
   "selected_protocols": {
-    "vless": 15,
+    "vless": 16,
     "vmess": 3,
-    "trojan": 4,
-    "shadowsocks": 2
+    "trojan": 2,
+    "shadowsocks": 3
   },
   "routing_policy": "local direct; RU direct; everything else proxy",
   "ru_reachability_required": false,
   "pool_selection": "stable network-prefix/host/transport diversity; recent foreign exit evidence; client latency selection",
-  "foreign_exit_candidates": 639,
+  "foreign_exit_candidates": 463,
   "geosite_sources": [
     {
       "category": "category-ru",
       "url": "https://raw.githubusercontent.com/KaringX/karing-ruleset/sing/geo/geosite/category-ru.json",
-      "sha256": "feb404aa12154c42b79f5d1475f42845e66d45e416cc18d4ac12eccc681459f0",
+      "sha256": "8fc16bf3b97cb7486f2c2c42e7b4b1ecfa1607aede209b0d15efa8c47a1e39e8",
       "entries": 1120
     }
   ],
   "client_geoip": "geoip:ru from INCY installed geoip.dat; updated by INCY, not this JSON",
-  "config_utf16_bytes": 71728,
-  "config_utf8_bytes": 35864
+  "config_utf16_bytes": 71484,
+  "config_utf8_bytes": 35742
 }
