@@ -1,17 +1,17 @@
 {
-  "generated_at_utc": "2026-10-24T07:15:50Z",
+  "generated_at_utc": "2026-10-24T12:06:51Z",
   "pool": "whitelist",
   "source": "https://raw.githubusercontent.com/whoahaow/rjsxrd/main/githubmirror/bypass/bypass-all.txt",
-  "source_sha256": "55381d49154ad9f9b2ddeb5ebde870ef91fbb589bab4d6421c528b485d7e3f94",
+  "source_sha256": "b2942f134cb4126de99f293a3c19ea4e41f18089c58b407d73ace76a80d08452",
   "counts": {
-    "source_nodes": 2027,
-    "russian_label_candidates": 84,
-    "duplicate": 347,
-    "unsupported_or_invalid": 263,
+    "source_nodes": 1384,
+    "russian_label_candidates": 53,
+    "duplicate": 203,
+    "unsupported_or_invalid": 117,
     "nonpublic_or_unresolved_endpoint": 0,
-    "cached_foreign_exits": 605
+    "cached_foreign_exits": 589
   },
-  "eligible": 1417,
+  "eligible": 1064,
   "selected": 24,
   "xray_validated": true,
   "actual_egress_checked": true,
@@ -24,15 +24,15 @@
   "excluded_country": "RU",
   "exclusion_basis": "mandatory actual HTTPS egress IP against RU CIDRs; public Russian entry IPs and RU labels permitted",
   "selected_protocols": {
-    "vless": 12,
     "vmess": 3,
+    "vless": 12,
     "shadowsocks": 3,
     "trojan": 6
   },
   "routing_policy": "local direct; RU direct; everything else proxy",
   "ru_reachability_required": false,
   "pool_selection": "stable network-prefix/host/transport diversity; recent foreign exit evidence; client latency selection",
-  "foreign_exit_candidates": 963,
+  "foreign_exit_candidates": 658,
   "geosite_sources": [
     {
       "category": "category-ru",
@@ -42,6 +42,6 @@
     }
   ],
   "client_geoip": "geoip:ru from INCY installed geoip.dat; updated by INCY, not this JSON",
-  "config_utf16_bytes": 73518,
-  "config_utf8_bytes": 36759
+  "config_utf16_bytes": 73096,
+  "config_utf8_bytes": 36548
 }
