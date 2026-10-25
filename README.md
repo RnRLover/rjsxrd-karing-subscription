@@ -16,9 +16,9 @@ Routing is generated from `russia-routing.json`, adapted from the user-exported 
 - Everything else -> automatic proxy via default loopback outbound.
 - IPIfNonMatch; no final catch-all rule, so GeoIP resolution can run.
 - FakeDNS disabled; HTTP/TLS/QUIC sniffing enabled, routeOnly.
-- Direct DNS: Yandex UDP 77.88.8.8.
+- Direct DNS: Google UDP 8.8.8.8.
 - Proxy DNS: Cloudflare DoH https://cloudflare-dns.com/dns-query through balancer.
-- Entry names and Observatory startup DNS use Yandex directly to avoid a dependency cycle.
+- Entry names and Observatory startup DNS use Google UDP 8.8.8.8 directly to avoid a dependency cycle.
 
 Both GeoSite/GeoIP files are downloaded from the exact Loyalsoldier URLs in the profile on each build. Required categories are validated before publication. The raw category `ru` does not exist in GeoSite; `category-ru` is used. No OpenCCK or Karing rule lists are downloaded by the active builder.
 

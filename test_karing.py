@@ -21,7 +21,11 @@ class KaringTests(unittest.TestCase):
         self.assertEqual(c['outbounds'][0]['protocol'], 'loopback')
         self.assertFalse(any(r.get('network') == 'tcp,udp' and 'port' not in r for r in c['routing']['rules']))
         self.assertEqual(c['dns']['servers'][-1]['address'], profile['RemoteDNSDomain'])
-        self.assertEqual(c['dns']['servers'][1]['address'], '77.88.8.8')
+        self.assertEqual(profile['DomesticDNSType'], 'DoU')
+        self.assertEqual(profile['DomesticDNSIP'], '8.8.8.8')
+        self.assertEqual(profile['DomesticDns'], '8.8.8.8')
+        self.assertTrue(all(s['address'] == '8.8.8.8' and s['tag'] == 'dns-bootstrap'
+                            for s in c['dns']['servers'][:2]))
         self.assertEqual(c['routing']['rules'][-2]['domain'], ['geosite:category-ru'])
         self.assertEqual(len(json.loads(incy_subscription(configs).splitlines()[0])), 1)
         self.assertEqual(len(json.loads(happ_subscription(configs))), 1)
