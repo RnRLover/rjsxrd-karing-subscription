@@ -20,6 +20,7 @@ from pathlib import Path
 from rjsxrd_parser import parse_url
 from routing import domains, policy
 from pool_selection import node_key, select_pool, recent_exit
+from ip_reputation import load_feed, rank_nodes, reputation_report
 
 ROOT = Path(__file__).resolve().parent
 
@@ -305,6 +306,8 @@ def main():
         exit_cache[key] = {'exit_ip': node['exit_ip'], 'verified_at': now}
         if egress_allowed(node['exit_ip'], ranges):
             checked.append(node)
+    feed, reputation_source = load_feed(exit_cache, fetch, now)
+    checked = rank_nodes(checked, feed)
     cache_path.parent.mkdir(exist_ok=True)
     atomic_write(cache_path, json.dumps(exit_cache, sort_keys=True) + '\n')
     previous_path = ROOT / 'ru.json'
@@ -312,6 +315,8 @@ def main():
     if previous_path.exists():
         previous = [node_key({'outbound': ob}) for ob in json.loads(previous_path.read_bytes())['outbounds'] if ob['protocol'] in ('vless', 'vmess', 'trojan', 'shadowsocks')]
     selected = select_pool(checked, settings['max_nodes'], previous)
+    reputation = reputation_report(checked, selected, feed, reputation_source)
+    print(json.dumps({'ip_reputation': reputation}, ensure_ascii=False))
     config = build(selected, routing)
     config_text = serialized_config(config)
     if args.xray: xray_validate(args.xray, config)
@@ -319,7 +324,8 @@ def main():
     report["service_acl"] = False
     report["routing_policy"] = "local direct; RU direct; everything else proxy"
     report['ru_reachability_required'] = False
-    report['pool_selection'] = 'stable network-prefix/host/transport diversity; recent foreign exit evidence; client latency selection'
+    report['pool_selection'] = 'exit-IP reputation first; stable exit/network-prefix/host/transport diversity; client latency selection'
+    report['ip_reputation'] = reputation
     report['foreign_exit_candidates'] = len(checked)
     report["geosite_sources"] = geo_sources
     report["client_geoip"] = "geoip:ru from INCY installed geoip.dat; updated by INCY, not this JSON"

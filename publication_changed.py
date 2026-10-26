@@ -26,10 +26,20 @@ def canonical(name, data):
     return json.dumps(obj, sort_keys=True, ensure_ascii=False)
 
 
+def reputation_signature(data):
+    """Publish changed selected-exit evidence, without timestamp/feed churn."""
+    return json.loads(data).get('ip_reputation', {}).get('servers', [])
+
+
 def changed(root):
     for name in CLIENT_FILES:
         old = subprocess.run(['git', 'show', 'HEAD:' + name], cwd=root, capture_output=True)
         if old.returncode or canonical(name, old.stdout) != canonical(name, (root / name).read_bytes()):
+            return True
+    report = root / 'report.json'
+    if report.exists():
+        old = subprocess.run(['git', 'show', 'HEAD:report.json'], cwd=root, capture_output=True)
+        if old.returncode or reputation_signature(old.stdout) != reputation_signature(report.read_bytes()):
             return True
     return False
 

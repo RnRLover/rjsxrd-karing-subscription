@@ -1,9 +1,10 @@
-"""Stable pool selection; no latency or public probe measurements."""
+"""Reputation-first stable pool selection; latency selection stays in the client."""
 import hashlib
 import ipaddress
 import json
 import socket
 from collections import Counter
+from ip_reputation import reputation_priority
 
 
 def node_key(node):
@@ -28,7 +29,7 @@ def transport(node):
 
 
 def select_pool(nodes, limit, previous=(), network_lookup=endpoint_network):
-    """Prefer distinct networks, then distinct hosts, then distinct transports.
+    """Prefer reputation, then distinct exits/networks/hosts/transports.
 
     IP prefixes approximate network diversity, not hosting-provider/ASN identity.
     Previous membership breaks ties; the config hash makes source order irrelevant.
@@ -37,18 +38,20 @@ def select_pool(nodes, limit, previous=(), network_lookup=endpoint_network):
     networks = {host: network_lookup(host) for host in {n['host'] for n in unique.values()}}
     ranks = {key: index for index, key in enumerate(previous)}
     previous = set(ranks)
-    net_count, host_count, type_count = Counter(), Counter(), Counter()
+    exit_count, net_count, host_count, type_count = Counter(), Counter(), Counter(), Counter()
     result = []
     while unique and len(result) < limit:
         key, node = min(unique.items(), key=lambda item: (
+            reputation_priority(item[1]), exit_count[item[1].get('exit_ip', item[1]['host'])],
             net_count[networks[item[1]['host']]], host_count[item[1]['host']],
             type_count[transport(item[1])], item[0] not in previous, item[0]))
         result.append(node)
         del unique[key]
+        exit_count[node.get('exit_ip', node['host'])] += 1
         net_count[networks[node['host']]] += 1
         host_count[node['host']] += 1
         type_count[transport(node)] += 1
-    return sorted(result, key=lambda n: (ranks.get(node_key(n), len(ranks)), node_key(n)))
+    return sorted(result, key=lambda n: (reputation_priority(n), ranks.get(node_key(n), len(ranks)), node_key(n)))
 
 
 def recent_exit(node, cache, now, ranges, ttl=86400):
