@@ -144,9 +144,9 @@ class KaringTests(unittest.TestCase):
         lines = incy_subscription(config).splitlines()
         self.assertEqual(json.loads(lines[0]), config)
         self.assertEqual(lines[1], '://autorouting/onadd/' + PUBLIC + 'karing-routing.json')
-        self.assertEqual(lines[2], '#profile-update-interval: 0.5')
+        self.assertNotIn('profile-update-interval', '\n'.join(lines))
         # This checks our envelope, not INCY's undocumented mixed-JSON parser.
-        self.assertEqual(len(lines), 3)
+        self.assertEqual(len(lines), 2)
 
     def test_only_three_groups_no_legacy_ru_or_local_routes(self):
         profile = {'rules': [{'name': 'Ads', 'rule_set': ['geosite:category-ads'], 'outbound': 'block', 'switch': False},
