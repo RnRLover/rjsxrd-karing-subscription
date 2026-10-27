@@ -293,7 +293,7 @@ def incy_subscription(config):
     for item in configs:
         serialized_config(item)
     text = json.dumps(config, ensure_ascii=False, separators=(',', ':')) + '\n'
-    body = text + '://autorouting/onadd/' + PUBLIC + 'karing-routing.json\n' + '#profile-update-interval: 1\n'
+    body = text + '://autorouting/onadd/' + PUBLIC + 'karing-routing.json\n' + '#profile-update-interval: 0.5\n'
     if len(body.encode('utf-8')) > 2_000_000:
         raise ValueError('INCY subscription exceeds download size budget')
     return body

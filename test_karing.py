@@ -144,7 +144,7 @@ class KaringTests(unittest.TestCase):
         lines = incy_subscription(config).splitlines()
         self.assertEqual(json.loads(lines[0]), config)
         self.assertEqual(lines[1], '://autorouting/onadd/' + PUBLIC + 'karing-routing.json')
-        self.assertEqual(lines[2], '#profile-update-interval: 1')
+        self.assertEqual(lines[2], '#profile-update-interval: 0.5')
         # This checks our envelope, not INCY's undocumented mixed-JSON parser.
         self.assertEqual(len(lines), 3)
 
