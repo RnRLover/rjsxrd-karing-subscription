@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-10-27T11:54:28Z",
+  "generated_at_utc": "2026-10-27T12:00:39Z",
   "pool": "whitelist",
   "source": "https://raw.githubusercontent.com/whoahaow/rjsxrd/main/githubmirror/bypass/bypass-all.txt",
   "source_sha256": "a13188c9b94b9f98b11bc7dcc60bbb81f34cbfbfbe1b2428578a8c1e7fb5d709",
@@ -9,7 +9,7 @@
     "russian_label_candidates": 105,
     "duplicate": 71,
     "nonpublic_or_unresolved_endpoint": 0,
-    "cached_foreign_exits": 270
+    "cached_foreign_exits": 355
   },
   "eligible": 446,
   "selected": 24,
@@ -45,8 +45,8 @@
     "selection_priority": "not_listed, unknown, listed (fewest occurrences first); then diversity",
     "meaning": "No listing in this feed is not a positive whitelist or proof of Gemini access.",
     "candidates": {
-      "not_listed": 337,
-      "listed": 18
+      "listed": 18,
+      "not_listed": 337
     },
     "selected": {
       "not_listed": 24
