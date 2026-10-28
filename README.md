@@ -16,9 +16,9 @@ Routing is generated from `russia-routing.json`, adapted from the user-exported 
 - Everything else -> automatic proxy via default loopback outbound.
 - IPIfNonMatch; no final catch-all rule, so GeoIP resolution can run.
 - FakeDNS disabled; HTTP/TLS/QUIC sniffing enabled, routeOnly.
-- Direct DNS: Google UDP 8.8.8.8.
+- Direct DNS: Yandex UDP 77.88.8.8.
 - Proxy DNS: Cloudflare DoH https://cloudflare-dns.com/dns-query through balancer.
-- Entry names and Observatory startup DNS use Google UDP 8.8.8.8 directly to avoid a dependency cycle.
+- Entry names and Observatory startup DNS use Yandex UDP 77.88.8.8 directly to avoid a dependency cycle.
 
 Both GeoSite/GeoIP files are downloaded from the exact Loyalsoldier URLs in the profile on each build. Required categories are validated before publication. The raw category `ru` does not exist in GeoSite; `category-ru` is used. No OpenCCK or Karing rule lists are downloaded by the active builder.
 
@@ -28,7 +28,7 @@ Reputation uses the public [IPsum feed](https://github.com/stamparm/ipsum), whic
 
 The feed is refreshed daily and stored in the existing private Actions exit-evidence cache, outside subscription files. Its own publication timestamp must be at most 72 hours old. On refresh failure, usable cached evidence can be used within that limit and is labelled in the report; without usable evidence the build fails and keeps the published subscription. `report.json` (a snapshot from the latest publication) and the selection-step log include source publication/fetch timestamps and hash, candidate/selected counts, and each selected tag's exit IP, score, status, and occurrence count. A reputation-score/status change for a selected exit also publishes the updated report, even when the pool itself is unchanged. The score is a pool admission preference; burstObservatory still chooses latency/failover in the client.
 
-INCY gets pure full JSON with embedded routing, no autorouting import, and no subscription-owned DNS servers; Happ gets self-contained domain/IP rules with no geofile dependencies. INCY's URL is unchanged; use the new Worker URL for Happ to receive both the server and the visible routing profile. Update subscription and reconnect. Client import and device traffic still require a real device check.
+INCY gets full JSON plus the existing autorouting URL; Happ gets self-contained domain/IP rules with no geofile dependencies. INCY's URL is unchanged; use the new Worker URL for Happ to receive both the server and the visible routing profile. Update subscription and reconnect. Client import and device traffic still require a real device check.
 
 Verification: Python unit tests; Xray -test for full config and both client formats; local SOCKS UDP DNS and TCP payload test without FakeDNS. The local test replaces upstream resolvers with local DNS stubs, and does not prove public VPN availability.
 
@@ -37,9 +37,3 @@ Builder: `python karing.py --xray .runtime/xray` (compatibility entry point for 
 Transport authentication is an admission gate independent of reputation. TLS nodes must pass a direct TLS handshake with Python system CAs, chain/name/time validation using the configured serverName/SNI, and a real HTTPS request through Xray. The report records server name, leaf SHA-256, expiry, TLS version, and a warning when expiry is within 7 days. The additional Python probe uses a different TLS stack/trust store than Xray and can conservatively reject nodes that work in a client. REALITY passes only after real HTTPS traffic through its configured Xray outbound; an ordinary TLS probe is not used for REALITY. Shadowsocks without TLS records not_applicable and still needs successful HTTPS egress. Failed transport/authentication probes are excluded with failure categories in the build log and report.
 
 Successful transport evidence is cached for at most one hour and never past certificate expiry; older foreign-exit evidence alone cannot admit a node. The existing 24-hour country cache only avoids repeated checks of known RU exits. Renewed certificates and warning/status changes publish selected-node evidence without timestamp-only commits. Without enough verified nodes, a failed build preserves the prior published subscription. No provider subscription update interval is added; INCY client scheduling remains user-controlled.
-
-## INCY: client-managed DNS trial
-
-INCY subscriptions no longer add a separate Russia routing profile. Rules for RU domains, RU/private destination IPs, LAN and ads remain embedded, together with the single automatic pool. The INCY-only export removes the custom DNS block, DNS outbound and internal DNS tags; ordinary port-53 traffic goes directly to its original destination. Resolver choice is left to INCY/device settings, so this does not guarantee carrier DNS on every device. Disable/deselect the previously imported Russia profile on existing installations before reconnecting; removing the import command cannot delete an old profile.
-
-INCY uses `IPIfNonMatch`: unmatched domain names are resolved with the runtime resolver for GeoIP classification, while domain and IP rules stay embedded. The subscription still declares no DNS servers and does not import a separate routing profile. Actual resolver behavior on Android remains dependent on INCY/device settings. The local integration check supplies a local resolver only to its isolated fixture and verifies that a domain absent from domain rules resolves to a private IP and follows the direct route. The generated shared routing JSON, `ru-karing.json` reference and Happ export retain their existing DNS policy; INCY does not import that routing JSON. GitHub refresh scheduling and node verification are unchanged. Mobile connectivity still requires a device check.

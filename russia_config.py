@@ -70,33 +70,6 @@ def build(config, profile):
     return result
 
 
-def incy_client_dns(config):
-    """Keep routing/pool, but leave resolver selection to INCY and the device."""
-    result = copy.deepcopy(config)
-    result.pop('dns', None)
-    result.pop('fakedns', None)
-    result['outbounds'] = [o for o in result['outbounds'] if o.get('tag') != 'dns-out']
-    rules = []
-    for rule in result['routing']['rules']:
-        if rule.get('outboundTag') == 'dns-out':
-            # Forward ordinary DNS to its original destination; do not replace
-            # the client/network resolver with a subscription-owned resolver.
-            rules.append({**rule, 'outboundTag': 'direct'})
-            continue
-        item = copy.deepcopy(rule)
-        if 'inboundTag' in item:
-            item['inboundTag'] = [t for t in item['inboundTag']
-                                  if t not in ('dns-bootstrap', 'dns-proxy')]
-            if not item['inboundTag']:
-                continue
-        rules.append(item)
-    result['routing']['rules'] = rules
-    # Preserve domain-to-IP GeoIP classification using the resolver available
-    # at runtime, without declaring subscription-owned DNS servers.
-    result['routing']['domainStrategy'] = 'IPIfNonMatch'
-    return result
-
-
 def variant(config):
     from karing import automatic_config
     result = automatic_config(config, 'Основной')
@@ -134,9 +107,7 @@ def main(xray):
         os.environ['XRAY_LOCATION_ASSET'] = temp
         try:
             xray_validate(xray, config)
-            for v in variants:
-                xray_validate(xray, v)
-                xray_validate(xray, incy_client_dns(v))
+            for v in variants: xray_validate(xray, v)
         finally:
             if prior is None: os.environ.pop('XRAY_LOCATION_ASSET', None)
             else: os.environ['XRAY_LOCATION_ASSET'] = prior
@@ -153,9 +124,7 @@ def main(xray):
     outputs['karing-report.json'] = json.dumps({'profile_url': PUBLIC + 'russia-routing.json',
         'variants': [{'name': v['remarks'], 'servers': sum(o.get('tag','').startswith('pool-') or o.get('tag') == 'Основной' for o in v['outbounds'])} for v in variants],
         'fakedns': False, 'routing': 'INCY China adapted for Russia', 'domainStrategy': 'IPIfNonMatch',
-        'dns_policy': {'incy': 'client/device; no subscription resolvers; original DNS destination forwarded directly',
-                       'happ': {'direct': profile['DomesticDNSIP'], 'proxy': profile['RemoteDNSDomain']}},
-        'incy_autorouting': False, 'incy_domain_strategy': 'IPIfNonMatch',
+        'dns_policy': {'direct': profile['DomesticDNSIP'], 'proxy': profile['RemoteDNSDomain']},
         'xray_validated': True, 'generated_at_utc': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())}, ensure_ascii=False, indent=2)
     import hashlib
     for name, data in assets.items():
