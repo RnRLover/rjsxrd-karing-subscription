@@ -1,18 +1,18 @@
 {
-  "profile_url": "https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/russia-routing.json",
+  "profile_url": null,
   "variants": [
     {
       "name": "Основной",
       "servers": 24
     }
   ],
-  "fakedns": true,
-  "routing": "INCY China adapted for Russia",
+  "fakedns": false,
+  "routing": "embedded Russia rules; no separate profile import",
   "domainStrategy": "IPIfNonMatch",
-  "dns_policy": {
-    "direct": "77.88.8.8",
-    "proxy": "https://cloudflare-dns.com/dns-query"
-  },
+  "dns_policy": "client/device managed; no subscription DNS servers",
+  "route_order": "block-direct-proxy",
+  "autorouting": false,
+  "happ_url": "https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/ru-karing-happ.txt",
   "xray_validated": true,
-  "generated_at_utc": "2026-10-28T14:30:38Z"
+  "generated_at_utc": "2026-10-28T18:38:44Z"
 }
