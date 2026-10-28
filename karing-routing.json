@@ -9,7 +9,7 @@
   "DomesticDNSIP": "77.88.8.8",
   "RemoteDns": "https://cloudflare-dns.com/dns-query",
   "DomesticDns": "77.88.8.8",
-  "FakeDNS": false,
+  "FakeDNS": true,
   "DnsHosts": {
     "cloudflare-dns.com": "1.1.1.1"
   },
