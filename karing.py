@@ -283,17 +283,14 @@ def happ_subscription(config):
 
 
 def incy_subscription(config):
-    """Experimental transport: full JSON plus INCY body metadata.
-
-    INCY documents stripping special lines, but does not explicitly document
-    full JSON mixed with autorouting. Keep this separate until a real import
-    confirms both fullConfigJson and geodata activation on the target client.
-    """
+    """Pure full JSON with embedded routing and client-managed DNS."""
+    from russia_config import incy_client_dns
     configs = config if isinstance(config, list) else [config]
-    for item in configs:
+    prepared = [incy_client_dns(item) for item in configs]
+    for item in prepared:
         serialized_config(item)
-    text = json.dumps(config, ensure_ascii=False, separators=(',', ':')) + '\n'
-    body = text + '://autorouting/onadd/' + PUBLIC + 'karing-routing.json\n'
+    payload = prepared if isinstance(config, list) else prepared[0]
+    body = json.dumps(payload, ensure_ascii=False, separators=(',', ':')) + '\n'
     if len(body.encode('utf-8')) > 2_000_000:
         raise ValueError('INCY subscription exceeds download size budget')
     return body
