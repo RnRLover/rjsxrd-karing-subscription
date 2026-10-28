@@ -32,7 +32,7 @@
   "ProxyIp": [],
   "BlockIp": [],
   "DomainStrategy": "IPIfNonMatch",
-  "RouteOrder": "block-proxy-direct",
+  "RouteOrder": "block-direct-proxy",
   "UseChunkFiles": false,
   "bypassPrivateIPs": true,
   "bypassLocalDNS": false
