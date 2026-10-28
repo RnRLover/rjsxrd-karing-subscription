@@ -11,6 +11,7 @@ Happ's full-Xray JSON subscription must stay a pure JSON array for its server to
 
 Routing is generated from `russia-routing.json`, adapted from the user-exported built-in INCY China profile:
 
+- Policy priority: block -> direct -> proxy, driven by RouteOrder in both the client profile and embedded Xray rules. Internal DNS/loopback rules stay ahead of policy rules.
 - category-ads-all -> block.
 - category-ru, geoip:ru, private/LAN -> direct.
 - Everything else -> automatic proxy via default loopback outbound.

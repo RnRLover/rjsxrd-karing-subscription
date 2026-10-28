@@ -30,6 +30,25 @@ class KaringTests(unittest.TestCase):
         self.assertEqual(len(json.loads(incy_subscription(configs).splitlines()[0])), 1)
         self.assertEqual(len(json.loads(happ_subscription(configs))), 1)
 
+    def test_russia_route_order_applies_to_embedded_rules(self):
+        from pathlib import Path
+        from russia_config import build
+        profile = json.loads(Path(__file__).with_name('russia-routing.json').read_bytes())
+        self.assertEqual(profile['RouteOrder'], 'block-direct-proxy')
+        for prefix in ['Block', 'Direct', 'Proxy']:
+            profile[prefix + 'Sites'] = ['full:overlap.test']
+            profile[prefix + 'Ip'] = ['192.0.2.0/24']
+        base = {'inbounds': [{'tag': 'socks-in'}], 'outbounds': [], 'routing': {}}
+        rules = build(base, profile)['routing']['rules']
+        # Only policy rules follow RouteOrder; internal DNS/loopback rules stay first.
+        self.assertEqual(len(rules), 9)
+        self.assertEqual([r.get('outboundTag', r.get('balancerTag')) for r in rules[3:]],
+                         ['block', 'block', 'direct', 'direct', 'auto', 'auto'])
+        profile['RouteOrder'] = 'proxy-block-direct'
+        rules = build(base, profile)['routing']['rules']
+        self.assertEqual([r.get('outboundTag', r.get('balancerTag')) for r in rules[3:]],
+                         ['auto', 'auto', 'block', 'block', 'direct', 'direct'])
+
     def test_selection_retains_ads_and_direct_but_rejects_proxy_and_malware(self):
         specifications = [('Adblock', 'block', 'geosite:category-ads'),
             ('AdblockPlus', 'block', 'acl:BanProgramAD'),

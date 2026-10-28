@@ -61,7 +61,12 @@ def build(config, profile):
         {'type': 'field', 'inboundTag': ['default-auto', 'dns-proxy'], 'balancerTag': 'auto'},
         {'type': 'field', 'inboundTag': ['dns-bootstrap'], 'outboundTag': 'direct'},
         {'type': 'field', 'inboundTag': [i['tag'] for i in result['inbounds']], 'port': '53', 'network': 'tcp,udp', 'outboundTag': 'dns-out'}]
-    for prefix, target in [('Block', 'block'), ('Proxy', 'auto'), ('Direct', 'direct')]:
+    order = profile.get('RouteOrder', 'block-proxy-direct').split('-')
+    if len(order) != 3 or set(order) != {'block', 'direct', 'proxy'}:
+        raise ValueError('RouteOrder must contain block, direct and proxy exactly once')
+    groups = {'block': ('Block', 'block'), 'direct': ('Direct', 'direct'), 'proxy': ('Proxy', 'auto')}
+    for name in order:
+        prefix, target = groups[name]
         action = {'balancerTag': target} if target == 'auto' else {'outboundTag': target}
         for key, field in [('Sites', 'domain'), ('Ip', 'ip')]:
             if profile[prefix + key]:
