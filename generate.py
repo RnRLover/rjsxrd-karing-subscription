@@ -21,6 +21,7 @@ from rjsxrd_parser import parse_url
 from routing import domains, policy
 from pool_selection import node_key, select_pool, recent_exit
 from ip_reputation import load_feed, rank_nodes, reputation_report
+from certificate_checks import probe_transport, complete_transport, reusable_transport, transport_report
 
 ROOT = Path(__file__).resolve().parent
 
@@ -183,8 +184,10 @@ def atomic_write(path, content):
         temporary = Path(f.name)
     os.replace(temporary, path)
 
-def verify_exits(nodes, ranges, xray):
+def verify_exits(nodes, ranges, xray, failures=None):
     """Collect actual HTTPS egress IPs; country filtering is done by the caller."""
+    if not nodes: return []
+    failures = failures if failures is not None else Counter()
     held, ports = [], []
     for node in nodes:
         sock = socket.socket()
@@ -215,13 +218,20 @@ def verify_exits(nodes, ranges, xray):
             def check(pair):
                 node, port = pair
                 opener = urllib.request.build_opener(urllib.request.ProxyHandler({"https": f"http://127.0.0.1:{port}"}))
+                stage = 'transport'
                 try:
+                    evidence = probe_transport(node)
+                    stage = 'xray_https'
                     with opener.open("https://api.ipify.org?format=json", timeout=12) as response:
                         ip = json.loads(response.read(1000))["ip"]
-                    return {**node, 'exit_ip': str(ipaddress.ip_address(ip))}
-                except Exception: return None
+                    return {**node, 'exit_ip': str(ipaddress.ip_address(ip)),
+                            'transport_check': complete_transport(evidence)}
+                except Exception as error:
+                    return {'probe_failure': stage + ':' + type(error).__name__}
             with concurrent.futures.ThreadPoolExecutor(max_workers=12) as executor:
-                return [node for node in executor.map(check, zip(nodes, ports)) if node is not None]
+                results = list(executor.map(check, zip(nodes, ports)))
+                failures.update(n['probe_failure'] for n in results if 'probe_failure' in n)
+                return [n for n in results if 'probe_failure' not in n]
         finally:
             process.terminate()
             try: process.wait(timeout=5)
@@ -285,25 +295,27 @@ def main():
     checked, pending = [], []
     for node in eligible:
         cached = recent_exit(node, exit_cache, now, ranges, ttl)
-        if cached:
-            checked.append(cached)
+        if cached and reusable_transport(exit_cache[node_key(node)].get('transport_check'), now):
+            checked.append({**cached, 'transport_check': exit_cache[node_key(node)]['transport_check']})
         else:
             entry = exit_cache.get(node_key(node), {})
             # Known RU exits need no repeated probe; unknown exits retry hourly.
             fresh = 0 <= now - entry.get('verified_at', 0) < ttl
             failed_recently = 0 <= now - entry.get('failed_at', 0) < 3600
-            if not fresh and not failed_recently:
+            if cached or (not fresh and not failed_recently):
                 pending.append(node)
     counters['cached_foreign_exits'] = len(checked)
     # Country evidence only: no GitHub ping ranking or Check-Host TCP filter.
-    measured = verify_exits(pending, ranges, args.xray) if pending else []
+    transport_failures = Counter()
+    measured = verify_exits(pending, ranges, args.xray, transport_failures) if pending else []
+    print(json.dumps({'transport_failure_counts': dict(transport_failures)}))
     measured_keys = {node_key(node) for node in measured}
     for node in pending:
         if node_key(node) not in measured_keys:
             exit_cache[node_key(node)] = {'failed_at': now}
     for node in measured:
         key = node_key(node)
-        exit_cache[key] = {'exit_ip': node['exit_ip'], 'verified_at': now}
+        exit_cache[key] = {'exit_ip': node['exit_ip'], 'verified_at': now, 'transport_check': node['transport_check']}
         if egress_allowed(node['exit_ip'], ranges):
             checked.append(node)
     feed, reputation_source = load_feed(exit_cache, fetch, now)
@@ -326,6 +338,7 @@ def main():
     report['ru_reachability_required'] = False
     report['pool_selection'] = 'exit-IP reputation first; stable exit/network-prefix/host/transport diversity; client latency selection'
     report['ip_reputation'] = reputation
+    report['transport_checks'] = transport_report(selected, transport_failures)
     report['foreign_exit_candidates'] = len(checked)
     report["geosite_sources"] = geo_sources
     report["client_geoip"] = "geoip:ru from INCY installed geoip.dat; updated by INCY, not this JSON"

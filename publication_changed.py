@@ -1,5 +1,6 @@
 """Publish client-visible changes, not report timestamps or unused source nodes."""
 import json
+from certificate_checks import transport_signature
 from pathlib import Path
 import subprocess
 
@@ -39,7 +40,7 @@ def changed(root):
     report = root / 'report.json'
     if report.exists():
         old = subprocess.run(['git', 'show', 'HEAD:report.json'], cwd=root, capture_output=True)
-        if old.returncode or reputation_signature(old.stdout) != reputation_signature(report.read_bytes()):
+        if old.returncode or reputation_signature(old.stdout) != reputation_signature(report.read_bytes()) or transport_signature(old.stdout) != transport_signature(report.read_bytes()):
             return True
     return False
 
