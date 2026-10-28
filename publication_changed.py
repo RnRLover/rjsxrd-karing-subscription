@@ -16,7 +16,7 @@ def canonical(name, data):
     if name == 'ru-karing-incy.txt':
         lines = text.splitlines()
         return json.dumps(json.loads(lines[0]), sort_keys=True, ensure_ascii=False) + '\n' + '\n'.join(lines[1:])
-    if name == 'ru-karing-happ-routing-test.txt':
+    if name == 'ru-karing-happ-routing-test.txt' and text.startswith('happ://routing/onadd/'):
         command, body = text.split('\n', 1)
         if not command.startswith('happ://routing/onadd/'):
             raise ValueError('missing Happ routing command')

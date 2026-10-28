@@ -1,6 +1,5 @@
 """Translate the exported INCY region profile into our full Xray subscription."""
 import copy
-import base64
 import json
 import os
 from pathlib import Path
@@ -34,44 +33,19 @@ def geosite_domains(blob, category):
 def build(config, profile):
     result = copy.deepcopy(config)
     result.pop('fakedns', None)
-    fake_enabled = str(profile.get('FakeDNS', False)).lower() == 'true'
-    if fake_enabled:
-        result['fakedns'] = [{'ipPool': '198.18.0.0/15', 'poolSize': 4096}]
-        for outbound in result['outbounds']:
-            if outbound.get('tag') == 'direct' and outbound.get('protocol') == 'freedom':
-                # Resolve restored domains using real profile DNS, not the OS.
-                outbound.setdefault('settings', {})['domainStrategy'] = 'UseIPv4'
+    result.pop('dns', None)
     result['remarks'] = 'Russia'
-    # Default traffic returns to the balancer via loopback. A final catch-all
-    # rule would prevent IPIfNonMatch from resolving domains for GeoIP rules.
+    # Keep the default loopback so unmatched traffic reaches the auto pool.
     result['outbounds'].insert(0, {'tag': 'default-proxy', 'protocol': 'loopback',
         'settings': {'inboundTag': 'default-auto'}})
-    result['outbounds'].append({'tag': 'dns-out', 'protocol': 'dns'})
-    bootstrap = ['full:www.gstatic.com']
-    for ob in result['outbounds']:
-        settings = ob.get('settings', {})
-        for server in settings.get('vnext', []) + settings.get('servers', []):
-            import ipaddress
-            host = server.get('address', '')
-            try: ipaddress.ip_address(host)
-            except ValueError:
-                if host: bootstrap.append('full:' + host)
     for inbound in result['inbounds']:
-        inbound['sniffing'] = {'enabled': True,
-            'destOverride': (['fakedns'] if fake_enabled else []) + ['http', 'tls', 'quic'],
-            'routeOnly': not fake_enabled}
-    direct = profile['DomesticDNSIP']
-    result['dns'] = {'hosts': profile['DnsHosts'], 'queryStrategy': 'UseIPv4', 'servers': [
-        {'address': direct, 'domains': list(dict.fromkeys(bootstrap)), 'skipFallback': True, 'tag': 'dns-bootstrap'},
-        {'address': direct, 'domains': profile['DirectSites'], 'skipFallback': True, 'tag': 'dns-bootstrap'},
-        {'address': profile['RemoteDNSDomain'], 'tag': 'dns-proxy'}]}
-    if fake_enabled:
-        result['dns']['servers'].insert(0, {'address': 'fakedns', 'domains': ['regexp:.*']})
+        inbound['sniffing'] = {'enabled': True, 'destOverride': ['http', 'tls', 'quic'], 'routeOnly': True}
     result['routing']['domainStrategy'] = profile['DomainStrategy']
     rules = [
-        {'type': 'field', 'inboundTag': ['default-auto', 'dns-proxy'], 'balancerTag': 'auto'},
-        {'type': 'field', 'inboundTag': ['dns-bootstrap'], 'outboundTag': 'direct'},
-        {'type': 'field', 'inboundTag': [i['tag'] for i in result['inbounds']], 'port': '53', 'network': 'tcp,udp', 'outboundTag': 'dns-out'}]
+        {'type': 'field', 'inboundTag': ['default-auto'], 'balancerTag': 'auto'},
+        # Preserve the resolver destination selected by the client/device.
+        {'type': 'field', 'inboundTag': [i['tag'] for i in result['inbounds']],
+         'port': '53', 'network': 'tcp,udp', 'outboundTag': 'direct'}]
     order = profile.get('RouteOrder', 'block-proxy-direct').split('-')
     if len(order) != 3 or set(order) != {'block', 'direct', 'proxy'}:
         raise ValueError('RouteOrder must contain block, direct and proxy exactly once')
@@ -95,13 +69,9 @@ def variant(config):
 
 
 def happ_routing_test_subscription(configs, profile):
-    """Experimental Happ body: native routing command followed by full Xray JSON."""
+    """Compatibility filename now serves the same pure JSON without imports."""
     from karing import happ_subscription
-    routing_profile = copy.deepcopy(profile)
-    routing_profile['Name'] = 'Россия (тест Happ)'
-    encoded = base64.b64encode(json.dumps(routing_profile, ensure_ascii=False,
-        separators=(',', ':')).encode('utf-8')).decode('ascii')
-    return 'happ://routing/onadd/' + encoded + '\n' + happ_subscription(configs)
+    return happ_subscription(configs)
 
 
 def main(xray):
@@ -137,10 +107,12 @@ def main(xray):
                'ru-karing-happ.txt': happ_subscription(happ),
                'ru-karing-happ-routing-test.txt': happ_routing_test_subscription(happ, profile),
                'karing-routing.json': json.dumps(profile, ensure_ascii=False, indent=2)}
-    outputs['karing-report.json'] = json.dumps({'profile_url': PUBLIC + 'russia-routing.json',
+    outputs['karing-report.json'] = json.dumps({'profile_url': None,
         'variants': [{'name': v['remarks'], 'servers': sum(o.get('tag','').startswith('pool-') or o.get('tag') == 'Основной' for o in v['outbounds'])} for v in variants],
-        'fakedns': bool(config.get('fakedns')), 'routing': 'INCY China adapted for Russia', 'domainStrategy': 'IPIfNonMatch',
-        'dns_policy': {'direct': profile['DomesticDNSIP'], 'proxy': profile['RemoteDNSDomain']},
+        'fakedns': bool(config.get('fakedns')), 'routing': 'embedded Russia rules; no separate profile import', 'domainStrategy': 'IPIfNonMatch',
+        'dns_policy': 'client/device managed; no subscription DNS servers',
+        'route_order': profile['RouteOrder'], 'autorouting': False,
+        'happ_url': PUBLIC + 'ru-karing-happ.txt',
         'xray_validated': True, 'generated_at_utc': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())}, ensure_ascii=False, indent=2)
     import hashlib
     for name, data in assets.items():

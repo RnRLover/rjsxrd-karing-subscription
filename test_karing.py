@@ -16,29 +16,18 @@ class KaringTests(unittest.TestCase):
         configs = subscription_variants(base)
         self.assertEqual(len(configs), 1)
         c = configs[0]
-        self.assertEqual(c['fakedns'], [{'ipPool': '198.18.0.0/15', 'poolSize': 4096}])
-        self.assertEqual(c['dns']['servers'][0]['address'], 'fakedns')
-        self.assertTrue(all('fakedns' in i['sniffing']['destOverride'] and not i['sniffing']['routeOnly'] for i in c['inbounds']))
-        self.assertEqual(next(o for o in c['outbounds'] if o['tag'] == 'direct')['settings']['domainStrategy'], 'UseIPv4')
+        self.assertNotIn('dns', c)
+        self.assertNotIn('fakedns', c)
+        self.assertTrue(all(i['sniffing']['routeOnly'] and 'fakedns' not in i['sniffing']['destOverride'] for i in c['inbounds']))
         self.assertEqual(c['routing']['domainStrategy'], 'IPIfNonMatch')
         self.assertEqual(c['outbounds'][0]['protocol'], 'loopback')
-        self.assertFalse(any(r.get('network') == 'tcp,udp' and 'port' not in r for r in c['routing']['rules']))
-        self.assertEqual(c['dns']['servers'][-1]['address'], profile['RemoteDNSDomain'])
-        self.assertEqual(profile['DomesticDNSType'], 'DoU')
-        self.assertEqual(profile['DomesticDNSIP'], '77.88.8.8')
-        self.assertEqual(profile['DomesticDns'], '77.88.8.8')
-        self.assertTrue(all(s['address'] == '77.88.8.8' and s['tag'] == 'dns-bootstrap'
-                            for s in c['dns']['servers'][1:3]))
+        self.assertFalse(any(o.get('protocol') == 'dns' for o in c['outbounds']))
+        self.assertEqual(c['routing']['rules'][1]['outboundTag'], 'direct')
+        self.assertEqual(c['routing']['rules'][1]['port'], '53')
         self.assertEqual(c['routing']['rules'][-2]['domain'], ['geosite:category-ru'])
-        self.assertEqual(len(json.loads(incy_subscription(configs).splitlines()[0])), 1)
-        self.assertEqual(len(json.loads(happ_subscription(configs))), 1)
-
-        profile['FakeDNS'] = False
-        plain = build(base, profile)
-        self.assertNotIn('fakedns', plain)
-        self.assertFalse(any(s['address'] == 'fakedns' for s in plain['dns']['servers']))
-        self.assertTrue(all(i['sniffing']['routeOnly'] for i in plain['inbounds']))
-        self.assertEqual(plain['routing']['rules'], c['routing']['rules'])
+        self.assertEqual(json.loads(incy_subscription(configs)), configs)
+        self.assertEqual(json.loads(happ_subscription(configs)), configs)
+        self.assertFalse(any(key.startswith(('DomesticDNS', 'RemoteDNS')) or key in ('DomesticDns', 'RemoteDns', 'DnsHosts') for key in profile))
 
     def test_russia_route_order_applies_to_embedded_rules(self):
         from pathlib import Path
@@ -51,12 +40,12 @@ class KaringTests(unittest.TestCase):
         base = {'inbounds': [{'tag': 'socks-in'}], 'outbounds': [], 'routing': {}}
         rules = build(base, profile)['routing']['rules']
         # Only policy rules follow RouteOrder; internal DNS/loopback rules stay first.
-        self.assertEqual(len(rules), 9)
-        self.assertEqual([r.get('outboundTag', r.get('balancerTag')) for r in rules[3:]],
+        self.assertEqual(len(rules), 8)
+        self.assertEqual([r.get('outboundTag', r.get('balancerTag')) for r in rules[2:]],
                          ['block', 'block', 'direct', 'direct', 'auto', 'auto'])
         profile['RouteOrder'] = 'proxy-block-direct'
         rules = build(base, profile)['routing']['rules']
-        self.assertEqual([r.get('outboundTag', r.get('balancerTag')) for r in rules[3:]],
+        self.assertEqual([r.get('outboundTag', r.get('balancerTag')) for r in rules[2:]],
                          ['auto', 'auto', 'block', 'block', 'direct', 'direct'])
 
     def test_selection_retains_ads_and_direct_but_rejects_proxy_and_malware(self):
@@ -168,14 +157,15 @@ class KaringTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'not found'):
             geoip_cidrs(blob, 'missing')
 
-    def test_incy_transport_preserves_full_config_and_remote_profile(self):
-        config = {'inbounds': [], 'outbounds': [], 'routing': {'rules': [{'ip': ['geoip:ru'], 'outboundTag': 'direct'}, {'network': 'tcp,udp', 'balancerTag': 'auto'}], 'balancers': [{'tag': 'auto'}]}, 'burstObservatory': {'subjectSelector': ['pool-']}}
-        lines = incy_subscription(config).splitlines()
-        self.assertEqual(json.loads(lines[0]), config)
-        self.assertEqual(lines[1], '://autorouting/onadd/' + PUBLIC + 'karing-routing.json')
-        self.assertNotIn('profile-update-interval', '\n'.join(lines))
-        # This checks our envelope, not INCY's undocumented mixed-JSON parser.
-        self.assertEqual(len(lines), 2)
+    def test_client_transports_do_not_add_routing_profiles(self):
+        from russia_config import happ_routing_test_subscription
+        config = {'inbounds': [], 'outbounds': [], 'routing': {'rules': [], 'balancers': [{'tag': 'auto'}]}}
+        for body in [incy_subscription([config]), happ_subscription([config]),
+                     happ_routing_test_subscription([config], {'Name': 'Russia'})]:
+            self.assertEqual(json.loads(body), [config])
+            self.assertNotIn('://routing/', body)
+            self.assertNotIn('://autorouting/', body)
+            self.assertNotIn('profile-update-interval', body)
 
     def test_only_three_groups_no_legacy_ru_or_local_routes(self):
         profile = {'rules': [{'name': 'Ads', 'rule_set': ['geosite:category-ads'], 'outbound': 'block', 'switch': False},
