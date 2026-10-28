@@ -21,6 +21,18 @@ def node(security='tls', name='localhost', port=443, protocol='trojan'):
 
 
 class EvidenceTests(unittest.TestCase):
+    def test_malformed_vmess_cipher_is_rejected_without_crashing_admission(self):
+        import base64
+        from generate import parse_node
+        payload = {'add': '1.1.1.1', 'port': 443, 'id': '123e4567-e89b-12d3-a456-426614174000',
+                   'aid': 0, 'tls': 'tls', 'net': 'tcp', 'sni': 'example.com'}
+        for value in (None, [], 1, '', 'none', 'zero'):
+            uri = 'vmess://' + base64.b64encode(json.dumps({**payload, 'scy': value}).encode()).decode()
+            with self.subTest(value=value):
+                self.assertIsNone(parse_node(uri))
+        uri = 'vmess://' + base64.b64encode(json.dumps({**payload, 'scy': 'auto'}).encode()).decode()
+        self.assertIsNotNone(parse_node(uri))
+
     def test_reality_needs_xray_and_has_no_certificate_expiry_claim(self):
         evidence = probe_transport(node('reality'))
         self.assertFalse(reusable_transport(evidence, 100))

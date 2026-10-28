@@ -114,7 +114,7 @@ def parse_node(line):
         return None
     if line.startswith("vless://") and (cfg.encryption != "none" or cfg.flow not in ("", "xtls-rprx-vision")):
         return None
-    if line.startswith("vmess://") and (cfg.alter_id != 0 or cfg.security.lower() in ("none", "zero")):
+    if line.startswith("vmess://") and (cfg.alter_id != 0 or not isinstance(cfg.security, str) or not cfg.security or cfg.security.lower() in ("none", "zero")):
         return None
     if line.startswith("ss://") and cfg.method not in ("aes-128-gcm", "aes-256-gcm", "chacha20-ietf-poly1305"):
         return None
