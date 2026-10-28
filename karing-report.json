@@ -10,9 +10,14 @@
   "routing": "INCY China adapted for Russia",
   "domainStrategy": "IPIfNonMatch",
   "dns_policy": {
-    "direct": "8.8.8.8",
-    "proxy": "https://cloudflare-dns.com/dns-query"
+    "incy": "client/device; no subscription resolvers; original DNS destination forwarded directly",
+    "happ": {
+      "direct": "8.8.8.8",
+      "proxy": "https://cloudflare-dns.com/dns-query"
+    }
   },
+  "incy_autorouting": false,
+  "incy_domain_strategy": "AsIs",
   "xray_validated": true,
-  "generated_at_utc": "2026-10-28T07:35:31Z"
+  "generated_at_utc": "2026-10-28T12:31:56Z"
 }
