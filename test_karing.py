@@ -22,9 +22,9 @@ class KaringTests(unittest.TestCase):
         self.assertFalse(any(r.get('network') == 'tcp,udp' and 'port' not in r for r in c['routing']['rules']))
         self.assertEqual(c['dns']['servers'][-1]['address'], profile['RemoteDNSDomain'])
         self.assertEqual(profile['DomesticDNSType'], 'DoU')
-        self.assertEqual(profile['DomesticDNSIP'], '8.8.8.8')
-        self.assertEqual(profile['DomesticDns'], '8.8.8.8')
-        self.assertTrue(all(s['address'] == '8.8.8.8' and s['tag'] == 'dns-bootstrap'
+        self.assertEqual(profile['DomesticDNSIP'], '77.88.8.8')
+        self.assertEqual(profile['DomesticDns'], '77.88.8.8')
+        self.assertTrue(all(s['address'] == '77.88.8.8' and s['tag'] == 'dns-bootstrap'
                             for s in c['dns']['servers'][:2]))
         self.assertEqual(c['routing']['rules'][-2]['domain'], ['geosite:category-ru'])
         self.assertEqual(len(json.loads(incy_subscription(configs).splitlines()[0])), 1)
@@ -139,30 +139,14 @@ class KaringTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'not found'):
             geoip_cidrs(blob, 'missing')
 
-    def test_incy_pure_json_keeps_pool_and_routes_without_managed_dns(self):
-        from russia_config import incy_client_dns
-        from pathlib import Path
-        config = json.loads(Path(__file__).with_name('ru-karing.json').read_bytes())
-        before = json.dumps(config, sort_keys=True)
-        body = incy_subscription([config])
-        result = json.loads(body)[0]
-        self.assertNotIn('dns', result)
-        self.assertNotIn('fakedns', result)
-        self.assertNotIn('://autorouting/', body)
-        self.assertNotIn('profile-update-interval', body)
-        self.assertEqual(result['routing']['domainStrategy'], 'AsIs')
-        self.assertEqual(result['routing']['balancers'], config['routing']['balancers'])
-        self.assertEqual(result['burstObservatory'], config['burstObservatory'])
-        self.assertEqual(result['outbounds'], [o for o in config['outbounds'] if o['tag'] != 'dns-out'])
-        self.assertTrue(any(r.get('port') == '53' and r.get('outboundTag') == 'direct'
-                            for r in result['routing']['rules']))
-        for rule in config['routing']['rules']:
-            if 'domain' in rule or 'ip' in rule:
-                self.assertIn(rule, result['routing']['rules'])
-        self.assertFalse(any(t.startswith('dns-') for r in result['routing']['rules']
-                             for t in r.get('inboundTag', [])))
-        self.assertEqual(result, incy_client_dns(result))
-        self.assertEqual(json.dumps(config, sort_keys=True), before)
+    def test_incy_transport_preserves_full_config_and_remote_profile(self):
+        config = {'inbounds': [], 'outbounds': [], 'routing': {'rules': [{'ip': ['geoip:ru'], 'outboundTag': 'direct'}, {'network': 'tcp,udp', 'balancerTag': 'auto'}], 'balancers': [{'tag': 'auto'}]}, 'burstObservatory': {'subjectSelector': ['pool-']}}
+        lines = incy_subscription(config).splitlines()
+        self.assertEqual(json.loads(lines[0]), config)
+        self.assertEqual(lines[1], '://autorouting/onadd/' + PUBLIC + 'karing-routing.json')
+        self.assertNotIn('profile-update-interval', '\n'.join(lines))
+        # This checks our envelope, not INCY's undocumented mixed-JSON parser.
+        self.assertEqual(len(lines), 2)
 
     def test_only_three_groups_no_legacy_ru_or_local_routes(self):
         profile = {'rules': [{'name': 'Ads', 'rule_set': ['geosite:category-ads'], 'outbound': 'block', 'switch': False},

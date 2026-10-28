@@ -70,16 +70,6 @@ config = json.loads((ROOT / args.config).read_bytes())
 if isinstance(config, list):
     config = config[args.profile_index]
 fake_enabled = bool(config.get('fakedns'))
-client_dns = 'dns' not in config
-if client_dns:
-    assert args.config == 'ru-karing-incy.txt'
-    assert config['routing']['domainStrategy'] == 'AsIs'
-    assert not any(o.get('protocol') == 'dns' for o in config['outbounds'])
-    assert any(r.get('port') == '53' and r.get('outboundTag') == 'direct' for r in config['routing']['rules'])
-    # Use an unprivileged local port in place of 53 for this isolated probe.
-    for rule in config['routing']['rules']:
-        if rule.get('port') == '53':
-            rule['port'] = str(dns.getsockname()[1])
 # Isolate the DNS round trip from public proxy availability. Full production
 # balancers and routing were validated unchanged by karing.py before this test.
 config['log'] = {'loglevel': 'debug'}
@@ -92,7 +82,7 @@ for rule in config['routing']['rules']:
 for outbound in config['outbounds']:
     if outbound['tag'] == 'direct':
         outbound['settings'] = {'domainStrategy': 'UseIPv4'}
-for i, item in enumerate(config.get('dns', {}).get('servers', [])):
+for i, item in enumerate(config['dns']['servers']):
     address = item if isinstance(item, str) else item['address']
     if address == 'fakedns':
         continue
@@ -140,8 +130,7 @@ with tempfile.TemporaryDirectory() as temp:
         query = b'\x12\x34\x01\x00\x00\x01\x00\x00\x00\x00\x00\x00\x05music\x06yandex\x02ru\x00\x00\x01\x00\x01'
         with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as udp:
             udp.settimeout(5)
-            destination = ('127.0.0.1', dns.getsockname()[1]) if client_dns else ('1.1.1.1', 53)
-            udp.sendto(b'\x00\x00\x00\x01' + socket.inet_aton(destination[0]) + struct.pack('!H', destination[1]) + query, relay)
+            udp.sendto(b'\x00\x00\x00\x01' + socket.inet_aton('1.1.1.1') + b'\x00\x35' + query, relay)
             response = udp.recv(4096)
         fake_ip = socket.inet_ntoa(response[-4:])
         assert (ipaddress.ip_address(fake_ip) in ipaddress.ip_network('198.18.0.0/15')) if fake_enabled else fake_ip == '127.0.0.1', fake_ip
@@ -152,9 +141,9 @@ with tempfile.TemporaryDirectory() as temp:
             assert receive(tcp, 10)[:2] == b'\x05\x00'
             tcp.sendall(b'PING')
             assert receive(tcp, 4) == b'PONG'
-        assert real_queries, 'local DNS exchange was not exercised'
+        assert real_queries, 'internal real DNS fallback was not exercised'
         assert not remote_queries, 'Yandex Music DNS went to the general resolver instead of direct Google DNS'
-        print(json.dumps({'resolved_ip': fake_ip, 'fakedns': fake_enabled, 'tcp_payload_roundtrip': True, 'internal_real_dns_fallback': not client_dns, 'client_dns_destination_preserved': client_dns, 'direct_site_dns_policy': not client_dns}))
+        print(json.dumps({'resolved_ip': fake_ip, 'fakedns': fake_enabled, 'tcp_payload_roundtrip': True, 'internal_real_dns_fallback': True, 'direct_site_dns_policy': True}))
         control.close()
     except Exception:
         log.flush()
@@ -168,8 +157,3 @@ dns.close()
 remote_dns.close()
 echo.close()
 
-
-# Exercise the exact pure-JSON INCY export as well as the managed reference.
-if args.config == 'ru-karing.json':
-    subprocess.run([sys.executable, str(Path(__file__).resolve()), '--xray', str(Path(args.xray).resolve()),
-                    '--config', 'ru-karing-incy.txt', '--profile-index', '0'], check=True)
