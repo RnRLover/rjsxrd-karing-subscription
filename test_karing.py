@@ -16,7 +16,10 @@ class KaringTests(unittest.TestCase):
         configs = subscription_variants(base)
         self.assertEqual(len(configs), 1)
         c = configs[0]
-        self.assertNotIn('fakedns', c)
+        self.assertEqual(c['fakedns'], [{'ipPool': '198.18.0.0/15', 'poolSize': 4096}])
+        self.assertEqual(c['dns']['servers'][0]['address'], 'fakedns')
+        self.assertTrue(all('fakedns' in i['sniffing']['destOverride'] and not i['sniffing']['routeOnly'] for i in c['inbounds']))
+        self.assertEqual(next(o for o in c['outbounds'] if o['tag'] == 'direct')['settings']['domainStrategy'], 'UseIPv4')
         self.assertEqual(c['routing']['domainStrategy'], 'IPIfNonMatch')
         self.assertEqual(c['outbounds'][0]['protocol'], 'loopback')
         self.assertFalse(any(r.get('network') == 'tcp,udp' and 'port' not in r for r in c['routing']['rules']))
@@ -25,10 +28,17 @@ class KaringTests(unittest.TestCase):
         self.assertEqual(profile['DomesticDNSIP'], '77.88.8.8')
         self.assertEqual(profile['DomesticDns'], '77.88.8.8')
         self.assertTrue(all(s['address'] == '77.88.8.8' and s['tag'] == 'dns-bootstrap'
-                            for s in c['dns']['servers'][:2]))
+                            for s in c['dns']['servers'][1:3]))
         self.assertEqual(c['routing']['rules'][-2]['domain'], ['geosite:category-ru'])
         self.assertEqual(len(json.loads(incy_subscription(configs).splitlines()[0])), 1)
         self.assertEqual(len(json.loads(happ_subscription(configs))), 1)
+
+        profile['FakeDNS'] = False
+        plain = build(base, profile)
+        self.assertNotIn('fakedns', plain)
+        self.assertFalse(any(s['address'] == 'fakedns' for s in plain['dns']['servers']))
+        self.assertTrue(all(i['sniffing']['routeOnly'] for i in plain['inbounds']))
+        self.assertEqual(plain['routing']['rules'], c['routing']['rules'])
 
     def test_russia_route_order_applies_to_embedded_rules(self):
         from pathlib import Path

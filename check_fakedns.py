@@ -81,7 +81,10 @@ for rule in config['routing']['rules']:
         rule['outboundTag'] = 'block'
 for outbound in config['outbounds']:
     if outbound['tag'] == 'direct':
-        outbound['settings'] = {'domainStrategy': 'UseIPv4'}
+        if fake_enabled:
+            assert outbound.get('settings', {}).get('domainStrategy') == 'UseIPv4'
+        else:
+            outbound['settings'] = {'domainStrategy': 'UseIPv4'}
 for i, item in enumerate(config['dns']['servers']):
     address = item if isinstance(item, str) else item['address']
     if address == 'fakedns':

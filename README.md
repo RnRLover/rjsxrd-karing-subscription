@@ -16,7 +16,7 @@ Routing is generated from `russia-routing.json`, adapted from the user-exported 
 - category-ru, geoip:ru, private/LAN -> direct.
 - Everything else -> automatic proxy via default loopback outbound.
 - IPIfNonMatch; no final catch-all rule, so GeoIP resolution can run.
-- FakeDNS disabled; HTTP/TLS/QUIC sniffing enabled, routeOnly.
+- FakeDNS enabled (198.18.0.0/15, 4096 mappings); fake-IP destinations are restored to domains with sniffing routeOnly=false. Direct connections resolve real addresses through profile DNS.
 - Direct DNS: Yandex UDP 77.88.8.8.
 - Proxy DNS: Cloudflare DoH https://cloudflare-dns.com/dns-query through balancer.
 - Entry names and Observatory startup DNS use Yandex UDP 77.88.8.8 directly to avoid a dependency cycle.
@@ -31,7 +31,7 @@ The feed is refreshed daily and stored in the existing private Actions exit-evid
 
 INCY gets full JSON plus the existing autorouting URL; Happ gets self-contained domain/IP rules with no geofile dependencies. INCY's URL is unchanged; use the new Worker URL for Happ to receive both the server and the visible routing profile. Update subscription and reconnect. Client import and device traffic still require a real device check.
 
-Verification: Python unit tests; Xray -test for full config and both client formats; local SOCKS UDP DNS and TCP payload test without FakeDNS. The local test replaces upstream resolvers with local DNS stubs, and does not prove public VPN availability.
+Verification: Python unit tests; Xray -test for full config and both client formats; local SOCKS UDP FakeDNS and TCP payload test through restored domains. The local test replaces upstream resolvers with local DNS stubs, and does not prove public VPN availability.
 
 Builder: `python karing.py --xray .runtime/xray` (compatibility entry point for russia_config.py).
 

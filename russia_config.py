@@ -34,6 +34,13 @@ def geosite_domains(blob, category):
 def build(config, profile):
     result = copy.deepcopy(config)
     result.pop('fakedns', None)
+    fake_enabled = str(profile.get('FakeDNS', False)).lower() == 'true'
+    if fake_enabled:
+        result['fakedns'] = [{'ipPool': '198.18.0.0/15', 'poolSize': 4096}]
+        for outbound in result['outbounds']:
+            if outbound.get('tag') == 'direct' and outbound.get('protocol') == 'freedom':
+                # Resolve restored domains using real profile DNS, not the OS.
+                outbound.setdefault('settings', {})['domainStrategy'] = 'UseIPv4'
     result['remarks'] = 'Russia'
     # Default traffic returns to the balancer via loopback. A final catch-all
     # rule would prevent IPIfNonMatch from resolving domains for GeoIP rules.
@@ -50,12 +57,16 @@ def build(config, profile):
             except ValueError:
                 if host: bootstrap.append('full:' + host)
     for inbound in result['inbounds']:
-        inbound['sniffing'] = {'enabled': True, 'destOverride': ['http', 'tls', 'quic'], 'routeOnly': True}
+        inbound['sniffing'] = {'enabled': True,
+            'destOverride': (['fakedns'] if fake_enabled else []) + ['http', 'tls', 'quic'],
+            'routeOnly': not fake_enabled}
     direct = profile['DomesticDNSIP']
     result['dns'] = {'hosts': profile['DnsHosts'], 'queryStrategy': 'UseIPv4', 'servers': [
         {'address': direct, 'domains': list(dict.fromkeys(bootstrap)), 'skipFallback': True, 'tag': 'dns-bootstrap'},
         {'address': direct, 'domains': profile['DirectSites'], 'skipFallback': True, 'tag': 'dns-bootstrap'},
         {'address': profile['RemoteDNSDomain'], 'tag': 'dns-proxy'}]}
+    if fake_enabled:
+        result['dns']['servers'].insert(0, {'address': 'fakedns', 'domains': ['regexp:.*']})
     result['routing']['domainStrategy'] = profile['DomainStrategy']
     rules = [
         {'type': 'field', 'inboundTag': ['default-auto', 'dns-proxy'], 'balancerTag': 'auto'},
@@ -128,7 +139,7 @@ def main(xray):
                'karing-routing.json': json.dumps(profile, ensure_ascii=False, indent=2)}
     outputs['karing-report.json'] = json.dumps({'profile_url': PUBLIC + 'russia-routing.json',
         'variants': [{'name': v['remarks'], 'servers': sum(o.get('tag','').startswith('pool-') or o.get('tag') == 'Основной' for o in v['outbounds'])} for v in variants],
-        'fakedns': False, 'routing': 'INCY China adapted for Russia', 'domainStrategy': 'IPIfNonMatch',
+        'fakedns': bool(config.get('fakedns')), 'routing': 'INCY China adapted for Russia', 'domainStrategy': 'IPIfNonMatch',
         'dns_policy': {'direct': profile['DomesticDNSIP'], 'proxy': profile['RemoteDNSDomain']},
         'xray_validated': True, 'generated_at_utc': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())}, ensure_ascii=False, indent=2)
     import hashlib
