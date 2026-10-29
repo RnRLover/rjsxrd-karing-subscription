@@ -50,7 +50,10 @@ class PoolTests(unittest.TestCase):
         self.assertNotEqual(canonical('karing-routing.json', json.dumps(a).encode()), canonical('karing-routing.json', json.dumps(b).encode()))
 
     def test_size_trimming_keeps_identical_pools_and_dns_in_two_profiles(self):
-        original = json.loads((Path(__file__).parent / 'ru-karing.json').read_bytes())
+        from russia_config import build
+        root = Path(__file__).parent
+        original = build(json.loads((root / 'ru.json').read_bytes()),
+                         json.loads((root / 'russia-routing.json').read_bytes()))
         proxies = [o for o in original['outbounds'] if o.get('tag', '').startswith('pool-')]
         self.assertTrue(proxies)
         original['outbounds'] = [o for o in original['outbounds'] if o not in proxies]

@@ -101,6 +101,9 @@ for i, item in enumerate(config.get('dns', {}).get('servers', [])):
     server = dict(item) if isinstance(item, dict) else {}
     server.update({'address': '127.0.0.1', 'port': (dns if server.get('tag') == 'dns-bootstrap' else remote_dns).getsockname()[1]})
     config['dns']['servers'][i] = server
+if not client_dns:
+    # A local fixture stands in for the remote proxy only for DNS probe traffic.
+    config['routing']['rules'].insert(0, {'type': 'field', 'inboundTag': ['dns-proxy'], 'outboundTag': 'direct'})
 config['routing']['rules'].insert(3, {'type': 'field', 'domain': ['full:music.yandex.ru'], 'outboundTag': 'direct'})
 for inbound in config['inbounds']:
     with socket.socket() as held:
@@ -167,7 +170,17 @@ with tempfile.TemporaryDirectory() as temp:
             assert any(b'geoip-only' in query for query in real_queries), 'GeoIP domain lookup was not exercised'
         assert real_queries, 'local DNS exchange was not exercised'
         assert not remote_queries, 'Yandex Music DNS went to the general resolver instead of direct Google DNS'
-        print(json.dumps({'resolved_ip': fake_ip, 'fakedns': fake_enabled, 'tcp_payload_roundtrip': True, 'internal_real_dns_fallback': not client_dns, 'client_dns_destination_preserved': client_dns, 'domain_geoip_roundtrip': client_dns, 'direct_site_dns_policy': not client_dns}))
+        if not client_dns:
+            foreign_query = query[:12] + b'\x07foreign\x07example\x00\x00\x01\x00\x01'
+            direct_count = len(real_queries)
+            with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as udp:
+                udp.settimeout(5)
+                udp.sendto(b'\x00\x00\x00\x01' + socket.inet_aton('1.1.1.1') + b'\x00\x35' + foreign_query, relay)
+                foreign_response = udp.recv(4096)
+            assert socket.inet_ntoa(foreign_response[-4:]) == '127.0.0.1'
+            assert remote_queries, 'external DNS resolver was not exercised'
+            assert len(real_queries) == direct_count, 'external domain leaked to the system resolver'
+        print(json.dumps({'resolved_ip': fake_ip, 'fakedns': fake_enabled, 'tcp_payload_roundtrip': True, 'internal_real_dns_fallback': not client_dns, 'client_dns_destination_preserved': client_dns, 'domain_geoip_roundtrip': client_dns, 'direct_site_dns_policy': not client_dns, 'external_dns_split': not client_dns}))
         control.close()
     except Exception:
         log.flush()

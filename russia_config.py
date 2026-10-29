@@ -38,14 +38,39 @@ def build(config, profile):
     # Keep the default loopback so unmatched traffic reaches the auto pool.
     result['outbounds'].insert(0, {'tag': 'default-proxy', 'protocol': 'loopback',
         'settings': {'inboundTag': 'default-auto'}})
+    result['outbounds'].append({'tag': 'dns-out', 'protocol': 'dns'})
+    bootstrap = ['full:www.gstatic.com']
+    import ipaddress
+    for outbound in result['outbounds']:
+        settings = outbound.get('settings', {})
+        if outbound.get('tag') == 'direct' and outbound.get('protocol') == 'freedom':
+            outbound.setdefault('settings', {})['domainStrategy'] = 'UseIPv4'
+        for server in settings.get('vnext', []) + settings.get('servers', []):
+            host = server.get('address', '')
+            try:
+                ipaddress.ip_address(host)
+            except ValueError:
+                if host:
+                    bootstrap.append('full:' + host)
+                    outbound.setdefault('streamSettings', {}).setdefault('sockopt', {})['domainStrategy'] = 'UseIPv4'
+    result['dns'] = {
+        'hosts': {'cloudflare-dns.com': '1.1.1.1'},
+        'queryStrategy': 'UseIPv4', 'disableFallbackIfMatch': True,
+        'servers': [
+            {'address': profile['DomesticDNS'], 'domains': list(dict.fromkeys(bootstrap)),
+             'skipFallback': True, 'tag': 'dns-bootstrap'},
+            {'address': profile['DomesticDNS'], 'domains': profile['DirectSites'],
+             'skipFallback': True, 'tag': 'dns-bootstrap'},
+            {'address': profile['ExternalDNS'], 'tag': 'dns-proxy'}]}
     for inbound in result['inbounds']:
         inbound['sniffing'] = {'enabled': True, 'destOverride': ['http', 'tls', 'quic'], 'routeOnly': True}
     result['routing']['domainStrategy'] = profile['DomainStrategy']
     rules = [
-        {'type': 'field', 'inboundTag': ['default-auto'], 'balancerTag': 'auto'},
-        # Preserve the resolver destination selected by the client/device.
+        {'type': 'field', 'inboundTag': ['default-auto', 'dns-proxy'], 'balancerTag': 'auto'},
+        {'type': 'field', 'inboundTag': ['dns-bootstrap'], 'outboundTag': 'direct'},
+        # Split intercepted DNS between the system resolver and proxied DoH.
         {'type': 'field', 'inboundTag': [i['tag'] for i in result['inbounds']],
-         'port': '53', 'network': 'tcp,udp', 'outboundTag': 'direct'}]
+         'port': '53', 'network': 'tcp,udp', 'outboundTag': 'dns-out'}]
     order = profile.get('RouteOrder', 'block-proxy-direct').split('-')
     if len(order) != 3 or set(order) != {'block', 'direct', 'proxy'}:
         raise ValueError('RouteOrder must contain block, direct and proxy exactly once')
@@ -110,7 +135,8 @@ def main(xray):
     outputs['karing-report.json'] = json.dumps({'profile_url': None,
         'variants': [{'name': v['remarks'], 'servers': sum(o.get('tag','').startswith('pool-') or o.get('tag') == 'Основной' for o in v['outbounds'])} for v in variants],
         'fakedns': bool(config.get('fakedns')), 'routing': 'embedded Russia rules; no separate profile import', 'domainStrategy': 'IPIfNonMatch',
-        'dns_policy': 'client/device managed; no subscription DNS servers',
+        'dns_policy': {'domestic': profile['DomesticDNS'], 'external': profile['ExternalDNS'],
+                       'external_route': 'auto proxy', 'matched_domains_fallback': False},
         'route_order': profile['RouteOrder'], 'autorouting': False,
         'happ_url': PUBLIC + 'ru-karing-happ.txt',
         'xray_validated': True, 'generated_at_utc': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())}, ensure_ascii=False, indent=2)

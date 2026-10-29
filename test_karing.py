@@ -16,18 +16,25 @@ class KaringTests(unittest.TestCase):
         configs = subscription_variants(base)
         self.assertEqual(len(configs), 1)
         c = configs[0]
-        self.assertNotIn('dns', c)
+        self.assertEqual([item['address'] for item in c['dns']['servers']], ['localhost', 'localhost', 'https://cloudflare-dns.com/dns-query'])
+        self.assertTrue(c['dns']['disableFallbackIfMatch'])
+        self.assertTrue(all(item['skipFallback'] for item in c['dns']['servers'][:2]))
+        self.assertEqual(c['dns']['servers'][1]['domains'], profile['DirectSites'])
+        self.assertIn('full:www.gstatic.com', c['dns']['servers'][0]['domains'])
         self.assertNotIn('fakedns', c)
         self.assertTrue(all(i['sniffing']['routeOnly'] and 'fakedns' not in i['sniffing']['destOverride'] for i in c['inbounds']))
         self.assertEqual(c['routing']['domainStrategy'], 'IPIfNonMatch')
         self.assertEqual(c['outbounds'][0]['protocol'], 'loopback')
-        self.assertFalse(any(o.get('protocol') == 'dns' for o in c['outbounds']))
+        self.assertTrue(any(o.get('tag') == 'dns-out' and o.get('protocol') == 'dns' for o in c['outbounds']))
         self.assertEqual(c['routing']['rules'][1]['outboundTag'], 'direct')
-        self.assertEqual(c['routing']['rules'][1]['port'], '53')
+        self.assertEqual(c['routing']['rules'][2]['port'], '53')
         self.assertEqual(c['routing']['rules'][-2]['domain'], ['geosite:category-ru'])
         self.assertEqual(json.loads(incy_subscription(configs)), configs)
         self.assertEqual(json.loads(happ_subscription(configs)), configs)
-        self.assertFalse(any(key.startswith(('DomesticDNS', 'RemoteDNS')) or key in ('DomesticDns', 'RemoteDns', 'DnsHosts') for key in profile))
+        self.assertEqual(profile['DomesticDNS'], 'localhost')
+        self.assertIn('dns-proxy', c['routing']['rules'][0]['inboundTag'])
+        self.assertEqual(c['routing']['rules'][0]['balancerTag'], 'auto')
+        self.assertEqual(c['routing']['rules'][2]['outboundTag'], 'dns-out')
 
     def test_russia_route_order_applies_to_embedded_rules(self):
         from pathlib import Path
@@ -40,12 +47,12 @@ class KaringTests(unittest.TestCase):
         base = {'inbounds': [{'tag': 'socks-in'}], 'outbounds': [], 'routing': {}}
         rules = build(base, profile)['routing']['rules']
         # Only policy rules follow RouteOrder; internal DNS/loopback rules stay first.
-        self.assertEqual(len(rules), 8)
-        self.assertEqual([r.get('outboundTag', r.get('balancerTag')) for r in rules[2:]],
+        self.assertEqual(len(rules), 9)
+        self.assertEqual([r.get('outboundTag', r.get('balancerTag')) for r in rules[3:]],
                          ['block', 'block', 'direct', 'direct', 'auto', 'auto'])
         profile['RouteOrder'] = 'proxy-block-direct'
         rules = build(base, profile)['routing']['rules']
-        self.assertEqual([r.get('outboundTag', r.get('balancerTag')) for r in rules[2:]],
+        self.assertEqual([r.get('outboundTag', r.get('balancerTag')) for r in rules[3:]],
                          ['auto', 'auto', 'block', 'block', 'direct', 'direct'])
 
     def test_selection_retains_ads_and_direct_but_rejects_proxy_and_malware(self):
