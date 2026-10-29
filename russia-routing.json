@@ -1,7 +1,4 @@
 {
-  "Name": "Россия",
-  "GlobalProxy": true,
-  "FakeDNS": false,
   "Geoipurl": "https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geoip.dat",
   "Geositeurl": "https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geosite.dat",
   "DirectSites": [
@@ -20,9 +17,5 @@
   ],
   "ProxyIp": [],
   "BlockIp": [],
-  "DomainStrategy": "IPOnDemand",
-  "RouteOrder": "block-direct-proxy",
-  "UseChunkFiles": false,
-  "bypassPrivateIPs": true,
-  "bypassLocalDNS": false
+  "RouteOrder": "block-direct-proxy"
 }

@@ -42,14 +42,7 @@ class PoolTests(unittest.TestCase):
         changed = copy.deepcopy(n); changed['outbound']['settings']['servers'][0]['password'] = 'different'
         self.assertNotEqual(node_key(n), node_key(changed))
 
-    def test_only_routing_timestamp_is_ignored_for_publication(self):
-        a = {'LastUpdated': '1', 'RemoteDNSIP': '8.8.8.8'}
-        b = {**a, 'LastUpdated': '2'}
-        self.assertEqual(canonical('karing-routing.json', json.dumps(a).encode()), canonical('karing-routing.json', json.dumps(b).encode()))
-        b['RemoteDNSIP'] = '8.8.4.4'
-        self.assertNotEqual(canonical('karing-routing.json', json.dumps(a).encode()), canonical('karing-routing.json', json.dumps(b).encode()))
-
-    def test_size_trimming_keeps_identical_pools_and_dns_in_two_profiles(self):
+    def test_size_trimming_keeps_common_pool_and_client_dns(self):
         from russia_config import build
         root = Path(__file__).parent
         original = build(json.loads((root / 'ru.json').read_bytes()),

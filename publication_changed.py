@@ -5,27 +5,11 @@ from latency_checks import latency_signature
 from pathlib import Path
 import subprocess
 
-CLIENT_FILES = ('subscription.json', 'ru.json', 'ru-karing.json', 'ru-karing-incy.txt',
-                'ru-karing-happ.txt', 'ru-karing-happ-routing-test.txt',
-                'karing-geoip.dat', 'karing-geosite.dat')
+CLIENT_FILES = ('subscription.json', 'ru.json', 'ru-karing-incy.txt', 'ru-karing-happ.txt')
 
 
 def canonical(name, data):
-    if name.endswith('.dat'):
-        return data
-    text = data.decode('utf-8-sig')
-    if name == 'ru-karing-incy.txt':
-        lines = text.splitlines()
-        return json.dumps(json.loads(lines[0]), sort_keys=True, ensure_ascii=False) + '\n' + '\n'.join(lines[1:])
-    if name == 'ru-karing-happ-routing-test.txt' and text.startswith('happ://routing/onadd/'):
-        command, body = text.split('\n', 1)
-        if not command.startswith('happ://routing/onadd/'):
-            raise ValueError('missing Happ routing command')
-        return command + '\n' + json.dumps(json.loads(body), sort_keys=True, ensure_ascii=False)
-    obj = json.loads(text)
-    if name == 'karing-routing.json':
-        obj.pop('LastUpdated', None)
-    return json.dumps(obj, sort_keys=True, ensure_ascii=False)
+    return json.dumps(json.loads(data.decode('utf-8-sig')), sort_keys=True, ensure_ascii=False)
 
 
 def reputation_signature(data):

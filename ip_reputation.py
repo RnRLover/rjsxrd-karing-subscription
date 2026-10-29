@@ -78,16 +78,6 @@ def rate_ip(address, feed):
             'score': max(0, 100 - 20 * count), 'blacklist_count': count}
 
 
-def reputation_priority(node):
-    evidence = node.get('reputation', {})
-    status = evidence.get('status', 'unknown')
-    if status == 'not_listed':
-        return (0, 0)
-    if status == 'listed':
-        return (2, evidence['blacklist_count'])
-    return (1, 0)
-
-
 def rank_nodes(nodes, feed):
     return [{**node, 'reputation': rate_ip(node.get('exit_ip'), feed)} for node in nodes]
 

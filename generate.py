@@ -138,21 +138,6 @@ def parse_node(line):
     stream.pop("fingerprint", None)
     return {"host": cfg.host, "label": urllib.parse.unquote(cfg.remark), "outbound": outbound, "uri": line}
 
-def diverse_pool(nodes, limit):
-    """Round robin across protocols, retaining upstream order within each."""
-    groups = {}
-    for node in nodes:
-        groups.setdefault(node['outbound']['protocol'], []).append(node)
-    result, index = [], 0
-    while len(result) < limit:
-        batch = [group[index] for group in groups.values() if index < len(group)]
-        if not batch:
-            break
-        result.extend(batch[:limit - len(result)])
-        index += 1
-    return result
-
-
 def build(nodes, routing, minimum=2):
     if len(nodes) < minimum: raise ValueError(f"need at least {minimum} eligible exits")
     proxies = []
@@ -370,9 +355,8 @@ def main():
     report["config_utf16_bytes"] = len(config_text.encode("utf-16-le"))
     report["config_utf8_bytes"] = len(config_text.encode("utf-8"))
     # Files change only after all inputs and Xray validation succeeded.
-    config_name, servers_name, report_name = ('ru.json', 'servers.txt', 'report.json')
+    config_name, report_name = ('ru.json', 'report.json')
     atomic_write(args.output / config_name, config_text)
-    atomic_write(args.output / servers_name, "\n".join(n["uri"] for n in selected) + "\n")
     atomic_write(args.output / report_name, json.dumps(report, ensure_ascii=False, indent=2) + "\n")
     print(json.dumps({"counts": counters, "eligible": len(eligible), "selected": len(selected), "xray_validated": bool(args.xray)}))
 
