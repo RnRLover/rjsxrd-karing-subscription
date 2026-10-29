@@ -29,7 +29,7 @@ class KaringTests(unittest.TestCase):
         self.assertEqual(c['routing']['rules'][1]['outboundTag'], 'direct')
         self.assertEqual(c['routing']['rules'][2]['port'], '53')
         self.assertEqual(c['routing']['rules'][-2]['domain'], ['geosite:category-ru'])
-        self.assertEqual(json.loads(incy_subscription(configs)), configs)
+        self.assertEqual(json.loads(incy_subscription(configs).splitlines()[0]), configs)
         self.assertEqual(json.loads(happ_subscription(configs)), configs)
         self.assertEqual(profile['DomesticDNS'], '77.88.8.8')
         self.assertIn('dns-proxy', c['routing']['rules'][0]['inboundTag'])
@@ -164,15 +164,30 @@ class KaringTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'not found'):
             geoip_cidrs(blob, 'missing')
 
-    def test_client_transports_do_not_add_routing_profiles(self):
-        from russia_config import happ_routing_test_subscription
+    def test_incy_restores_profile_import_and_happ_stays_pure_json(self):
+        from pathlib import Path
+        from russia_config import happ_routing_test_subscription, client_routing_profile as export_profile
         config = {'inbounds': [], 'outbounds': [], 'routing': {'rules': [], 'balancers': [{'tag': 'auto'}]}}
-        for body in [incy_subscription([config]), happ_subscription([config]),
-                     happ_routing_test_subscription([config], {'Name': 'Russia'})]:
+        lines = incy_subscription([config]).splitlines()
+        self.assertEqual(json.loads(lines[0]), [config])
+        self.assertEqual(lines[1], '://autorouting/onadd/' + PUBLIC + 'karing-routing.json')
+        self.assertEqual(len(lines), 2)
+        self.assertNotIn('profile-update-interval', '\n'.join(lines))
+        for body in [happ_subscription([config]), happ_routing_test_subscription([config], {})]:
             self.assertEqual(json.loads(body), [config])
             self.assertNotIn('://routing/', body)
             self.assertNotIn('://autorouting/', body)
-            self.assertNotIn('profile-update-interval', body)
+        template = json.loads(Path(__file__).with_name('russia-routing.json').read_bytes())
+        before = json.dumps(template, sort_keys=True)
+        profile = export_profile(template)
+        self.assertEqual(profile['DomesticDNSIP'], '77.88.8.8')
+        self.assertEqual(profile['RemoteDNSDomain'], 'https://cloudflare-dns.com/dns-query')
+        self.assertEqual(profile['RouteOrder'], 'block-direct-proxy')
+        self.assertEqual(profile['DomainStrategy'], 'IPIfNonMatch')
+        self.assertFalse(profile['FakeDNS'])
+        self.assertNotIn('DomesticDNS', profile)
+        self.assertNotIn('ExternalDNS', profile)
+        self.assertEqual(json.dumps(template, sort_keys=True), before)
 
     def test_only_three_groups_no_legacy_ru_or_local_routes(self):
         profile = {'rules': [{'name': 'Ads', 'rule_set': ['geosite:category-ads'], 'outbound': 'block', 'switch': False},

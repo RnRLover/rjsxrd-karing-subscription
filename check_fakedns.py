@@ -66,7 +66,9 @@ def echo_worker():
 threading.Thread(target=dns_worker, args=(dns, real_queries), daemon=True).start()
 threading.Thread(target=dns_worker, args=(remote_dns, remote_queries), daemon=True).start()
 threading.Thread(target=echo_worker, daemon=True).start()
-config = json.loads((ROOT / args.config).read_bytes())
+text = (ROOT / args.config).read_text(encoding='utf-8')
+text = '\n'.join(line for line in text.splitlines() if not line.startswith('://autorouting/'))
+config = json.loads(text)
 if isinstance(config, list):
     config = config[args.profile_index]
 fake_enabled = bool(config.get('fakedns'))
@@ -195,7 +197,7 @@ remote_dns.close()
 echo.close()
 
 
-# Exercise the exact pure-JSON INCY export as well as the managed reference.
+# Exercise the exact INCY JSON payload as well as the managed reference.
 if args.config == 'ru-karing.json':
     subprocess.run([sys.executable, str(Path(__file__).resolve()), '--xray', str(Path(args.xray).resolve()),
                     '--config', 'ru-karing-incy.txt', '--profile-index', '0'], check=True)

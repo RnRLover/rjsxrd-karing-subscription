@@ -93,6 +93,19 @@ def variant(config):
     return build(result, json.loads((ROOT / 'russia-routing.json').read_bytes()))
 
 
+def client_routing_profile(profile):
+    """Export the native client schema from the build-time DNS template."""
+    result = copy.deepcopy(profile)
+    domestic = result.pop('DomesticDNS')
+    external = result.pop('ExternalDNS')
+    result.update({'DomesticDNSType': 'DoU', 'DomesticDNSDomain': '',
+        'DomesticDNSIP': domestic, 'DomesticDns': domestic,
+        'RemoteDNSType': 'DoH', 'RemoteDNSDomain': external,
+        'RemoteDNSIP': '1.1.1.1', 'RemoteDns': external,
+        'DnsHosts': {'cloudflare-dns.com': '1.1.1.1'}})
+    return result
+
+
 def happ_routing_test_subscription(configs, profile):
     """Compatibility filename now serves the same pure JSON without imports."""
     from karing import happ_subscription
@@ -131,13 +144,13 @@ def main(xray):
     outputs = {'ru-karing.json': serialized_config(config), 'ru-karing-incy.txt': incy_subscription(variants),
                'ru-karing-happ.txt': happ_subscription(happ),
                'ru-karing-happ-routing-test.txt': happ_routing_test_subscription(happ, profile),
-               'karing-routing.json': json.dumps(profile, ensure_ascii=False, indent=2)}
-    outputs['karing-report.json'] = json.dumps({'profile_url': None,
+               'karing-routing.json': json.dumps(client_routing_profile(profile), ensure_ascii=False, indent=2)}
+    outputs['karing-report.json'] = json.dumps({'profile_url': PUBLIC + 'karing-routing.json',
         'variants': [{'name': v['remarks'], 'servers': sum(o.get('tag','').startswith('pool-') or o.get('tag') == 'Основной' for o in v['outbounds'])} for v in variants],
-        'fakedns': bool(config.get('fakedns')), 'routing': 'embedded Russia rules; no separate profile import', 'domainStrategy': 'IPIfNonMatch',
+        'fakedns': bool(config.get('fakedns')), 'routing': 'embedded Russia rules; INCY autorouting profile import', 'domainStrategy': 'IPIfNonMatch',
         'dns_policy': {'domestic': profile['DomesticDNS'], 'external': profile['ExternalDNS'],
                        'external_route': 'auto proxy', 'matched_domains_fallback': False},
-        'route_order': profile['RouteOrder'], 'autorouting': False,
+        'route_order': profile['RouteOrder'], 'autorouting': {'incy': True, 'happ': False},
         'happ_url': PUBLIC + 'ru-karing-happ.txt',
         'xray_validated': True, 'generated_at_utc': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())}, ensure_ascii=False, indent=2)
     import hashlib
