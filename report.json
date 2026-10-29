@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-10-29T16:22:44Z",
+  "generated_at_utc": "2026-10-29T16:25:28Z",
   "pool": "whitelist",
   "source": "https://raw.githubusercontent.com/whoahaow/rjsxrd/main/githubmirror/bypass/bypass-all.txt",
   "source_sha256": "6c463ce5d901a6934eaad0a29e7843fe8ec935f9e69db398d719c7ca7074bbfc",
@@ -9,7 +9,7 @@
     "unsupported_or_invalid": 148,
     "duplicate": 72,
     "nonpublic_or_unresolved_endpoint": 0,
-    "cached_foreign_exits": 0
+    "cached_foreign_exits": 344
   },
   "eligible": 464,
   "selected": 24,
@@ -41,7 +41,7 @@
     "evidence_source": "cache",
     "unlisted_coverage": "IPv4 only",
     "score_formula": "max(0, 100 - 20 * IPsum blacklist occurrence count)",
-    "selection_priority": "not_listed, unknown, listed (fewest occurrences first); then diversity",
+    "selection_priority": "not_listed, unknown, listed (fewest occurrences first); then HTTP latency buckets and diversity",
     "meaning": "No listing in this feed is not a positive whitelist or proof of Gemini access.",
     "candidates": {
       "not_listed": 331,
@@ -225,228 +225,223 @@
     "policy": "TLS chain/name/expiry via system CA plus Xray HTTPS; REALITY via Xray; SS without TLS not applicable",
     "cache_seconds": 3600,
     "expiry_warning_days": 7,
-    "failure_counts": {
-      "xray_https:URLError": 38,
-      "transport:TimeoutError": 2,
-      "transport:SSLEOFError": 2,
-      "xray_https:TimeoutError": 1
-    },
+    "failure_counts": {},
     "servers": [
       {
         "tag": "pool-01",
-        "kind": "none",
-        "status": "not_applicable",
         "checked_at": 1793290814,
-        "next_check_at": 1793294414
+        "kind": "none",
+        "next_check_at": 1793294414,
+        "status": "not_applicable"
       },
       {
         "tag": "pool-02",
-        "kind": "none",
-        "status": "not_applicable",
         "checked_at": 1793290813,
-        "next_check_at": 1793294413
+        "kind": "none",
+        "next_check_at": 1793294413,
+        "status": "not_applicable"
       },
       {
         "tag": "pool-03",
-        "kind": "none",
-        "status": "not_applicable",
         "checked_at": 1793290814,
-        "next_check_at": 1793294414
+        "kind": "none",
+        "next_check_at": 1793294414,
+        "status": "not_applicable"
       },
       {
         "tag": "pool-04",
-        "kind": "reality",
-        "status": "passed",
         "checked_at": 1793290903,
-        "next_check_at": 1793294503
+        "kind": "reality",
+        "next_check_at": 1793294503,
+        "status": "passed"
       },
       {
         "tag": "pool-05",
-        "kind": "none",
-        "status": "not_applicable",
         "checked_at": 1793290812,
-        "next_check_at": 1793294412
+        "kind": "none",
+        "next_check_at": 1793294412,
+        "status": "not_applicable"
       },
       {
         "tag": "pool-06",
-        "kind": "tls",
-        "status": "passed",
-        "server_name": "resources.connectingpeoplewithgreatjobs.com",
-        "not_after": 1799371003,
-        "expires_soon": false,
-        "sha256": "3daac3853b2693c4c513321954170afc085da79e95d6c7ced914abb6b4481517",
-        "tls_version": "TLSv1.3",
-        "trust_store": "Python system CA",
         "checked_at": 1793290909,
-        "next_check_at": 1793294509
+        "expires_soon": false,
+        "kind": "tls",
+        "next_check_at": 1793294509,
+        "not_after": 1799371003,
+        "server_name": "resources.connectingpeoplewithgreatjobs.com",
+        "sha256": "3daac3853b2693c4c513321954170afc085da79e95d6c7ced914abb6b4481517",
+        "status": "passed",
+        "tls_version": "TLSv1.3",
+        "trust_store": "Python system CA"
       },
       {
         "tag": "pool-07",
-        "kind": "none",
-        "status": "not_applicable",
         "checked_at": 1793290809,
-        "next_check_at": 1793294409
+        "kind": "none",
+        "next_check_at": 1793294409,
+        "status": "not_applicable"
       },
       {
         "tag": "pool-08",
-        "kind": "tls",
-        "status": "passed",
-        "server_name": "www.findconnectwithemployersandbuildprofessionalnetwork.com",
-        "not_after": 1798715511,
-        "expires_soon": false,
-        "sha256": "dfab1ec157497c4065ea72ad17efd21cd41bd77807386d718efa743e0a41e9cf",
-        "tls_version": "TLSv1.3",
-        "trust_store": "Python system CA",
         "checked_at": 1793290823,
-        "next_check_at": 1793294423
+        "expires_soon": false,
+        "kind": "tls",
+        "next_check_at": 1793294423,
+        "not_after": 1798715511,
+        "server_name": "www.findconnectwithemployersandbuildprofessionalnetwork.com",
+        "sha256": "dfab1ec157497c4065ea72ad17efd21cd41bd77807386d718efa743e0a41e9cf",
+        "status": "passed",
+        "tls_version": "TLSv1.3",
+        "trust_store": "Python system CA"
       },
       {
         "tag": "pool-09",
-        "kind": "tls",
-        "status": "passed",
-        "server_name": "cdn.findconnectwithemployersandbuildprofessionalnetwork.com",
-        "not_after": 1798715511,
-        "expires_soon": false,
-        "sha256": "dfab1ec157497c4065ea72ad17efd21cd41bd77807386d718efa743e0a41e9cf",
-        "tls_version": "TLSv1.3",
-        "trust_store": "Python system CA",
         "checked_at": 1793290843,
-        "next_check_at": 1793294443
+        "expires_soon": false,
+        "kind": "tls",
+        "next_check_at": 1793294443,
+        "not_after": 1798715511,
+        "server_name": "cdn.findconnectwithemployersandbuildprofessionalnetwork.com",
+        "sha256": "dfab1ec157497c4065ea72ad17efd21cd41bd77807386d718efa743e0a41e9cf",
+        "status": "passed",
+        "tls_version": "TLSv1.3",
+        "trust_store": "Python system CA"
       },
       {
         "tag": "pool-10",
-        "kind": "none",
-        "status": "not_applicable",
         "checked_at": 1793290806,
-        "next_check_at": 1793294406
+        "kind": "none",
+        "next_check_at": 1793294406,
+        "status": "not_applicable"
       },
       {
         "tag": "pool-11",
-        "kind": "tls",
-        "status": "passed",
-        "server_name": "www.healthcarejobshubenhancemedicalprofessionalskillstoday.com",
-        "not_after": 1798888716,
-        "expires_soon": false,
-        "sha256": "ffc169e754614b63fe39a2f26723074c527d4653e7ef031e2fe32f2af66a55bb",
-        "tls_version": "TLSv1.3",
-        "trust_store": "Python system CA",
         "checked_at": 1793290822,
-        "next_check_at": 1793294422
+        "expires_soon": false,
+        "kind": "tls",
+        "next_check_at": 1793294422,
+        "not_after": 1798888716,
+        "server_name": "www.healthcarejobshubenhancemedicalprofessionalskillstoday.com",
+        "sha256": "ffc169e754614b63fe39a2f26723074c527d4653e7ef031e2fe32f2af66a55bb",
+        "status": "passed",
+        "tls_version": "TLSv1.3",
+        "trust_store": "Python system CA"
       },
       {
         "tag": "pool-12",
-        "kind": "reality",
-        "status": "passed",
         "checked_at": 1793290943,
-        "next_check_at": 1793294543
+        "kind": "reality",
+        "next_check_at": 1793294543,
+        "status": "passed"
       },
       {
         "tag": "pool-13",
-        "kind": "tls",
-        "status": "passed",
-        "server_name": "blog.explorecreativejobsandenhanceyourcareerportfolio.com",
-        "not_after": 1798715536,
-        "expires_soon": false,
-        "sha256": "a9434eb3765893f1d7915d446f7cdb12261fe87560f7f9bf699f732e07d8d11b",
-        "tls_version": "TLSv1.3",
-        "trust_store": "Python system CA",
         "checked_at": 1793290896,
-        "next_check_at": 1793294496
+        "expires_soon": false,
+        "kind": "tls",
+        "next_check_at": 1793294496,
+        "not_after": 1798715536,
+        "server_name": "blog.explorecreativejobsandenhanceyourcareerportfolio.com",
+        "sha256": "a9434eb3765893f1d7915d446f7cdb12261fe87560f7f9bf699f732e07d8d11b",
+        "status": "passed",
+        "tls_version": "TLSv1.3",
+        "trust_store": "Python system CA"
       },
       {
         "tag": "pool-14",
-        "kind": "reality",
-        "status": "passed",
         "checked_at": 1793290858,
-        "next_check_at": 1793294458
+        "kind": "reality",
+        "next_check_at": 1793294458,
+        "status": "passed"
       },
       {
         "tag": "pool-15",
-        "kind": "tls",
-        "status": "passed",
-        "server_name": "api.connectingpeoplewithgreatjobs.com",
-        "not_after": 1799371003,
-        "expires_soon": false,
-        "sha256": "3daac3853b2693c4c513321954170afc085da79e95d6c7ced914abb6b4481517",
-        "tls_version": "TLSv1.3",
-        "trust_store": "Python system CA",
         "checked_at": 1793290892,
-        "next_check_at": 1793294492
+        "expires_soon": false,
+        "kind": "tls",
+        "next_check_at": 1793294492,
+        "not_after": 1799371003,
+        "server_name": "api.connectingpeoplewithgreatjobs.com",
+        "sha256": "3daac3853b2693c4c513321954170afc085da79e95d6c7ced914abb6b4481517",
+        "status": "passed",
+        "tls_version": "TLSv1.3",
+        "trust_store": "Python system CA"
       },
       {
         "tag": "pool-16",
-        "kind": "none",
-        "status": "not_applicable",
         "checked_at": 1793290855,
-        "next_check_at": 1793294455
+        "kind": "none",
+        "next_check_at": 1793294455,
+        "status": "not_applicable"
       },
       {
         "tag": "pool-17",
-        "kind": "none",
-        "status": "not_applicable",
         "checked_at": 1793290811,
-        "next_check_at": 1793294411
+        "kind": "none",
+        "next_check_at": 1793294411,
+        "status": "not_applicable"
       },
       {
         "tag": "pool-18",
-        "kind": "reality",
-        "status": "passed",
         "checked_at": 1793290816,
-        "next_check_at": 1793294416
+        "kind": "reality",
+        "next_check_at": 1793294416,
+        "status": "passed"
       },
       {
         "tag": "pool-19",
-        "kind": "reality",
-        "status": "passed",
         "checked_at": 1793290816,
-        "next_check_at": 1793294416
+        "kind": "reality",
+        "next_check_at": 1793294416,
+        "status": "passed"
       },
       {
         "tag": "pool-20",
-        "kind": "none",
-        "status": "not_applicable",
         "checked_at": 1793290839,
-        "next_check_at": 1793294439
+        "kind": "none",
+        "next_check_at": 1793294439,
+        "status": "not_applicable"
       },
       {
         "tag": "pool-21",
-        "kind": "reality",
-        "status": "passed",
         "checked_at": 1793290894,
-        "next_check_at": 1793294494
+        "kind": "reality",
+        "next_check_at": 1793294494,
+        "status": "passed"
       },
       {
         "tag": "pool-22",
-        "kind": "tls",
-        "status": "passed",
-        "server_name": "us001.zestapp778.com",
-        "not_after": 1798257522,
-        "expires_soon": false,
-        "sha256": "aac4138d1e5b498f0d053c0c5774ae498ec0f3c8581707436276eb3c8c0e439d",
-        "tls_version": "TLSv1.3",
-        "trust_store": "Python system CA",
         "checked_at": 1793290833,
-        "next_check_at": 1793294433
+        "expires_soon": false,
+        "kind": "tls",
+        "next_check_at": 1793294433,
+        "not_after": 1798257522,
+        "server_name": "us001.zestapp778.com",
+        "sha256": "aac4138d1e5b498f0d053c0c5774ae498ec0f3c8581707436276eb3c8c0e439d",
+        "status": "passed",
+        "tls_version": "TLSv1.3",
+        "trust_store": "Python system CA"
       },
       {
         "tag": "pool-23",
-        "kind": "reality",
-        "status": "passed",
         "checked_at": 1793290872,
-        "next_check_at": 1793294472
+        "kind": "reality",
+        "next_check_at": 1793294472,
+        "status": "passed"
       },
       {
         "tag": "pool-24",
-        "kind": "tls",
-        "status": "passed",
-        "server_name": "learn.discoverfreshgraduatejobsstartyourprofessionaljourney.com",
-        "not_after": 1798715745,
-        "expires_soon": false,
-        "sha256": "e431393fd4a1a3725a9080232e6e4fd845fd4c76c2119fb75954726faf290e2b",
-        "tls_version": "TLSv1.3",
-        "trust_store": "Python system CA",
         "checked_at": 1793290897,
-        "next_check_at": 1793294497
+        "expires_soon": false,
+        "kind": "tls",
+        "next_check_at": 1793294497,
+        "not_after": 1798715745,
+        "server_name": "learn.discoverfreshgraduatejobsstartyourprofessionaljourney.com",
+        "sha256": "e431393fd4a1a3725a9080232e6e4fd845fd4c76c2119fb75954726faf290e2b",
+        "status": "passed",
+        "tls_version": "TLSv1.3",
+        "trust_store": "Python system CA"
       }
     ]
   },
@@ -466,385 +461,385 @@
       {
         "tag": "pool-01",
         "latency": {
-          "url": "https://www.gstatic.com/generate_204",
-          "method": "HEAD",
+          "attempts": 2,
           "checked_at": 1793290814,
+          "errors": {},
+          "failed": 0,
+          "median_ms": 68.7,
+          "method": "HEAD",
           "samples_ms": [
             53.2,
             84.1
           ],
-          "attempts": 2,
-          "failed": 0,
-          "median_ms": 68.7,
-          "errors": {}
+          "url": "https://www.gstatic.com/generate_204"
         }
       },
       {
         "tag": "pool-02",
         "latency": {
-          "url": "https://www.gstatic.com/generate_204",
-          "method": "HEAD",
+          "attempts": 2,
           "checked_at": 1793290813,
+          "errors": {},
+          "failed": 0,
+          "median_ms": 85.0,
+          "method": "HEAD",
           "samples_ms": [
             88.7,
             81.3
           ],
-          "attempts": 2,
-          "failed": 0,
-          "median_ms": 85.0,
-          "errors": {}
+          "url": "https://www.gstatic.com/generate_204"
         }
       },
       {
         "tag": "pool-03",
         "latency": {
-          "url": "https://www.gstatic.com/generate_204",
-          "method": "HEAD",
+          "attempts": 2,
           "checked_at": 1793290814,
+          "errors": {},
+          "failed": 0,
+          "median_ms": 88.7,
+          "method": "HEAD",
           "samples_ms": [
             87.1,
             90.3
           ],
-          "attempts": 2,
-          "failed": 0,
-          "median_ms": 88.7,
-          "errors": {}
+          "url": "https://www.gstatic.com/generate_204"
         }
       },
       {
         "tag": "pool-04",
         "latency": {
-          "url": "https://www.gstatic.com/generate_204",
-          "method": "HEAD",
+          "attempts": 2,
           "checked_at": 1793290903,
+          "errors": {},
+          "failed": 0,
+          "median_ms": 90.2,
+          "method": "HEAD",
           "samples_ms": [
             91.8,
             88.7
           ],
-          "attempts": 2,
-          "failed": 0,
-          "median_ms": 90.2,
-          "errors": {}
+          "url": "https://www.gstatic.com/generate_204"
         }
       },
       {
         "tag": "pool-05",
         "latency": {
-          "url": "https://www.gstatic.com/generate_204",
-          "method": "HEAD",
+          "attempts": 2,
           "checked_at": 1793290812,
+          "errors": {},
+          "failed": 0,
+          "median_ms": 96.0,
+          "method": "HEAD",
           "samples_ms": [
             87.8,
             104.3
           ],
-          "attempts": 2,
-          "failed": 0,
-          "median_ms": 96.0,
-          "errors": {}
+          "url": "https://www.gstatic.com/generate_204"
         }
       },
       {
         "tag": "pool-06",
         "latency": {
-          "url": "https://www.gstatic.com/generate_204",
-          "method": "HEAD",
+          "attempts": 2,
           "checked_at": 1793290909,
+          "errors": {},
+          "failed": 0,
+          "median_ms": 112.8,
+          "method": "HEAD",
           "samples_ms": [
             110.1,
             115.6
           ],
-          "attempts": 2,
-          "failed": 0,
-          "median_ms": 112.8,
-          "errors": {}
+          "url": "https://www.gstatic.com/generate_204"
         }
       },
       {
         "tag": "pool-07",
         "latency": {
-          "url": "https://www.gstatic.com/generate_204",
-          "method": "HEAD",
+          "attempts": 2,
           "checked_at": 1793290809,
+          "errors": {},
+          "failed": 0,
+          "median_ms": 123.0,
+          "method": "HEAD",
           "samples_ms": [
             109.0,
             137.1
           ],
-          "attempts": 2,
-          "failed": 0,
-          "median_ms": 123.0,
-          "errors": {}
+          "url": "https://www.gstatic.com/generate_204"
         }
       },
       {
         "tag": "pool-08",
         "latency": {
-          "url": "https://www.gstatic.com/generate_204",
-          "method": "HEAD",
+          "attempts": 2,
           "checked_at": 1793290824,
+          "errors": {},
+          "failed": 0,
+          "median_ms": 134.0,
+          "method": "HEAD",
           "samples_ms": [
             136.1,
             131.9
           ],
-          "attempts": 2,
-          "failed": 0,
-          "median_ms": 134.0,
-          "errors": {}
+          "url": "https://www.gstatic.com/generate_204"
         }
       },
       {
         "tag": "pool-09",
         "latency": {
-          "url": "https://www.gstatic.com/generate_204",
-          "method": "HEAD",
+          "attempts": 2,
           "checked_at": 1793290843,
+          "errors": {},
+          "failed": 0,
+          "median_ms": 134.6,
+          "method": "HEAD",
           "samples_ms": [
             135.0,
             134.2
           ],
-          "attempts": 2,
-          "failed": 0,
-          "median_ms": 134.6,
-          "errors": {}
+          "url": "https://www.gstatic.com/generate_204"
         }
       },
       {
         "tag": "pool-10",
         "latency": {
-          "url": "https://www.gstatic.com/generate_204",
-          "method": "HEAD",
+          "attempts": 2,
           "checked_at": 1793290807,
+          "errors": {},
+          "failed": 0,
+          "median_ms": 137.6,
+          "method": "HEAD",
           "samples_ms": [
             160.5,
             114.7
           ],
-          "attempts": 2,
-          "failed": 0,
-          "median_ms": 137.6,
-          "errors": {}
+          "url": "https://www.gstatic.com/generate_204"
         }
       },
       {
         "tag": "pool-11",
         "latency": {
-          "url": "https://www.gstatic.com/generate_204",
-          "method": "HEAD",
+          "attempts": 2,
           "checked_at": 1793290823,
+          "errors": {},
+          "failed": 0,
+          "median_ms": 143.8,
+          "method": "HEAD",
           "samples_ms": [
             148.6,
             138.9
           ],
-          "attempts": 2,
-          "failed": 0,
-          "median_ms": 143.8,
-          "errors": {}
+          "url": "https://www.gstatic.com/generate_204"
         }
       },
       {
         "tag": "pool-12",
         "latency": {
-          "url": "https://www.gstatic.com/generate_204",
-          "method": "HEAD",
+          "attempts": 2,
           "checked_at": 1793290943,
+          "errors": {},
+          "failed": 0,
+          "median_ms": 145.9,
+          "method": "HEAD",
           "samples_ms": [
             152.4,
             139.4
           ],
-          "attempts": 2,
-          "failed": 0,
-          "median_ms": 145.9,
-          "errors": {}
+          "url": "https://www.gstatic.com/generate_204"
         }
       },
       {
         "tag": "pool-13",
         "latency": {
-          "url": "https://www.gstatic.com/generate_204",
-          "method": "HEAD",
+          "attempts": 2,
           "checked_at": 1793290896,
+          "errors": {},
+          "failed": 0,
+          "median_ms": 147.0,
+          "method": "HEAD",
           "samples_ms": [
             127.1,
             166.9
           ],
-          "attempts": 2,
-          "failed": 0,
-          "median_ms": 147.0,
-          "errors": {}
+          "url": "https://www.gstatic.com/generate_204"
         }
       },
       {
         "tag": "pool-14",
         "latency": {
-          "url": "https://www.gstatic.com/generate_204",
-          "method": "HEAD",
+          "attempts": 2,
           "checked_at": 1793290859,
+          "errors": {},
+          "failed": 0,
+          "median_ms": 147.6,
+          "method": "HEAD",
           "samples_ms": [
             145.2,
             150.1
           ],
-          "attempts": 2,
-          "failed": 0,
-          "median_ms": 147.6,
-          "errors": {}
+          "url": "https://www.gstatic.com/generate_204"
         }
       },
       {
         "tag": "pool-15",
         "latency": {
-          "url": "https://www.gstatic.com/generate_204",
-          "method": "HEAD",
+          "attempts": 2,
           "checked_at": 1793290892,
+          "errors": {},
+          "failed": 0,
+          "median_ms": 153.0,
+          "method": "HEAD",
           "samples_ms": [
             171.8,
             134.2
           ],
-          "attempts": 2,
-          "failed": 0,
-          "median_ms": 153.0,
-          "errors": {}
+          "url": "https://www.gstatic.com/generate_204"
         }
       },
       {
         "tag": "pool-16",
         "latency": {
-          "url": "https://www.gstatic.com/generate_204",
-          "method": "HEAD",
+          "attempts": 2,
           "checked_at": 1793290855,
+          "errors": {},
+          "failed": 0,
+          "median_ms": 154.8,
+          "method": "HEAD",
           "samples_ms": [
             127.4,
             182.2
           ],
-          "attempts": 2,
-          "failed": 0,
-          "median_ms": 154.8,
-          "errors": {}
+          "url": "https://www.gstatic.com/generate_204"
         }
       },
       {
         "tag": "pool-17",
         "latency": {
-          "url": "https://www.gstatic.com/generate_204",
-          "method": "HEAD",
+          "attempts": 2,
           "checked_at": 1793290812,
+          "errors": {},
+          "failed": 0,
+          "median_ms": 154.9,
+          "method": "HEAD",
           "samples_ms": [
             149.6,
             160.2
           ],
-          "attempts": 2,
-          "failed": 0,
-          "median_ms": 154.9,
-          "errors": {}
+          "url": "https://www.gstatic.com/generate_204"
         }
       },
       {
         "tag": "pool-18",
         "latency": {
-          "url": "https://www.gstatic.com/generate_204",
-          "method": "HEAD",
+          "attempts": 2,
           "checked_at": 1793290816,
+          "errors": {},
+          "failed": 0,
+          "median_ms": 166.9,
+          "method": "HEAD",
           "samples_ms": [
             162.5,
             171.3
           ],
-          "attempts": 2,
-          "failed": 0,
-          "median_ms": 166.9,
-          "errors": {}
+          "url": "https://www.gstatic.com/generate_204"
         }
       },
       {
         "tag": "pool-19",
         "latency": {
-          "url": "https://www.gstatic.com/generate_204",
-          "method": "HEAD",
+          "attempts": 2,
           "checked_at": 1793290816,
+          "errors": {},
+          "failed": 0,
+          "median_ms": 171.2,
+          "method": "HEAD",
           "samples_ms": [
             141.6,
             200.8
           ],
-          "attempts": 2,
-          "failed": 0,
-          "median_ms": 171.2,
-          "errors": {}
+          "url": "https://www.gstatic.com/generate_204"
         }
       },
       {
         "tag": "pool-20",
         "latency": {
-          "url": "https://www.gstatic.com/generate_204",
-          "method": "HEAD",
+          "attempts": 2,
           "checked_at": 1793290840,
+          "errors": {},
+          "failed": 0,
+          "median_ms": 172.8,
+          "method": "HEAD",
           "samples_ms": [
             155.0,
             190.5
           ],
-          "attempts": 2,
-          "failed": 0,
-          "median_ms": 172.8,
-          "errors": {}
+          "url": "https://www.gstatic.com/generate_204"
         }
       },
       {
         "tag": "pool-21",
         "latency": {
-          "url": "https://www.gstatic.com/generate_204",
-          "method": "HEAD",
+          "attempts": 2,
           "checked_at": 1793290894,
+          "errors": {},
+          "failed": 0,
+          "median_ms": 173.1,
+          "method": "HEAD",
           "samples_ms": [
             160.7,
             185.4
           ],
-          "attempts": 2,
-          "failed": 0,
-          "median_ms": 173.1,
-          "errors": {}
+          "url": "https://www.gstatic.com/generate_204"
         }
       },
       {
         "tag": "pool-22",
         "latency": {
-          "url": "https://www.gstatic.com/generate_204",
-          "method": "HEAD",
+          "attempts": 2,
           "checked_at": 1793290833,
+          "errors": {},
+          "failed": 0,
+          "median_ms": 182.1,
+          "method": "HEAD",
           "samples_ms": [
             136.3,
             227.8
           ],
-          "attempts": 2,
-          "failed": 0,
-          "median_ms": 182.1,
-          "errors": {}
+          "url": "https://www.gstatic.com/generate_204"
         }
       },
       {
         "tag": "pool-23",
         "latency": {
-          "url": "https://www.gstatic.com/generate_204",
-          "method": "HEAD",
+          "attempts": 2,
           "checked_at": 1793290872,
+          "errors": {},
+          "failed": 0,
+          "median_ms": 188.1,
+          "method": "HEAD",
           "samples_ms": [
             197.1,
             179.2
           ],
-          "attempts": 2,
-          "failed": 0,
-          "median_ms": 188.1,
-          "errors": {}
+          "url": "https://www.gstatic.com/generate_204"
         }
       },
       {
         "tag": "pool-24",
         "latency": {
-          "url": "https://www.gstatic.com/generate_204",
-          "method": "HEAD",
+          "attempts": 2,
           "checked_at": 1793290897,
+          "errors": {},
+          "failed": 0,
+          "median_ms": 198.1,
+          "method": "HEAD",
           "samples_ms": [
             207.8,
             188.3
           ],
-          "attempts": 2,
-          "failed": 0,
-          "median_ms": 198.1,
-          "errors": {}
+          "url": "https://www.gstatic.com/generate_204"
         }
       }
     ]
