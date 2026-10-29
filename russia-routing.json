@@ -20,11 +20,9 @@
   ],
   "ProxyIp": [],
   "BlockIp": [],
-  "DomainStrategy": "IPIfNonMatch",
+  "DomainStrategy": "IPOnDemand",
   "RouteOrder": "block-direct-proxy",
   "UseChunkFiles": false,
   "bypassPrivateIPs": true,
-  "bypassLocalDNS": false,
-  "DomesticDNS": "77.88.8.8",
-  "ExternalDNS": "https://cloudflare-dns.com/dns-query"
+  "bypassLocalDNS": false
 }

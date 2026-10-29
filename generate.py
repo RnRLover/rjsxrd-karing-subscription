@@ -20,7 +20,6 @@ from pathlib import Path
 from rjsxrd_parser import parse_url
 from routing import domains, policy
 from pool_selection import node_key, select_pool, recent_exit
-from latency_checks import measure_latency, reusable_latency, latency_report
 from ip_reputation import load_feed, rank_nodes, reputation_report
 from certificate_checks import probe_transport, complete_transport, reusable_transport, transport_report
 
@@ -166,7 +165,7 @@ def build(nodes, routing, minimum=2):
         "inbounds": [{"tag": "socks-in", "listen": "127.0.0.1", "port": 10808, "protocol": "socks", "settings": {"udp": True}, "sniffing": {"enabled": True, "destOverride": ["http", "tls", "quic"], "routeOnly": True}}, {"tag": "http-in", "listen": "127.0.0.1", "port": 10809, "protocol": "http"}],
         "outbounds": [{"tag": "block", "protocol": "blackhole"}, *proxies, {"tag": "direct", "protocol": "freedom"}],
         "routing": copy.deepcopy(routing),
-        "burstObservatory": {"subjectSelector": ["pool-"], "pingConfig": {"destination": "https://www.gstatic.com/generate_204", "interval": "60s", "sampling": 2, "timeout": "5s"}},
+        "burstObservatory": {"subjectSelector": ["pool-"], "pingConfig": {"destination": "https://www.gstatic.com/generate_204", "interval": "3m", "sampling": 1, "timeout": "5s"}},
         "stats": {},
         "meta": {"serverDescription": "rjsxrd: RU/local direct; ads blocked; all other TCP/UDP via automatic proxy"}
     }
@@ -226,8 +225,7 @@ def verify_exits(nodes, ranges, xray, failures=None):
                     with opener.open("https://api.ipify.org?format=json", timeout=12) as response:
                         ip = json.loads(response.read(1000))["ip"]
                     return {**node, 'exit_ip': str(ipaddress.ip_address(ip)),
-                            'transport_check': complete_transport(evidence),
-                            'latency_check': measure_latency(opener)}
+                            'transport_check': complete_transport(evidence)}
                 except Exception as error:
                     return {'probe_failure': stage + ':' + type(error).__name__}
             with concurrent.futures.ThreadPoolExecutor(max_workers=12) as executor:
@@ -267,6 +265,9 @@ def main():
         categories[name] = domains(json.loads(data))
         geo_sources.append({"category": name, "url": url, "sha256": hashlib.sha256(data.encode()).hexdigest(), "entries": len(categories[name])})
     routing = policy(categories["category-ru"], cidrs)
+    # The shared clients use standard geodata; do not waste the pool budget
+    # on expanded domains that the published policy replaces with this tag.
+    routing["rules"][1]["domain"] = ["geosite:category-ru"]
     candidates, seen, counters = [], set(), Counter()
     for line in original.splitlines():
         line = line.strip()
@@ -297,10 +298,8 @@ def main():
     checked, pending = [], []
     for node in eligible:
         cached = recent_exit(node, exit_cache, now, ranges, ttl)
-        if (cached and reusable_transport(exit_cache[node_key(node)].get('transport_check'), now)
-                and reusable_latency(exit_cache[node_key(node)].get('latency_check'), now)):
-            checked.append({**cached, 'transport_check': exit_cache[node_key(node)]['transport_check'],
-                            'latency_check': exit_cache[node_key(node)]['latency_check']})
+        if cached and reusable_transport(exit_cache[node_key(node)].get('transport_check'), now):
+            checked.append({**cached, 'transport_check': exit_cache[node_key(node)]['transport_check']})
         else:
             entry = exit_cache.get(node_key(node), {})
             # Known RU exits need no repeated probe; unknown exits retry hourly.
@@ -309,7 +308,7 @@ def main():
             if cached or (not fresh and not failed_recently):
                 pending.append(node)
     counters['cached_foreign_exits'] = len(checked)
-    # Collect outbound HTTPS health latency alongside exit/authentication evidence.
+    # Keep certificate and real HTTPS egress verification; client measures ping.
     transport_failures = Counter()
     measured = verify_exits(pending, ranges, args.xray, transport_failures) if pending else []
     print(json.dumps({'transport_failure_counts': dict(transport_failures)}))
@@ -319,8 +318,7 @@ def main():
             exit_cache[node_key(node)] = {'failed_at': now}
     for node in measured:
         key = node_key(node)
-        exit_cache[key] = {'exit_ip': node['exit_ip'], 'verified_at': now, 'transport_check': node['transport_check'],
-                           'latency_check': node['latency_check']}
+        exit_cache[key] = {'exit_ip': node['exit_ip'], 'verified_at': now, 'transport_check': node['transport_check']}
         if egress_allowed(node['exit_ip'], ranges):
             checked.append(node)
     feed, reputation_source = load_feed(exit_cache, fetch, now)
@@ -332,6 +330,19 @@ def main():
     if previous_path.exists():
         previous = [node_key({'outbound': ob}) for ob in json.loads(previous_path.read_bytes())['outbounds'] if ob['protocol'] in ('vless', 'vmess', 'trojan', 'shadowsocks')]
     selected = select_pool(checked, settings['max_nodes'], previous)
+    # Grow until the Android serialization budget is reached, preserving the
+    # greedy diversity order instead of an arbitrary 24-node restriction.
+    while True:
+        config = build(selected, routing)
+        try:
+            config_text = serialized_config(config)
+            if len(config_text.encode('utf-16-le')) > 220_000:
+                raise ValueError('config exceeds Android publication size budget')
+            break
+        except ValueError as error:
+            if 'publication size budget' not in str(error) or len(selected) <= 2:
+                raise
+            selected.pop()
     reputation = reputation_report(checked, selected, feed, reputation_source)
     print(json.dumps({'ip_reputation': reputation}, ensure_ascii=False))
     config = build(selected, routing)
@@ -341,14 +352,13 @@ def main():
     report["service_acl"] = False
     report["routing_policy"] = "local direct; RU direct; everything else proxy"
     report['ru_reachability_required'] = False
-    report['pool_selection'] = 'exit-IP reputation; HTTP health latency buckets; exit/network-prefix/host/transport diversity; client leastPing'
+    report['pool_selection'] = 'exclude all IPsum-listed exits; maximize count within size budget; exit/network-prefix/host/transport diversity; client leastPing'
     report['ip_reputation'] = reputation
     report['transport_checks'] = transport_report(selected, transport_failures)
-    report['latency_selection'] = latency_report(checked, selected)
-    print(json.dumps({'latency_selection': report['latency_selection']}, ensure_ascii=False))
+    report['reputation_excluded'] = sum(n['reputation']['status'] == 'listed' for n in checked)
     report['foreign_exit_candidates'] = len(checked)
     report["geosite_sources"] = geo_sources
-    report["client_geoip"] = "geoip:ru from INCY installed geoip.dat; updated by INCY, not this JSON"
+    report["client_geoip"] = "geoip:ru from client installed geoip.dat; update client geodata"
     report["config_utf16_bytes"] = len(config_text.encode("utf-16-le"))
     report["config_utf8_bytes"] = len(config_text.encode("utf-8"))
     # Files change only after all inputs and Xray validation succeeded.

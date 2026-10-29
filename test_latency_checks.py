@@ -48,10 +48,11 @@ class LatencyTests(unittest.TestCase):
         self.assertEqual(e['median_ms'], 200)
         self.assertEqual(latency_priority({'latency_check': e}), (1, 2))
 
-    def test_fast_nodes_beat_previous_membership_and_unknown_measurements(self):
+    def test_runner_latency_does_not_override_stability_or_maximum_count(self):
         slow, fast, unknown = measured('slow', 1300), measured('fast', 80), node('unknown')
         selected = select_pool([slow, unknown, fast], 1, [node_key(slow)], lambda h: h)
-        self.assertEqual(selected[0]['host'], 'fast')
+        self.assertEqual(selected[0]['host'], 'slow')
+        self.assertEqual(len(select_pool([slow, unknown, fast], 10, network_lookup=lambda h: h)), 3)
 
     def test_reputation_precedes_latency_and_bucket_retains_diversity(self):
         clean, listed = measured('clean', 1500), measured('listed', 10, reputation='listed')
@@ -59,7 +60,7 @@ class LatencyTests(unittest.TestCase):
         nodes = [measured('a', 10), measured('a', 20), measured('b', 80)]
         nodes[1]['outbound']['streamSettings']['network'] = 'ws'
         chosen = select_pool(nodes, 2, network_lookup=lambda h: h)
-        self.assertEqual([n['host'] for n in chosen], ['a', 'b'])
+        self.assertEqual({n['host'] for n in chosen}, {'a', 'b'})
 
     def test_measurement_dates_do_not_change_publication_signature(self):
         report = {'latency_selection': {'servers': [{'tag': 'pool-01', 'latency': {'median_ms': 20, 'checked_at': 10}}]}}

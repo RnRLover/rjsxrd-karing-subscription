@@ -1,11 +1,9 @@
-"""Reputation and HTTP latency with stable diversity-aware pool selection."""
+"""Exclude listed exits, then fill a stable and diverse automatic pool."""
 import hashlib
 import ipaddress
 import json
 import socket
 from collections import Counter
-from ip_reputation import reputation_priority
-from latency_checks import latency_priority, latency_value
 
 
 def node_key(node):
@@ -30,12 +28,14 @@ def transport(node):
 
 
 def select_pool(nodes, limit, previous=(), network_lookup=endpoint_network):
-    """Prefer reputation and HTTP latency buckets, then diverse infrastructure.
+    """Keep all eligible nodes up to the cap, spreading exits and infrastructure.
 
-    IP prefixes approximate network diversity, not hosting-provider/ASN identity.
-    Previous membership breaks ties; the config hash makes source order irrelevant.
+    Missing reputation coverage is not a positive clean verdict. Any known
+    blacklist listing is excluded; ping is measured by the client, not ranked here.
+    The greedy result preserves diversity if a size guard trims its tail.
     """
-    unique = {node_key(n): n for n in nodes}
+    unique = {node_key(n): n for n in nodes
+              if n.get('reputation', {}).get('status') != 'listed'}
     networks = {host: network_lookup(host) for host in {n['host'] for n in unique.values()}}
     ranks = {key: index for index, key in enumerate(previous)}
     previous = set(ranks)
@@ -43,16 +43,16 @@ def select_pool(nodes, limit, previous=(), network_lookup=endpoint_network):
     result = []
     while unique and len(result) < limit:
         key, node = min(unique.items(), key=lambda item: (
-            reputation_priority(item[1]), latency_priority(item[1]), exit_count[item[1].get('exit_ip', item[1]['host'])],
+            exit_count[item[1].get('exit_ip', item[1]['host'])],
             net_count[networks[item[1]['host']]], host_count[item[1]['host']],
-            type_count[transport(item[1])], latency_value(item[1]), item[0] not in previous, item[0]))
+            type_count[transport(item[1])], item[0] not in previous, ranks.get(item[0], len(ranks)), item[0]))
         result.append(node)
         del unique[key]
         exit_count[node.get('exit_ip', node['host'])] += 1
         net_count[networks[node['host']]] += 1
         host_count[node['host']] += 1
         type_count[transport(node)] += 1
-    return sorted(result, key=lambda n: (reputation_priority(n), latency_priority(n), latency_value(n), ranks.get(node_key(n), len(ranks)), node_key(n)))
+    return result
 
 
 def recent_exit(node, cache, now, ranges, ttl=86400):

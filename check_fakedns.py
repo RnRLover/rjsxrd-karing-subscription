@@ -74,7 +74,7 @@ if isinstance(config, list):
 fake_enabled = bool(config.get('fakedns'))
 client_dns = 'dns' not in config
 if client_dns:
-    assert config['routing']['domainStrategy'] == 'IPIfNonMatch'
+    assert config['routing']['domainStrategy'] == 'IPOnDemand'
     assert not any(o.get('protocol') == 'dns' for o in config['outbounds'])
     assert any(r.get('port') == '53' and r.get('outboundTag') == 'direct' for r in config['routing']['rules'])
     # Use an unprivileged local port in place of 53 for this isolated probe.

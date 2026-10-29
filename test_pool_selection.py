@@ -70,10 +70,11 @@ class PoolTests(unittest.TestCase):
             tags = {o['tag'] for o in v['outbounds'] if o['protocol'] in ('vless','vmess','trojan','shadowsocks')}
             self.assertEqual(set(v['routing']['balancers'][0]['selector']), tags)
             self.assertEqual(set(v['burstObservatory']['subjectSelector']), tags)
-        expected = {s['address'] for s in original['dns']['servers'] if s.get('tag') == 'dns-bootstrap'}
+        self.assertNotIn('dns', trimmed)
         for variant in variants:
-            self.assertEqual({s['address'] for s in variant['dns']['servers'] if s.get('tag') == 'dns-bootstrap'}, expected)
-            self.assertEqual({s['address'] for s in variant['dns']['servers'] if s.get('tag') == 'dns-proxy'}, {'https://cloudflare-dns.com/dns-query'})
+            self.assertNotIn('dns', variant)
+            self.assertFalse(any(o.get('protocol') == 'dns' for o in variant['outbounds']))
+
 
 
 if __name__ == '__main__':

@@ -1,12 +1,11 @@
 """Publish client-visible changes, not report timestamps or unused source nodes."""
 import json
 from certificate_checks import transport_signature
-from latency_checks import latency_signature
 from pathlib import Path
 import subprocess
 
-CLIENT_FILES = ('ru.json', 'ru-karing.json', 'ru-karing-incy.txt',
-                'ru-karing-happ.txt', 'ru-karing-happ-routing-test.txt', 'karing-routing.json',
+CLIENT_FILES = ('subscription.json', 'ru.json', 'ru-karing.json', 'ru-karing-incy.txt',
+                'ru-karing-happ.txt', 'ru-karing-happ-routing-test.txt',
                 'karing-geoip.dat', 'karing-geosite.dat')
 
 
@@ -43,7 +42,7 @@ def changed(root):
     report = root / 'report.json'
     if report.exists():
         old = subprocess.run(['git', 'show', 'HEAD:report.json'], cwd=root, capture_output=True)
-        if old.returncode or reputation_signature(old.stdout) != reputation_signature(report.read_bytes()) or transport_signature(old.stdout) != transport_signature(report.read_bytes()) or latency_signature(old.stdout) != latency_signature(report.read_bytes()):
+        if old.returncode or reputation_signature(old.stdout) != reputation_signature(report.read_bytes()) or transport_signature(old.stdout) != transport_signature(report.read_bytes()):
             return True
     return False
 

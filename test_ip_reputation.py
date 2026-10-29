@@ -90,12 +90,12 @@ class ReputationTests(unittest.TestCase):
         self.assertEqual(chosen, select_pool([a, b, marked, a], 2, [node_key(marked)],
                                            lambda host: 'other' if host == 'c' else 'same'))
 
-    def test_fallback_has_unknown_before_listed_and_fewer_occurrences_first(self):
+    def test_listed_exits_are_excluded_even_when_pool_has_space(self):
         nodes = rank_nodes([node('three', '8.8.8.8'), node('one', '1.1.1.1'),
                             node('unknown', '2606:4700:4700::1111'),
                             node('unlisted', '9.9.9.9')], self.feed)
         chosen = select_pool(nodes, 4, network_lookup=lambda host: host)
-        self.assertEqual([n['host'] for n in chosen], ['unlisted', 'unknown', 'one', 'three'])
+        self.assertEqual({n['host'] for n in chosen}, {'unlisted', 'unknown'})
 
     def test_distinct_actual_exits_precede_different_entry_networks(self):
         nodes = rank_nodes([node('a', '9.9.9.9'), node('b', '9.9.9.9'),

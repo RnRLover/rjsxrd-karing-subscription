@@ -35,42 +35,20 @@ def build(config, profile):
     result.pop('fakedns', None)
     result.pop('dns', None)
     result['remarks'] = 'Russia'
-    # Keep the default loopback so unmatched traffic reaches the auto pool.
-    result['outbounds'].insert(0, {'tag': 'default-proxy', 'protocol': 'loopback',
-        'settings': {'inboundTag': 'default-auto'}})
-    result['outbounds'].append({'tag': 'dns-out', 'protocol': 'dns'})
-    bootstrap = ['full:www.gstatic.com']
-    import ipaddress
-    for outbound in result['outbounds']:
-        settings = outbound.get('settings', {})
-        if outbound.get('tag') == 'direct' and outbound.get('protocol') == 'freedom':
-            outbound.setdefault('settings', {})['domainStrategy'] = 'UseIPv4'
-        for server in settings.get('vnext', []) + settings.get('servers', []):
-            host = server.get('address', '')
-            try:
-                ipaddress.ip_address(host)
-            except ValueError:
-                if host:
-                    bootstrap.append('full:' + host)
-                    outbound.setdefault('streamSettings', {}).setdefault('sockopt', {})['domainStrategy'] = 'UseIPv4'
-    result['dns'] = {
-        'hosts': {'cloudflare-dns.com': '1.1.1.1'},
-        'queryStrategy': 'UseIPv4', 'disableFallbackIfMatch': True,
-        'servers': [
-            {'address': profile['DomesticDNS'], 'domains': list(dict.fromkeys(bootstrap)),
-             'skipFallback': True, 'tag': 'dns-bootstrap'},
-            {'address': profile['DomesticDNS'], 'domains': profile['DirectSites'],
-             'skipFallback': True, 'tag': 'dns-bootstrap'},
-            {'address': profile['ExternalDNS'], 'tag': 'dns-proxy'}]}
+    # No DNS resolver, DNS interception, loopback or external routing profile.
+    # A real proxy first also keeps full-JSON detection compatible across clients.
+    result['outbounds'] = [o for o in result['outbounds']
+                           if o.get('protocol') not in ('dns', 'loopback')]
+    proxies = [o for o in result['outbounds']
+               if o.get('protocol') in ('vless', 'vmess', 'trojan', 'shadowsocks')]
+    result['outbounds'] = proxies + [o for o in result['outbounds'] if o not in proxies]
+    for balancer in result['routing'].get('balancers', []):
+        balancer['fallbackTag'] = proxies[0]['tag'] if proxies else 'block'
     for inbound in result['inbounds']:
         inbound['sniffing'] = {'enabled': True, 'destOverride': ['http', 'tls', 'quic'], 'routeOnly': True}
-    result['routing']['domainStrategy'] = profile['DomainStrategy']
-    rules = [
-        {'type': 'field', 'inboundTag': ['default-auto', 'dns-proxy'], 'balancerTag': 'auto'},
-        {'type': 'field', 'inboundTag': ['dns-bootstrap'], 'outboundTag': 'direct'},
-        # Split intercepted DNS between direct Yandex and proxied DoH.
-        {'type': 'field', 'inboundTag': [i['tag'] for i in result['inbounds']],
-         'port': '53', 'network': 'tcp,udp', 'outboundTag': 'dns-out'}]
+    # With the explicit final auto rule, IPOnDemand checks domain IPs before it.
+    result['routing']['domainStrategy'] = 'IPOnDemand'
+    rules = []
     order = profile.get('RouteOrder', 'block-proxy-direct').split('-')
     if len(order) != 3 or set(order) != {'block', 'direct', 'proxy'}:
         raise ValueError('RouteOrder must contain block, direct and proxy exactly once')
@@ -81,6 +59,9 @@ def build(config, profile):
         for key, field in [('Sites', 'domain'), ('Ip', 'ip')]:
             if profile[prefix + key]:
                 rules.append({'type': 'field', field: profile[prefix + key], **action})
+    # Preserve the DNS destination chosen by the client/system.
+    rules.insert(0, {'type': 'field', 'port': '53', 'network': 'tcp,udp', 'outboundTag': 'direct'})
+    rules.append({'type': 'field', 'network': 'tcp,udp', 'balancerTag': 'auto'})
     result['routing']['rules'] = rules
     return result
 
@@ -88,28 +69,13 @@ def build(config, profile):
 def variant(config):
     from karing import automatic_config
     result = automatic_config(config, 'Основной')
-    if any(o['tag'] == 'default-proxy' for o in result['outbounds']):
-        return result
     return build(result, json.loads((ROOT / 'russia-routing.json').read_bytes()))
 
 
-def client_routing_profile(profile):
-    """Export the native client schema from the build-time DNS template."""
-    result = copy.deepcopy(profile)
-    domestic = result.pop('DomesticDNS')
-    external = result.pop('ExternalDNS')
-    result.update({'DomesticDNSType': 'DoU', 'DomesticDNSDomain': '',
-        'DomesticDNSIP': domestic, 'DomesticDns': domestic,
-        'RemoteDNSType': 'DoH', 'RemoteDNSDomain': external,
-        'RemoteDNSIP': '1.1.1.1', 'RemoteDns': external,
-        'DnsHosts': {'cloudflare-dns.com': '1.1.1.1'}})
-    return result
-
-
 def happ_routing_test_subscription(configs, profile):
-    """Compatibility filename now serves the same pure JSON without imports."""
-    from karing import happ_subscription
-    return happ_subscription(configs)
+    """Legacy filename is an identical alias of the common subscription."""
+    from karing import incy_subscription
+    return incy_subscription(configs)
 
 
 def main(xray):
@@ -135,27 +101,26 @@ def main(xray):
         finally:
             if prior is None: os.environ.pop('XRAY_LOCATION_ASSET', None)
             else: os.environ['XRAY_LOCATION_ASSET'] = prior
-    happ = [happ_config(v, sites, ips) for v in variants]
-    # Preserve default outbound ordering for IPIfNonMatch fallback.
-    for v in happ:
-        loop = next(o for o in v['outbounds'] if o['tag'] == 'default-proxy')
-        v['outbounds'].remove(loop); v['outbounds'].insert(0, loop)
-        xray_validate(xray, v)
-    outputs = {'ru-karing.json': serialized_config(config), 'ru-karing-incy.txt': incy_subscription(variants),
-               'ru-karing-happ.txt': happ_subscription(happ),
-               'ru-karing-happ-routing-test.txt': happ_routing_test_subscription(happ, profile),
-               'karing-routing.json': json.dumps(client_routing_profile(profile), ensure_ascii=False, indent=2)}
-    outputs['karing-report.json'] = json.dumps({'profile_url': PUBLIC + 'karing-routing.json',
-        'variants': [{'name': v['remarks'], 'servers': sum(o.get('tag','').startswith('pool-') or o.get('tag') == 'Основной' for o in v['outbounds'])} for v in variants],
-        'fakedns': bool(config.get('fakedns')), 'routing': 'embedded Russia rules; INCY autorouting profile import', 'domainStrategy': 'IPIfNonMatch',
-        'dns_policy': {'domestic': profile['DomesticDNS'], 'external': profile['ExternalDNS'],
-                       'external_route': 'auto proxy', 'matched_domains_fallback': False},
-        'route_order': profile['RouteOrder'], 'autorouting': {'incy': True, 'happ': False},
-        'happ_url': PUBLIC + 'ru-karing-happ.txt',
-        'xray_validated': True, 'generated_at_utc': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())}, ensure_ascii=False, indent=2)
+    body = incy_subscription(variants)
+    outputs = {'ru-karing.json': serialized_config(config),
+               'subscription.json': body,
+               'ru-karing-incy.txt': body, 'ru-karing-happ.txt': body,
+               'ru-karing-happ-routing-test.txt': body}
+    outputs['karing-report.json'] = json.dumps({
+        'subscription_url': PUBLIC + 'subscription.json',
+        'variants': [{'name': v['remarks'], 'servers': sum(
+            o.get('protocol') in ('vless', 'vmess', 'trojan', 'shadowsocks')
+            for o in v['outbounds'])} for v in variants],
+        'fakedns': False, 'routing': 'embedded block / RU and private direct / automatic proxy',
+        'domainStrategy': 'IPOnDemand', 'dns_policy': 'not supplied; client settings',
+        'route_order': profile['RouteOrder'], 'autorouting': {'incy': False, 'happ': False},
+        'geodata': 'standard client geosite.dat and geoip.dat; keep current',
+        'xray_validated': True,
+        'generated_at_utc': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())},
+        ensure_ascii=False, indent=2)
     import hashlib
     for name, data in assets.items():
         (ROOT / ('karing-' + name)).write_bytes(data)
         atomic_write(ROOT / ('karing-' + name + '.sha256'), hashlib.sha256(data).hexdigest() + '\n')
     for name, text in outputs.items(): atomic_write(ROOT / name, text + '\n')
-    print('Published single Russia profile; Xray validated INCY and standalone Happ')
+    print('Published one common DNS-free subscription; old client URLs are identical aliases')
