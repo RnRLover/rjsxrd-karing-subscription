@@ -1,26 +1,21 @@
 {
-  "profile_url": "https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/karing-routing.json",
+  "subscription_url": "https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/subscription.json",
   "variants": [
     {
-      "name": "Основной",
-      "servers": 24
+      "name": "Russia",
+      "servers": 302
     }
   ],
   "fakedns": false,
-  "routing": "embedded Russia rules; INCY autorouting profile import",
-  "domainStrategy": "IPIfNonMatch",
-  "dns_policy": {
-    "domestic": "77.88.8.8",
-    "external": "https://cloudflare-dns.com/dns-query",
-    "external_route": "auto proxy",
-    "matched_domains_fallback": false
-  },
+  "routing": "embedded block / RU and private direct / automatic proxy",
+  "domainStrategy": "IPOnDemand",
+  "dns_policy": "not supplied; client settings",
   "route_order": "block-direct-proxy",
   "autorouting": {
-    "incy": true,
+    "incy": false,
     "happ": false
   },
-  "happ_url": "https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/ru-karing-happ.txt",
+  "geodata": "standard client geosite.dat and geoip.dat; keep current",
   "xray_validated": true,
-  "generated_at_utc": "2026-10-29T16:25:34Z"
+  "generated_at_utc": "2026-10-29T17:19:02Z"
 }
