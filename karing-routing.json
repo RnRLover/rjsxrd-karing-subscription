@@ -25,6 +25,15 @@
   "UseChunkFiles": false,
   "bypassPrivateIPs": true,
   "bypassLocalDNS": false,
-  "DomesticDNS": "77.88.8.8",
-  "ExternalDNS": "https://cloudflare-dns.com/dns-query"
+  "DomesticDNSType": "DoU",
+  "DomesticDNSDomain": "",
+  "DomesticDNSIP": "77.88.8.8",
+  "DomesticDns": "77.88.8.8",
+  "RemoteDNSType": "DoH",
+  "RemoteDNSDomain": "https://cloudflare-dns.com/dns-query",
+  "RemoteDNSIP": "1.1.1.1",
+  "RemoteDns": "https://cloudflare-dns.com/dns-query",
+  "DnsHosts": {
+    "cloudflare-dns.com": "1.1.1.1"
+  }
 }
