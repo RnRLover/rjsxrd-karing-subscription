@@ -1,17 +1,17 @@
 {
-  "generated_at_utc": "2026-10-29T14:02:12Z",
+  "generated_at_utc": "2026-10-29T15:48:04Z",
   "pool": "whitelist",
   "source": "https://raw.githubusercontent.com/whoahaow/rjsxrd/main/githubmirror/bypass/bypass-all.txt",
-  "source_sha256": "1fff06f9e06466b3410d6b64fc3858f96ebd0ad8fd6ee1d44f326468ab7dda67",
+  "source_sha256": "63e264510b2a17e463365e348517cb961493a7b8e7823f1adc3150e8a2dbdc11",
   "counts": {
-    "source_nodes": 922,
-    "russian_label_candidates": 56,
-    "unsupported_or_invalid": 237,
-    "duplicate": 91,
+    "source_nodes": 847,
+    "russian_label_candidates": 91,
+    "unsupported_or_invalid": 205,
+    "duplicate": 101,
     "nonpublic_or_unresolved_endpoint": 0,
     "cached_foreign_exits": 0
   },
-  "eligible": 594,
+  "eligible": 541,
   "selected": 24,
   "xray_validated": true,
   "actual_egress_checked": true,
@@ -24,8 +24,8 @@
   "excluded_country": "RU",
   "exclusion_basis": "mandatory actual HTTPS egress IP against RU CIDRs; public Russian entry IPs and RU labels permitted",
   "selected_protocols": {
-    "trojan": 5,
-    "shadowsocks": 3,
+    "trojan": 6,
+    "shadowsocks": 2,
     "vmess": 3,
     "vless": 13
   },
@@ -45,8 +45,8 @@
     "selection_priority": "not_listed, unknown, listed (fewest occurrences first); then diversity",
     "meaning": "No listing in this feed is not a positive whitelist or proof of Gemini access.",
     "candidates": {
-      "listed": 21,
-      "not_listed": 416
+      "not_listed": 381,
+      "listed": 20
     },
     "selected": {
       "not_listed": 24
@@ -54,21 +54,21 @@
     "servers": [
       {
         "tag": "pool-01",
-        "exit_ip": "51.15.83.200",
+        "exit_ip": "51.158.182.66",
         "status": "not_listed",
         "score": 100,
         "blacklist_count": 0
       },
       {
         "tag": "pool-02",
-        "exit_ip": "216.152.156.159",
+        "exit_ip": "216.152.156.242",
         "status": "not_listed",
         "score": 100,
         "blacklist_count": 0
       },
       {
         "tag": "pool-03",
-        "exit_ip": "216.106.186.33",
+        "exit_ip": "216.106.186.66",
         "status": "not_listed",
         "score": 100,
         "blacklist_count": 0
@@ -89,133 +89,133 @@
       },
       {
         "tag": "pool-06",
-        "exit_ip": "185.141.57.84",
-        "status": "not_listed",
-        "score": 100,
-        "blacklist_count": 0
-      },
-      {
-        "tag": "pool-07",
         "exit_ip": "5.35.34.169",
         "status": "not_listed",
         "score": 100,
         "blacklist_count": 0
       },
       {
-        "tag": "pool-08",
+        "tag": "pool-07",
         "exit_ip": "64.181.219.110",
         "status": "not_listed",
         "score": 100,
         "blacklist_count": 0
       },
       {
-        "tag": "pool-09",
-        "exit_ip": "47.88.79.34",
-        "status": "not_listed",
-        "score": 100,
-        "blacklist_count": 0
-      },
-      {
-        "tag": "pool-10",
+        "tag": "pool-08",
         "exit_ip": "150.241.73.101",
         "status": "not_listed",
         "score": 100,
         "blacklist_count": 0
       },
       {
-        "tag": "pool-11",
-        "exit_ip": "136.148.212.178",
-        "status": "not_listed",
-        "score": 100,
-        "blacklist_count": 0
-      },
-      {
-        "tag": "pool-12",
+        "tag": "pool-09",
         "exit_ip": "91.107.188.129",
         "status": "not_listed",
         "score": 100,
         "blacklist_count": 0
       },
       {
-        "tag": "pool-13",
-        "exit_ip": "193.148.253.194",
-        "status": "not_listed",
-        "score": 100,
-        "blacklist_count": 0
-      },
-      {
-        "tag": "pool-14",
+        "tag": "pool-10",
         "exit_ip": "149.248.50.252",
         "status": "not_listed",
         "score": 100,
         "blacklist_count": 0
       },
       {
-        "tag": "pool-15",
-        "exit_ip": "51.159.162.83",
+        "tag": "pool-11",
+        "exit_ip": "51.158.104.170",
         "status": "not_listed",
         "score": 100,
         "blacklist_count": 0
       },
       {
-        "tag": "pool-16",
-        "exit_ip": "170.101.101.19",
+        "tag": "pool-12",
+        "exit_ip": "170.101.101.112",
         "status": "not_listed",
         "score": 100,
         "blacklist_count": 0
       },
       {
-        "tag": "pool-17",
+        "tag": "pool-13",
         "exit_ip": "150.40.126.24",
         "status": "not_listed",
         "score": 100,
         "blacklist_count": 0
       },
       {
-        "tag": "pool-18",
-        "exit_ip": "193.29.139.212",
-        "status": "not_listed",
-        "score": 100,
-        "blacklist_count": 0
-      },
-      {
-        "tag": "pool-19",
+        "tag": "pool-14",
         "exit_ip": "91.107.247.173",
         "status": "not_listed",
         "score": 100,
         "blacklist_count": 0
       },
       {
-        "tag": "pool-20",
-        "exit_ip": "51.79.49.116",
-        "status": "not_listed",
-        "score": 100,
-        "blacklist_count": 0
-      },
-      {
-        "tag": "pool-21",
+        "tag": "pool-15",
         "exit_ip": "5.252.26.57",
         "status": "not_listed",
         "score": 100,
         "blacklist_count": 0
       },
       {
-        "tag": "pool-22",
+        "tag": "pool-16",
         "exit_ip": "149.28.177.190",
         "status": "not_listed",
         "score": 100,
         "blacklist_count": 0
       },
       {
+        "tag": "pool-17",
+        "exit_ip": "130.94.17.194",
+        "status": "not_listed",
+        "score": 100,
+        "blacklist_count": 0
+      },
+      {
+        "tag": "pool-18",
+        "exit_ip": "217.60.52.138",
+        "status": "not_listed",
+        "score": 100,
+        "blacklist_count": 0
+      },
+      {
+        "tag": "pool-19",
+        "exit_ip": "51.159.167.67",
+        "status": "not_listed",
+        "score": 100,
+        "blacklist_count": 0
+      },
+      {
+        "tag": "pool-20",
+        "exit_ip": "80.174.118.90",
+        "status": "not_listed",
+        "score": 100,
+        "blacklist_count": 0
+      },
+      {
+        "tag": "pool-21",
+        "exit_ip": "15.204.97.198",
+        "status": "not_listed",
+        "score": 100,
+        "blacklist_count": 0
+      },
+      {
+        "tag": "pool-22",
+        "exit_ip": "104.28.153.227",
+        "status": "not_listed",
+        "score": 100,
+        "blacklist_count": 0
+      },
+      {
         "tag": "pool-23",
-        "exit_ip": "196.196.204.180",
+        "exit_ip": "15.204.54.121",
         "status": "not_listed",
         "score": 100,
         "blacklist_count": 0
       },
       {
         "tag": "pool-24",
-        "exit_ip": "130.94.17.194",
+        "exit_ip": "62.133.63.45",
         "status": "not_listed",
         "score": 100,
         "blacklist_count": 0
@@ -227,11 +227,12 @@
     "cache_seconds": 3600,
     "expiry_warning_days": 7,
     "failure_counts": {
-      "transport:SSLEOFError": 5,
-      "xray_https:URLError": 113,
-      "transport:TimeoutError": 14,
+      "transport:SSLEOFError": 9,
+      "xray_https:URLError": 94,
+      "transport:TimeoutError": 11,
       "transport:SSLError": 1,
-      "xray_https:TimeoutError": 1
+      "xray_https:TimeoutError": 1,
+      "transport:ConnectionResetError": 2
     },
     "servers": [
       {
@@ -244,8 +245,8 @@
         "sha256": "ee624f0e80f1ba9dcd7aa51b627fa465b049166cbdee3285f58d2e6e5e72e02e",
         "tls_version": "TLSv1.3",
         "trust_store": "Python system CA",
-        "checked_at": 1793282477,
-        "next_check_at": 1793286077
+        "checked_at": 1793288846,
+        "next_check_at": 1793292446
       },
       {
         "tag": "pool-02",
@@ -257,8 +258,8 @@
         "sha256": "ffc169e754614b63fe39a2f26723074c527d4653e7ef031e2fe32f2af66a55bb",
         "tls_version": "TLSv1.3",
         "trust_store": "Python system CA",
-        "checked_at": 1793282405,
-        "next_check_at": 1793286005
+        "checked_at": 1793288812,
+        "next_check_at": 1793292412
       },
       {
         "tag": "pool-03",
@@ -270,15 +271,15 @@
         "sha256": "d6bf63fdf0677ef846b0fa89112828040d3882d70be9390c2ee7c48805576cd6",
         "tls_version": "TLSv1.3",
         "trust_store": "Python system CA",
-        "checked_at": 1793282405,
-        "next_check_at": 1793286005
+        "checked_at": 1793288805,
+        "next_check_at": 1793292405
       },
       {
         "tag": "pool-04",
         "kind": "none",
         "status": "not_applicable",
-        "checked_at": 1793282457,
-        "next_check_at": 1793286057
+        "checked_at": 1793288825,
+        "next_check_at": 1793292425
       },
       {
         "tag": "pool-05",
@@ -290,24 +291,11 @@
         "sha256": "0fbab45dbc09409dd5d0a237b659b7504eb777cd93ed7757684a17a79dc19fbd",
         "tls_version": "TLSv1.3",
         "trust_store": "Python system CA",
-        "checked_at": 1793282430,
-        "next_check_at": 1793286030
+        "checked_at": 1793288824,
+        "next_check_at": 1793292424
       },
       {
         "tag": "pool-06",
-        "kind": "tls",
-        "status": "passed",
-        "server_name": "indigostar.click",
-        "not_after": 1801022317,
-        "expires_soon": false,
-        "sha256": "432062a7a1ed078f1f186765560f2759214e13f22a6afa7a1958bb501f2e53fb",
-        "tls_version": "TLSv1.3",
-        "trust_store": "Python system CA",
-        "checked_at": 1793282408,
-        "next_check_at": 1793286008
-      },
-      {
-        "tag": "pool-07",
         "kind": "tls",
         "status": "passed",
         "server_name": "renderer-bridge-1-881.mirra.now",
@@ -316,11 +304,11 @@
         "sha256": "9d6e80d7918a44878f27be92ca9c01ed4a0c6f43c21f2f97b2fdba02544db994",
         "tls_version": "TLSv1.3",
         "trust_store": "Python system CA",
-        "checked_at": 1793282395,
-        "next_check_at": 1793285995
+        "checked_at": 1793288803,
+        "next_check_at": 1793292403
       },
       {
-        "tag": "pool-08",
+        "tag": "pool-07",
         "kind": "tls",
         "status": "passed",
         "server_name": "vmess.lbw666.dpdns.org",
@@ -329,38 +317,18 @@
         "sha256": "9d5bc09084021dfd603e5133e241c746eb2a02ad81f41767a7d1939146bad344",
         "tls_version": "TLSv1.3",
         "trust_store": "Python system CA",
-        "checked_at": 1793282480,
-        "next_check_at": 1793286080
+        "checked_at": 1793288851,
+        "next_check_at": 1793292451
+      },
+      {
+        "tag": "pool-08",
+        "kind": "reality",
+        "status": "passed",
+        "checked_at": 1793288828,
+        "next_check_at": 1793292428
       },
       {
         "tag": "pool-09",
-        "kind": "tls",
-        "status": "passed",
-        "server_name": "rib9jxayoqjgn2kw.v.3dns.vip",
-        "not_after": 1799366399,
-        "expires_soon": false,
-        "sha256": "e3763795c98a3c40540ed9856d267be6381c77b0edecf3c95bc9231a95b34736",
-        "tls_version": "TLSv1.3",
-        "trust_store": "Python system CA",
-        "checked_at": 1793282432,
-        "next_check_at": 1793286032
-      },
-      {
-        "tag": "pool-10",
-        "kind": "reality",
-        "status": "passed",
-        "checked_at": 1793282469,
-        "next_check_at": 1793286069
-      },
-      {
-        "tag": "pool-11",
-        "kind": "reality",
-        "status": "passed",
-        "checked_at": 1793282441,
-        "next_check_at": 1793286041
-      },
-      {
-        "tag": "pool-12",
         "kind": "tls",
         "status": "passed",
         "server_name": "site.check-looks.space",
@@ -369,18 +337,11 @@
         "sha256": "494993f19a82ad724b36f6dd322e65acfa81066e0c91d8e2e8fd532eb735ba48",
         "tls_version": "TLSv1.3",
         "trust_store": "Python system CA",
-        "checked_at": 1793282450,
-        "next_check_at": 1793286050
+        "checked_at": 1793288828,
+        "next_check_at": 1793292428
       },
       {
-        "tag": "pool-13",
-        "kind": "reality",
-        "status": "passed",
-        "checked_at": 1793282398,
-        "next_check_at": 1793285998
-      },
-      {
-        "tag": "pool-14",
+        "tag": "pool-10",
         "kind": "tls",
         "status": "passed",
         "server_name": "ca001.zestapp778.com",
@@ -389,11 +350,11 @@
         "sha256": "aac4138d1e5b498f0d053c0c5774ae498ec0f3c8581707436276eb3c8c0e439d",
         "tls_version": "TLSv1.3",
         "trust_store": "Python system CA",
-        "checked_at": 1793282506,
-        "next_check_at": 1793286106
+        "checked_at": 1793288852,
+        "next_check_at": 1793292452
       },
       {
-        "tag": "pool-15",
+        "tag": "pool-11",
         "kind": "tls",
         "status": "passed",
         "server_name": "www.calmlunch.com",
@@ -402,11 +363,11 @@
         "sha256": "d320c363230b3c7241eb00ed689f15f5a1bcdbeab901c15ed30a1c1146dd1a21",
         "tls_version": "TLSv1.3",
         "trust_store": "Python system CA",
-        "checked_at": 1793282391,
-        "next_check_at": 1793285991
+        "checked_at": 1793288779,
+        "next_check_at": 1793292379
       },
       {
-        "tag": "pool-16",
+        "tag": "pool-12",
         "kind": "tls",
         "status": "passed",
         "server_name": "resources.explorecreativejobsandenhanceyourcareerportfolio.com",
@@ -415,25 +376,18 @@
         "sha256": "a9434eb3765893f1d7915d446f7cdb12261fe87560f7f9bf699f732e07d8d11b",
         "tls_version": "TLSv1.3",
         "trust_store": "Python system CA",
-        "checked_at": 1793282491,
-        "next_check_at": 1793286091
+        "checked_at": 1793288869,
+        "next_check_at": 1793292469
       },
       {
-        "tag": "pool-17",
+        "tag": "pool-13",
         "kind": "reality",
         "status": "passed",
-        "checked_at": 1793282500,
-        "next_check_at": 1793286100
+        "checked_at": 1793288868,
+        "next_check_at": 1793292468
       },
       {
-        "tag": "pool-18",
-        "kind": "none",
-        "status": "not_applicable",
-        "checked_at": 1793282443,
-        "next_check_at": 1793286043
-      },
-      {
-        "tag": "pool-19",
+        "tag": "pool-14",
         "kind": "tls",
         "status": "passed",
         "server_name": "sino.bestsellers1.site",
@@ -442,18 +396,11 @@
         "sha256": "09563ee9ced9d67c9c3bd61971f20b11dff2a4782cbaf1967fe59d6f99de2ab4",
         "tls_version": "TLSv1.3",
         "trust_store": "Python system CA",
-        "checked_at": 1793282474,
-        "next_check_at": 1793286074
+        "checked_at": 1793288841,
+        "next_check_at": 1793292441
       },
       {
-        "tag": "pool-20",
-        "kind": "none",
-        "status": "not_applicable",
-        "checked_at": 1793282467,
-        "next_check_at": 1793286067
-      },
-      {
-        "tag": "pool-21",
+        "tag": "pool-15",
         "kind": "tls",
         "status": "passed",
         "server_name": "de1.frost-api.com",
@@ -462,11 +409,11 @@
         "sha256": "de4fd61adeb989da091f83f44a812e6c30aa7dc6ed8ad0212512fdc605e477b9",
         "tls_version": "TLSv1.3",
         "trust_store": "Python system CA",
-        "checked_at": 1793282438,
-        "next_check_at": 1793286038
+        "checked_at": 1793288809,
+        "next_check_at": 1793292409
       },
       {
-        "tag": "pool-22",
+        "tag": "pool-16",
         "kind": "tls",
         "status": "passed",
         "server_name": "au001.zestapp778.com",
@@ -475,18 +422,11 @@
         "sha256": "aac4138d1e5b498f0d053c0c5774ae498ec0f3c8581707436276eb3c8c0e439d",
         "tls_version": "TLSv1.3",
         "trust_store": "Python system CA",
-        "checked_at": 1793282427,
-        "next_check_at": 1793286027
+        "checked_at": 1793288870,
+        "next_check_at": 1793292470
       },
       {
-        "tag": "pool-23",
-        "kind": "reality",
-        "status": "passed",
-        "checked_at": 1793282484,
-        "next_check_at": 1793286084
-      },
-      {
-        "tag": "pool-24",
+        "tag": "pool-17",
         "kind": "tls",
         "status": "passed",
         "server_name": "us001.zestapp778.com",
@@ -495,12 +435,79 @@
         "sha256": "aac4138d1e5b498f0d053c0c5774ae498ec0f3c8581707436276eb3c8c0e439d",
         "tls_version": "TLSv1.3",
         "trust_store": "Python system CA",
-        "checked_at": 1793282406,
-        "next_check_at": 1793286006
+        "checked_at": 1793288801,
+        "next_check_at": 1793292401
+      },
+      {
+        "tag": "pool-18",
+        "kind": "reality",
+        "status": "passed",
+        "checked_at": 1793288831,
+        "next_check_at": 1793292431
+      },
+      {
+        "tag": "pool-19",
+        "kind": "tls",
+        "status": "passed",
+        "server_name": "www.calmlunch.com",
+        "not_after": 1798442753,
+        "expires_soon": false,
+        "sha256": "d320c363230b3c7241eb00ed689f15f5a1bcdbeab901c15ed30a1c1146dd1a21",
+        "tls_version": "TLSv1.3",
+        "trust_store": "Python system CA",
+        "checked_at": 1793288778,
+        "next_check_at": 1793292378
+      },
+      {
+        "tag": "pool-20",
+        "kind": "none",
+        "status": "not_applicable",
+        "checked_at": 1793288775,
+        "next_check_at": 1793292375
+      },
+      {
+        "tag": "pool-21",
+        "kind": "reality",
+        "status": "passed",
+        "checked_at": 1793288831,
+        "next_check_at": 1793292431
+      },
+      {
+        "tag": "pool-22",
+        "kind": "tls",
+        "status": "passed",
+        "server_name": "vp14.1145678.xyz",
+        "not_after": 1800705440,
+        "expires_soon": false,
+        "sha256": "1deabc251d5ca88747e3027607ee43cd3efc5a6d099e4a21a85f7b604b041cf8",
+        "tls_version": "TLSv1.3",
+        "trust_store": "Python system CA",
+        "checked_at": 1793288859,
+        "next_check_at": 1793292459
+      },
+      {
+        "tag": "pool-23",
+        "kind": "tls",
+        "status": "passed",
+        "server_name": "US032019.ssgreen.org",
+        "not_after": 1800232968,
+        "expires_soon": false,
+        "sha256": "98482e7c5239f3784236fc28e5609e0a34ed4b9d4125a1a5444503fd550dc91a",
+        "tls_version": "TLSv1.3",
+        "trust_store": "Python system CA",
+        "checked_at": 1793288811,
+        "next_check_at": 1793292411
+      },
+      {
+        "tag": "pool-24",
+        "kind": "reality",
+        "status": "passed",
+        "checked_at": 1793288805,
+        "next_check_at": 1793292405
       }
     ]
   },
-  "foreign_exit_candidates": 437,
+  "foreign_exit_candidates": 401,
   "geosite_sources": [
     {
       "category": "category-ru",
@@ -510,6 +517,6 @@
     }
   ],
   "client_geoip": "geoip:ru from INCY installed geoip.dat; updated by INCY, not this JSON",
-  "config_utf16_bytes": 72566,
-  "config_utf8_bytes": 36283
+  "config_utf16_bytes": 73028,
+  "config_utf8_bytes": 36514
 }

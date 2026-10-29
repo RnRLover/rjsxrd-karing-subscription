@@ -25,6 +25,6 @@
   "UseChunkFiles": false,
   "bypassPrivateIPs": true,
   "bypassLocalDNS": false,
-  "DomesticDNS": "localhost",
+  "DomesticDNS": "77.88.8.8",
   "ExternalDNS": "https://cloudflare-dns.com/dns-query"
 }
