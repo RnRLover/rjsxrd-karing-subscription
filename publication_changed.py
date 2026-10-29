@@ -5,7 +5,7 @@ from latency_checks import latency_signature
 from pathlib import Path
 import subprocess
 
-CLIENT_FILES = ('subscription.json', 'ru.json', 'ru-karing-incy.txt', 'ru-karing-happ.txt')
+CLIENT_FILES = ('subscription.json', 'ru.json')
 
 
 def canonical(name, data):

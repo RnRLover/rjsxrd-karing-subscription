@@ -54,8 +54,6 @@ def echo_worker():
         conn.sendall(b'PONG')
 threading.Thread(target=dns_worker, args=(dns, real_queries), daemon=True).start()
 threading.Thread(target=echo_worker, daemon=True).start()
-for alias in ('ru-karing-incy.txt', 'ru-karing-happ.txt'):
-    assert (ROOT / alias).read_bytes() == (ROOT / 'subscription.json').read_bytes(), alias
 text = (ROOT / args.config).read_text(encoding='utf-8')
 config = json.loads(text)
 if isinstance(config, list):

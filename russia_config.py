@@ -78,6 +78,5 @@ def main(xray):
     runtime.mkdir(exist_ok=True)
     for name, data in assets.items():
         (runtime / name).write_bytes(data)
-    for name in ('subscription.json', 'ru-karing-incy.txt', 'ru-karing-happ.txt'):
-        atomic_write(ROOT / name, body + '\n')
-    print('Published common subscription and identical legacy URL aliases')
+    atomic_write(ROOT / 'subscription.json', body + '\n')
+    print('Published common subscription')

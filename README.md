@@ -4,7 +4,7 @@ Use the same URL in both clients:
 
 https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/subscription.json
 
-One pure JSON array, one **Основной** configuration. The old `ru-karing-incy.txt`, `ru-karing-happ.txt` URLs are byte-identical compatibility aliases, not different subscriptions. No provider interval, routing import command or separate routing profile is attached. Disable/remove a previously imported Russia profile in the app, or import the common URL as a new subscription.
+One pure JSON array, one **Основной** configuration. No provider interval, routing import command or separate routing profile is attached. Disable/remove a previously imported Russia profile in the app, or import the common URL as a new subscription.
 
 ## Routing
 
@@ -30,7 +30,7 @@ GitHub Actions runs at minutes 7, 22, 37 and 52 each hour. CI checks JSON/Xray v
 
 ## Repository files
 
-- `subscription.json`: common client subscription; `ru-karing-incy.txt` and `ru-karing-happ.txt` are identical aliases retained for existing URLs.
+- `subscription.json`: the only client subscription URL, shared by both applications.
 - `generate.py`, `rjsxrd_parser.py`, `pool_selection.py`, `certificate_checks.py`, `ip_reputation.py`, `latency_checks.py`: collect, verify, select and rank servers.
 - `karing.py`, `russia_config.py`, `routing.py`, `settings.json`, `russia-routing.json`: common JSON generation and embedded routing policy.
 - `ru.json`: last checked base pool, used for stable selection and routing-only rebuilds; `report.json`: selected-node verification and latency evidence.
