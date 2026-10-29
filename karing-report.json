@@ -9,10 +9,15 @@
   "fakedns": false,
   "routing": "embedded Russia rules; no separate profile import",
   "domainStrategy": "IPIfNonMatch",
-  "dns_policy": "client/device managed; no subscription DNS servers",
+  "dns_policy": {
+    "domestic": "localhost",
+    "external": "https://cloudflare-dns.com/dns-query",
+    "external_route": "auto proxy",
+    "matched_domains_fallback": false
+  },
   "route_order": "block-direct-proxy",
   "autorouting": false,
   "happ_url": "https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/ru-karing-happ.txt",
   "xray_validated": true,
-  "generated_at_utc": "2026-10-28T18:38:44Z"
+  "generated_at_utc": "2026-10-29T14:02:18Z"
 }

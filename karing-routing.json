@@ -24,5 +24,7 @@
   "RouteOrder": "block-direct-proxy",
   "UseChunkFiles": false,
   "bypassPrivateIPs": true,
-  "bypassLocalDNS": false
+  "bypassLocalDNS": false,
+  "DomesticDNS": "localhost",
+  "ExternalDNS": "https://cloudflare-dns.com/dns-query"
 }
