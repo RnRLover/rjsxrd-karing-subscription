@@ -20,6 +20,7 @@ from pathlib import Path
 from rjsxrd_parser import parse_url
 from routing import domains, policy
 from pool_selection import node_key, select_pool, recent_exit
+from latency_checks import measure_latency, reusable_latency, latency_report, order_by_latency
 from ip_reputation import load_feed, rank_nodes, reputation_report
 from certificate_checks import probe_transport, complete_transport, reusable_transport, transport_report
 
@@ -225,7 +226,8 @@ def verify_exits(nodes, ranges, xray, failures=None):
                     with opener.open("https://api.ipify.org?format=json", timeout=12) as response:
                         ip = json.loads(response.read(1000))["ip"]
                     return {**node, 'exit_ip': str(ipaddress.ip_address(ip)),
-                            'transport_check': complete_transport(evidence)}
+                            'transport_check': complete_transport(evidence),
+                            'latency_check': measure_latency(opener)}
                 except Exception as error:
                     return {'probe_failure': stage + ':' + type(error).__name__}
             with concurrent.futures.ThreadPoolExecutor(max_workers=12) as executor:
@@ -298,8 +300,10 @@ def main():
     checked, pending = [], []
     for node in eligible:
         cached = recent_exit(node, exit_cache, now, ranges, ttl)
-        if cached and reusable_transport(exit_cache[node_key(node)].get('transport_check'), now):
-            checked.append({**cached, 'transport_check': exit_cache[node_key(node)]['transport_check']})
+        if (cached and reusable_transport(exit_cache[node_key(node)].get('transport_check'), now)
+                and reusable_latency(exit_cache[node_key(node)].get('latency_check'), now)):
+            checked.append({**cached, 'transport_check': exit_cache[node_key(node)]['transport_check'],
+                            'latency_check': exit_cache[node_key(node)]['latency_check']})
         else:
             entry = exit_cache.get(node_key(node), {})
             # Known RU exits need no repeated probe; unknown exits retry hourly.
@@ -308,7 +312,7 @@ def main():
             if cached or (not fresh and not failed_recently):
                 pending.append(node)
     counters['cached_foreign_exits'] = len(checked)
-    # Keep certificate and real HTTPS egress verification; client measures ping.
+    # Measure HTTPS latency through the same authenticated outbound as egress.
     transport_failures = Counter()
     measured = verify_exits(pending, ranges, args.xray, transport_failures) if pending else []
     print(json.dumps({'transport_failure_counts': dict(transport_failures)}))
@@ -318,7 +322,8 @@ def main():
             exit_cache[node_key(node)] = {'failed_at': now}
     for node in measured:
         key = node_key(node)
-        exit_cache[key] = {'exit_ip': node['exit_ip'], 'verified_at': now, 'transport_check': node['transport_check']}
+        exit_cache[key] = {'exit_ip': node['exit_ip'], 'verified_at': now, 'transport_check': node['transport_check'],
+                           'latency_check': node['latency_check']}
         if egress_allowed(node['exit_ip'], ranges):
             checked.append(node)
     feed, reputation_source = load_feed(exit_cache, fetch, now)
@@ -343,6 +348,8 @@ def main():
             if 'publication size budget' not in str(error) or len(selected) <= 2:
                 raise
             selected.pop()
+    # Membership/size are fixed by diversity first; ping only orders this pool.
+    selected = order_by_latency(selected)
     reputation = reputation_report(checked, selected, feed, reputation_source)
     print(json.dumps({'ip_reputation': reputation}, ensure_ascii=False))
     config = build(selected, routing)
@@ -352,9 +359,10 @@ def main():
     report["service_acl"] = False
     report["routing_policy"] = "local direct; RU direct; everything else proxy"
     report['ru_reachability_required'] = False
-    report['pool_selection'] = 'exclude all IPsum-listed exits; maximize count within size budget; exit/network-prefix/host/transport diversity; client leastPing'
+    report['pool_selection'] = 'exclude all IPsum-listed exits; maximize count within size budget; exit/network-prefix/host/transport diversity; order selected pool by HTTPS latency; client leastPing'
     report['ip_reputation'] = reputation
     report['transport_checks'] = transport_report(selected, transport_failures)
+    report['latency_selection'] = latency_report(checked, selected)
     report['reputation_excluded'] = sum(n['reputation']['status'] == 'listed' for n in checked)
     report['foreign_exit_candidates'] = len(checked)
     report["geosite_sources"] = geo_sources

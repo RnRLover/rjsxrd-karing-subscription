@@ -55,11 +55,20 @@ def latency_value(node):
             if latency_priority(node)[0] < 2 else math.inf)
 
 
+def order_by_latency(nodes):
+    """Sort the already selected pool by median milliseconds; unknowns last.
+
+    Sorting is stable for equal/unknown latency, preserving diversity order.
+    No node is excluded because a health probe failed.
+    """
+    return sorted(nodes, key=latency_value)
+
+
 def latency_report(nodes, selected):
     return {'url': URL, 'method': 'HEAD', 'attempts': SAMPLES, 'timeout_seconds': TIMEOUT,
-            'cache_seconds': TTL, 'bucket_ms': BUCKET_MS, 'vantage': 'GitHub Actions runner',
-            'policy': 'reputation; complete before partial probes; latency bucket; diversity; exact latency; previous membership',
-            'failed_probe_policy': 'rank after measured nodes; keep existing transport/exit gates',
+            'cache_seconds': TTL, 'vantage': 'GitHub Actions runner',
+            'policy': 'select reputation-eligible diverse membership first; order selected pool by ascending median milliseconds; unknown last',
+            'failed_probe_policy': 'keep nodes; partial samples use their median; no successful samples sorts last',
             'candidates': len(nodes),
             'candidates_measured': sum(latency_priority(n)[0] < 2 for n in nodes),
             'servers': [{'tag': f'pool-{i:02d}', 'latency': n.get('latency_check')}

@@ -1,6 +1,6 @@
 import json
 import unittest
-from latency_checks import measure_latency, reusable_latency, latency_priority, latency_signature, URL, TTL
+from latency_checks import measure_latency, reusable_latency, latency_priority, latency_signature, order_by_latency, URL, TTL
 from pool_selection import select_pool, node_key
 from test_pool_selection import node
 
@@ -61,6 +61,18 @@ class LatencyTests(unittest.TestCase):
         nodes[1]['outbound']['streamSettings']['network'] = 'ws'
         chosen = select_pool(nodes, 2, network_lookup=lambda h: h)
         self.assertEqual({n['host'] for n in chosen}, {'a', 'b'})
+
+    def test_sort_selected_pool_uses_exact_median_and_retains_every_member(self):
+        nodes = [measured('slow', 1600), measured('fast', 11),
+                 measured('partial', 9, failed=1), node('unknown'),
+                 measured('tie', 11), measured('invalid', float('nan'))]
+        original = nodes[:]
+        ordered = order_by_latency(nodes)
+        self.assertEqual([n['host'] for n in ordered],
+                         ['partial', 'fast', 'tie', 'slow', 'unknown', 'invalid'])
+        self.assertEqual(nodes, original)
+        self.assertEqual({node_key(n) for n in ordered}, {node_key(n) for n in nodes})
+        self.assertEqual(order_by_latency([]), [])
 
     def test_measurement_dates_do_not_change_publication_signature(self):
         report = {'latency_selection': {'servers': [{'tag': 'pool-01', 'latency': {'median_ms': 20, 'checked_at': 10}}]}}
