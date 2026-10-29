@@ -30,7 +30,9 @@ def canonical(name, data):
 
 def reputation_signature(data):
     """Publish changed selected-exit evidence, without timestamp/feed churn."""
-    return json.loads(data).get('ip_reputation', {}).get('servers', [])
+    reputation = json.loads(data).get('ip_reputation', {})
+    return {'servers': reputation.get('servers', []),
+            'selection_priority': reputation.get('selection_priority')}
 
 
 def changed(root):

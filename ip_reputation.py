@@ -100,7 +100,7 @@ def reputation_report(nodes, selected, feed, source):
         'sha256': feed['sha256'], 'feed_entries': len(feed['counts']),
         'evidence_source': source, 'unlisted_coverage': 'IPv4 only',
         'score_formula': 'max(0, 100 - 20 * IPsum blacklist occurrence count)',
-        'selection_priority': 'not_listed, unknown, listed (fewest occurrences first); then diversity',
+        'selection_priority': 'not_listed, unknown, listed (fewest occurrences first); then HTTP latency buckets and diversity',
         'meaning': 'No listing in this feed is not a positive whitelist or proof of Gemini access.',
         'candidates': dict(Counter(n['reputation']['status'] for n in nodes)),
         'selected': dict(Counter(n['reputation']['status'] for n in selected)),
