@@ -30,7 +30,7 @@ jobs:
         with:
           python-version: '3.12'
       - name: Remove retired subscription files
-        run: git rm --ignore-unmatch check_fakedns.py check_ru.py test_check_ru.py geo_dat.py happ-worker.js test_happ_worker.mjs setup_singbox.py normal.json normal-servers.txt normal-report.json normal-reachability.json ru-reachability.json ru-karing-happ-routing-test.txt ru-karing.json servers.txt karing-report.json karing-geoip.dat karing-geosite.dat karing-geoip.dat.sha256 karing-geosite.dat.sha256
+        run: git rm --ignore-unmatch check_fakedns.py check_ru.py test_check_ru.py geo_dat.py happ-worker.js test_happ_worker.mjs setup_singbox.py normal.json normal-servers.txt normal-report.json normal-reachability.json ru-reachability.json ru-karing-happ-routing-test.txt ru-karing.json servers.txt karing-report.json karing-geoip.dat karing-geosite.dat karing-geoip.dat.sha256 karing-geosite.dat.sha256 ru-karing-incy.txt ru-karing-happ.txt
       - name: Tests
         run: python -m unittest discover -v
       - name: Prepare official Xray
@@ -52,14 +52,14 @@ jobs:
           key: exit-country-v1-${{ github.run_id }}-${{ github.run_attempt }}
       - name: Generate common subscription
         run: python karing.py --xray .runtime/xray
-      - name: Check common JSON, legacy URLs, LAN TCP and client DNS
+      - name: Check common JSON, LAN TCP and client DNS
         run: python check_subscription.py --xray .runtime/xray
       - name: Publish validated files
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           if python publication_changed.py || ! git diff --cached --quiet; then
-            git add subscription.json ru.json report.json ru-karing-incy.txt ru-karing-happ.txt
+            git add subscription.json ru.json report.json
             git commit -m "Update validated rjsxrd subscription"
             git push
           fi
