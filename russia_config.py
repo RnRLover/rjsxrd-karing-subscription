@@ -68,7 +68,7 @@ def build(config, profile):
     rules = [
         {'type': 'field', 'inboundTag': ['default-auto', 'dns-proxy'], 'balancerTag': 'auto'},
         {'type': 'field', 'inboundTag': ['dns-bootstrap'], 'outboundTag': 'direct'},
-        # Split intercepted DNS between the system resolver and proxied DoH.
+        # Split intercepted DNS between direct Yandex and proxied DoH.
         {'type': 'field', 'inboundTag': [i['tag'] for i in result['inbounds']],
          'port': '53', 'network': 'tcp,udp', 'outboundTag': 'dns-out'}]
     order = profile.get('RouteOrder', 'block-proxy-direct').split('-')

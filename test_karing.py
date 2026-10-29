@@ -16,7 +16,7 @@ class KaringTests(unittest.TestCase):
         configs = subscription_variants(base)
         self.assertEqual(len(configs), 1)
         c = configs[0]
-        self.assertEqual([item['address'] for item in c['dns']['servers']], ['localhost', 'localhost', 'https://cloudflare-dns.com/dns-query'])
+        self.assertEqual([item['address'] for item in c['dns']['servers']], ['77.88.8.8', '77.88.8.8', 'https://cloudflare-dns.com/dns-query'])
         self.assertTrue(c['dns']['disableFallbackIfMatch'])
         self.assertTrue(all(item['skipFallback'] for item in c['dns']['servers'][:2]))
         self.assertEqual(c['dns']['servers'][1]['domains'], profile['DirectSites'])
@@ -31,7 +31,7 @@ class KaringTests(unittest.TestCase):
         self.assertEqual(c['routing']['rules'][-2]['domain'], ['geosite:category-ru'])
         self.assertEqual(json.loads(incy_subscription(configs)), configs)
         self.assertEqual(json.loads(happ_subscription(configs)), configs)
-        self.assertEqual(profile['DomesticDNS'], 'localhost')
+        self.assertEqual(profile['DomesticDNS'], '77.88.8.8')
         self.assertIn('dns-proxy', c['routing']['rules'][0]['inboundTag'])
         self.assertEqual(c['routing']['rules'][0]['balancerTag'], 'auto')
         self.assertEqual(c['routing']['rules'][2]['outboundTag'], 'dns-out')
