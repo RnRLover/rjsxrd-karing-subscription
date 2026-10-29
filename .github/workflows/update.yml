@@ -29,8 +29,6 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Remove retired subscription files
-        run: git rm --ignore-unmatch check_fakedns.py check_ru.py test_check_ru.py geo_dat.py happ-worker.js test_happ_worker.mjs setup_singbox.py normal.json normal-servers.txt normal-report.json normal-reachability.json ru-reachability.json ru-karing-happ-routing-test.txt ru-karing.json servers.txt karing-report.json karing-geoip.dat karing-geosite.dat karing-geoip.dat.sha256 karing-geosite.dat.sha256 ru-karing-incy.txt ru-karing-happ.txt
       - name: Tests
         run: python -m unittest discover -v
       - name: Prepare official Xray
@@ -58,7 +56,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          if python publication_changed.py || ! git diff --cached --quiet; then
+          if python publication_changed.py; then
             git add subscription.json ru.json report.json
             git commit -m "Update validated rjsxrd subscription"
             git push
