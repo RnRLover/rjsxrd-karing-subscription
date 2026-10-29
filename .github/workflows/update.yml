@@ -33,8 +33,6 @@ jobs:
         run: python -m unittest discover -v
       - name: Prepare official Xray
         run: python setup_xray.py
-      - name: Prepare official sing-box rule converter
-        run: python setup_singbox.py
       - name: Restore recent exit-country evidence
         uses: actions/cache/restore@v4
         with:
@@ -51,10 +49,10 @@ jobs:
           path: .runtime/exit-cache.json
           key: exit-country-v1-${{ github.run_id }}-${{ github.run_attempt }}
       - name: Generate single Russia profile
-        run: python karing.py --xray .runtime/xray --singbox .runtime/sing-box
+        run: python karing.py --xray .runtime/xray
       - name: Check DNS startup and local DNS TCP exchange
         run: python check_fakedns.py --xray .runtime/xray
-      - name: Check standalone Happ config without geofiles
+      - name: Check identical common subscription through legacy Happ URL
         run: |
           python check_fakedns.py --xray .runtime/xray --config ru-karing-happ.txt --profile-index 0
       - name: Publish validated files
@@ -62,7 +60,8 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           if python publication_changed.py; then
-            git add ru.json servers.txt report.json ru-karing.json ru-karing-incy.txt ru-karing-happ.txt ru-karing-happ-routing-test.txt karing-routing.json karing-report.json karing-geoip.dat karing-geosite.dat karing-geoip.dat.sha256 karing-geosite.dat.sha256
+            git rm --ignore-unmatch karing-routing.json
+          git add subscription.json ru.json servers.txt report.json ru-karing.json ru-karing-incy.txt ru-karing-happ.txt ru-karing-happ-routing-test.txt karing-report.json karing-geoip.dat karing-geosite.dat karing-geoip.dat.sha256 karing-geosite.dat.sha256
             git commit -m "Update validated rjsxrd subscription"
             git push
           fi
