@@ -14,6 +14,13 @@ def build(config, profile):
     result.pop('fakedns', None)
     result.pop('dns', None)
     result['remarks'] = 'Russia'
+    result['geodata'] = {
+        'cron': '17 */12 * * *',
+        'assets': [
+            {'url': profile['Geoipurl'], 'file': 'geoip.dat'},
+            {'url': profile['Geositeurl'], 'file': 'geosite.dat'},
+        ],
+    }
     # No DNS resolver, DNS interception, loopback or external routing profile.
     # A real proxy first also keeps full-JSON detection compatible across clients.
     result['outbounds'] = [o for o in result['outbounds']
@@ -73,7 +80,7 @@ def main(xray):
             if prior is None: os.environ.pop('XRAY_LOCATION_ASSET', None)
             else: os.environ['XRAY_LOCATION_ASSET'] = prior
     body = common_subscription(variants)
-    # Databases are validation inputs only; neither client imports these files.
+    # Local validation assets; clients download their own copies via geodata.
     runtime = ROOT / '.runtime'
     runtime.mkdir(exist_ok=True)
     for name, data in assets.items():

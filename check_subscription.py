@@ -1,8 +1,12 @@
-"""Isolated UDP DNS, LAN TCP and domain GeoIP checks for the common config.
+"""Exercise published routing in Xray using isolated TCP/UDP transport fixtures.
 
-Only this test injects a local resolver. It is never written to the subscription.
+Production rules, sniffing and balancer selectors stay unchanged. Only outbound
+transports, inbound ports, probe subjects and the test DNS resolver are replaced.
+The fixture resolver and redirects are never written to the subscription.
 """
 import argparse
+import copy
+import ipaddress
 import json
 import os
 from pathlib import Path
@@ -12,13 +16,11 @@ import subprocess
 import tempfile
 import threading
 import time
-ROOT = Path(__file__).resolve().parent
-parser = argparse.ArgumentParser()
-parser.add_argument('--xray', required=True)
-parser.add_argument('--config', default='subscription.json')
-parser.add_argument('--profile-index', type=int, default=0)
-args = parser.parse_args()
+
 from generate import xray_validate
+
+ROOT = Path(__file__).resolve().parent
+
 
 def receive(sock, count):
     data = b''
@@ -28,128 +30,174 @@ def receive(sock, count):
             raise RuntimeError('unexpected EOF')
         data += part
     return data
-dns = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-dns.bind(('127.0.0.1', 0))
-echo = socket.socket()
-echo.bind(('127.0.0.1', 0))
-echo.listen()
-real_queries = []
 
-def dns_worker(server, queries):
-    while True:
-        try:
-            request, addr = server.recvfrom(4096)
-            queries.append(request)
-            response = request[:2] + b'\x81\x80\x00\x01\x00\x01\x00\x00\x00\x00' + request[12:] + b'\xc0\x0c\x00\x01\x00\x01\x00\x00\x00<\x00\x04' + socket.inet_aton('127.0.0.1')
-            server.sendto(response, addr)
-        except OSError:
-            return
 
-def echo_worker():
-    conn, _ = echo.accept()
-    with conn:
-        conn.settimeout(10)
-        if receive(conn, 4) != b'PING':
-            raise RuntimeError('wrong TCP payload')
-        conn.sendall(b'PONG')
-threading.Thread(target=dns_worker, args=(dns, real_queries), daemon=True).start()
-threading.Thread(target=echo_worker, daemon=True).start()
-text = (ROOT / args.config).read_text(encoding='utf-8')
-config = json.loads(text)
-if isinstance(config, list):
-    config = config[args.profile_index]
-assert 'dns' not in config and 'fakedns' not in config
-assert config['routing']['domainStrategy'] == 'IPOnDemand'
-assert not any((o.get('protocol') == 'dns' for o in config['outbounds']))
-assert any((r.get('port') == '53' and r.get('outboundTag') == 'direct' for r in config['routing']['rules']))
-for rule in config['routing']['rules']:
-    if rule.get('port') == '53':
-        rule['port'] = str(dns.getsockname()[1])
-config['dns'] = {'servers': [{'address': '127.0.0.1', 'port': dns.getsockname()[1], 'tag': 'dns-bootstrap'}]}
-config['routing']['rules'].insert(0, {'type': 'field', 'inboundTag': ['dns-bootstrap'], 'outboundTag': 'direct'})
-config['log'] = {'loglevel': 'debug'}
-config.pop('burstObservatory', None)
-config['routing'].pop('balancers', None)
-for rule in config['routing']['rules']:
-    if 'balancerTag' in rule:
-        rule.pop('balancerTag')
-        rule['outboundTag'] = 'block'
-for outbound in config['outbounds']:
-    if outbound['tag'] == 'direct':
-        outbound['settings'] = {'domainStrategy': 'UseIPv4'}
-config['routing']['rules'].insert(3, {'type': 'field', 'domain': ['full:music.yandex.ru'], 'outboundTag': 'direct'})
-for inbound in config['inbounds']:
-    with socket.socket() as held:
-        held.bind(('127.0.0.1', 0))
-        inbound['port'] = held.getsockname()[1]
-port = config['inbounds'][0]['port']
-with tempfile.TemporaryDirectory() as temp:
-    temp = Path(temp)
-    needs_geo = any((value.startswith(('geoip:', 'geosite:', 'ext:')) for rule in config['routing']['rules'] for key in ('domain', 'ip') for value in rule.get(key, [])))
-    if needs_geo:
-        for name in ('geoip.dat', 'geosite.dat'):
-            (temp / name).write_bytes((ROOT / '.runtime' / name).read_bytes())
-    os.environ['XRAY_LOCATION_ASSET'] = str(temp)
-    xray = Path(args.xray).resolve()
-    xray_validate(xray, config)
-    path = temp / 'config.json'
-    path.write_text(json.dumps(config), encoding='utf-8')
-    log = (temp / 'xray.log').open('w', encoding='utf-8')
-    process = subprocess.Popen([str(xray), 'run', '-config', str(path)], stdout=log, stderr=log)
-    try:
-        control = None
-        for _ in range(300):
-            if process.poll() is not None:
-                break
+def tcp_fixture(label):
+    server = socket.socket()
+    server.bind(('127.0.0.1', 0))
+    server.listen()
+    def worker():
+        while True:
             try:
-                control = socket.create_connection(('127.0.0.1', port), timeout=5)
-                break
+                conn, _ = server.accept()
+                with conn:
+                    conn.settimeout(5)
+                    if conn.recv(4096):
+                        conn.sendall(label)
             except OSError:
-                time.sleep(0.1)
-        if control is None:
-            log.flush()
-            raise RuntimeError('Xray did not start: ' + (temp / 'xray.log').read_text(encoding='utf-8'))
-        control.sendall(b'\x05\x01\x00')
-        assert receive(control, 2) == b'\x05\x00'
-        control.sendall(b'\x05\x03\x00\x01' + b'\x00' * 6)
-        reply = receive(control, 10)
-        assert reply[:4] == b'\x05\x00\x00\x01', reply
-        relay = (socket.inet_ntoa(reply[4:8]), struct.unpack('!H', reply[8:])[0])
-        query = b'\x124\x01\x00\x00\x01\x00\x00\x00\x00\x00\x00\x05music\x06yandex\x02ru\x00\x00\x01\x00\x01'
-        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as udp:
-            udp.settimeout(5)
-            destination = ('127.0.0.1', dns.getsockname()[1])
-            udp.sendto(b'\x00\x00\x00\x01' + socket.inet_aton(destination[0]) + struct.pack('!H', destination[1]) + query, relay)
-            response = udp.recv(4096)
-        resolved_ip = socket.inet_ntoa(response[-4:])
-        assert resolved_ip == '127.0.0.1', resolved_ip
-        with socket.create_connection(('127.0.0.1', port), timeout=10) as tcp:
-            tcp.sendall(b'\x05\x01\x00')
-            assert receive(tcp, 2) == b'\x05\x00'
-            tcp.sendall(b'\x05\x01\x00\x01' + socket.inet_aton(resolved_ip) + struct.pack('!H', echo.getsockname()[1]))
-            assert receive(tcp, 10)[:2] == b'\x05\x00'
-            tcp.sendall(b'PING')
-            assert receive(tcp, 4) == b'PONG'
-        threading.Thread(target=echo_worker, daemon=True).start()
-        with socket.create_connection(('127.0.0.1', port), timeout=10) as tcp:
-            tcp.sendall(b'\x05\x01\x00')
-            assert receive(tcp, 2) == b'\x05\x00'
-            domain = b'geoip-only.invalid'
-            tcp.sendall(b'\x05\x01\x00\x03' + bytes([len(domain)]) + domain + struct.pack('!H', echo.getsockname()[1]))
-            assert receive(tcp, 10)[:2] == b'\x05\x00'
-            tcp.sendall(b'PING')
-            assert receive(tcp, 4) == b'PONG'
-        assert any((b'geoip-only' in query for query in real_queries)), 'GeoIP domain lookup was not exercised'
-        assert real_queries, 'local DNS exchange was not exercised'
-        print(json.dumps({'client_dns_destination_preserved': True, 'LAN_tcp_roundtrip': True, 'domain_geoip_roundtrip': True}))
-        control.close()
-    except Exception:
-        log.flush()
-        print((temp / 'xray.log').read_text(encoding='utf-8')[-18000:])
-        raise
-    finally:
-        process.terminate()
-        process.wait(timeout=5)
-        log.close()
-dns.close()
-echo.close()
+                return
+    threading.Thread(target=worker, daemon=True).start()
+    return server
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--xray', required=True)
+    parser.add_argument('--config', default='subscription.json')
+    parser.add_argument('--profile-index', type=int, default=0)
+    args = parser.parse_args()
+    original = json.loads((ROOT / args.config).read_bytes())
+    if isinstance(original, list):
+        original = original[args.profile_index]
+    assert 'dns' not in original and 'fakedns' not in original
+    assert original['routing']['domainStrategy'] == 'IPOnDemand'
+    assert not any(o['protocol'] in ('dns', 'loopback') for o in original['outbounds'])
+    assert any(r.get('port') == '53' and r.get('outboundTag') == 'direct'
+               for r in original['routing']['rules'])
+    config = copy.deepcopy(original)
+    direct = tcp_fixture(b'DIRECT')
+    proxy = tcp_fixture(b'PROXY')
+    dns = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    dns.bind(('127.0.0.1', direct.getsockname()[1]))
+    dns_queries = []
+    def dns_worker():
+        while True:
+            try:
+                request, addr = dns.recvfrom(4096)
+                pos, parts = 12, []
+                while request[pos]:
+                    length = request[pos]
+                    parts.append(request[pos+1:pos+1+length].decode())
+                    pos += length + 1
+                name = '.'.join(parts)
+                dns_queries.append(name)
+                address = '77.88.8.8' if name == 'geoip-only.invalid' else '8.8.8.8'
+                answer = (request[:2] + b'\x81\x80\x00\x01\x00\x01\x00\x00\x00\x00'
+                          + request[12:pos+5] + b'\xc0\x0c\x00\x01\x00\x01\x00\x00\x00\x3c\x00\x04'
+                          + socket.inet_aton(address))
+                dns.sendto(answer, addr)
+            except OSError:
+                return
+    threading.Thread(target=dns_worker, daemon=True).start()
+    for outbound in config['outbounds']:
+        if outbound['tag'] == 'block':
+            continue
+        port = (direct if outbound['tag'] == 'direct' else proxy).getsockname()[1]
+        tag = outbound['tag']
+        outbound.clear()
+        outbound.update(tag=tag, protocol='freedom',
+                        settings={'redirect': f'127.0.0.1:{port}'})
+    for inbound in config['inbounds']:
+        with socket.socket() as held:
+            held.bind(('127.0.0.1', 0))
+            inbound['port'] = held.getsockname()[1]
+    config['dns'] = {'queryStrategy': 'UseIPv4', 'servers': [
+        {'address': '127.0.0.1', 'port': dns.getsockname()[1]}]}
+    config['burstObservatory']['subjectSelector'] = ['unused-test-subject']
+    config['log'] = {'loglevel': 'debug'}
+    assert config['routing'] == original['routing']
+    port = next(i['port'] for i in config['inbounds'] if i['protocol'] == 'socks')
+    with tempfile.TemporaryDirectory() as directory:
+        directory = Path(directory)
+        for name in ('geoip.dat', 'geosite.dat'):
+            (directory / name).write_bytes((ROOT / '.runtime' / name).read_bytes())
+        os.environ['XRAY_LOCATION_ASSET'] = str(directory)
+        xray = str(Path(args.xray).resolve())
+        xray_validate(xray, config)
+        path = directory / 'config.json'
+        path.write_text(json.dumps(config), encoding='utf-8')
+        with (directory / 'xray.log').open('w') as log:
+            process = subprocess.Popen([xray, 'run', '-config', str(path)], stdout=log, stderr=log)
+            try:
+                for _ in range(100):
+                    try:
+                        with socket.create_connection(('127.0.0.1', port), timeout=.2):
+                            break
+                    except OSError:
+                        if process.poll() is not None:
+                            raise RuntimeError('Xray stopped before probe')
+                        time.sleep(.05)
+                def request(host, payload=b'PING'):
+                    with socket.create_connection(('127.0.0.1', port), timeout=5) as conn:
+                        conn.settimeout(5)
+                        conn.sendall(b'\x05\x01\x00')
+                        assert receive(conn, 2) == b'\x05\x00'
+                        try:
+                            ip = ipaddress.ip_address(host)
+                            address = bytes([1 if ip.version == 4 else 4]) + ip.packed
+                        except ValueError:
+                            encoded = host.encode('idna')
+                            address = b'\x03' + bytes([len(encoded)]) + encoded
+                        conn.sendall(b'\x05\x01\x00' + address + struct.pack('!H', 443))
+                        assert receive(conn, 10)[:2] == b'\x05\x00'
+                        conn.sendall(payload)
+                        try:
+                            value = conn.recv(16)
+                        except ConnectionResetError:
+                            value = b''
+                        return value.decode() if value else 'BLOCK'
+                cases = [
+                    ('RU TLD with foreign DNS address', 'routing-fixture.ru', 'DIRECT'),
+                    ('SU TLD with foreign DNS address', 'routing-fixture.su', 'DIRECT'),
+                    ('RF TLD with foreign DNS address', 'routing-fixture.xn--p1ai', 'DIRECT'),
+                    ('RU service on .com', 'vk.com', 'DIRECT'),
+                    ('RU IP', '77.88.8.8', 'DIRECT'),
+                    ('GeoIP-only domain', 'geoip-only.invalid', 'DIRECT'),
+                    ('LAN IPv4', '192.168.1.1', 'DIRECT'),
+                    ('LAN IPv6', 'fd00::1', 'DIRECT'),
+                    ('Foreign IP', '8.8.8.8', 'PROXY'),
+                    ('Foreign domain', 'foreign.invalid', 'PROXY'),
+                    ('Advertisement', 'doubleclick.net', 'BLOCK'),
+                    ('RU advertisement before direct', 'ads.adfox.ru', 'BLOCK')]
+                results = []
+                for label, host, expected in cases:
+                    actual = request(host)
+                    results.append({'case': label, 'destination': host,
+                                    'expected': expected, 'actual': actual})
+                actual = request('8.8.8.8', b'GET / HTTP/1.1\r\nHost: routing-fixture.ru\r\n\r\n')
+                results.append({'case': 'Sniffed RU host at foreign IP',
+                                'expected': 'DIRECT', 'actual': actual})
+                # Exercise original port-53 routing and UDP delivery to the local
+                # resolver fixture; production has no redirect or supplied DNS.
+                with socket.create_connection(('127.0.0.1', port), timeout=5) as conn:
+                    conn.sendall(b'\x05\x01\x00')
+                    assert receive(conn, 2) == b'\x05\x00'
+                    conn.sendall(b'\x05\x03\x00\x01' + b'\x00' * 6)
+                    reply = receive(conn, 10)
+                    relay = (socket.inet_ntoa(reply[4:8]), struct.unpack('!H', reply[8:])[0])
+                    query = (b'\x12\x34\x01\x00\x00\x01\x00\x00\x00\x00\x00\x00'
+                             b'\x07example\x03com\x00\x00\x01\x00\x01')
+                    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as udp:
+                        udp.settimeout(5)
+                        udp.sendto(b'\x00\x00\x00\x01' + socket.inet_aton('9.9.9.9')
+                                   + struct.pack('!H', 53) + query, relay)
+                        response = udp.recv(4096)
+                    assert response[-4:] == socket.inet_aton('8.8.8.8')
+                assert 'geoip-only.invalid' in dns_queries
+                print(json.dumps({'routing_rules_unchanged': True, 'UDP_DNS_direct': True,
+                                  'results': results}, ensure_ascii=False))
+                assert all(r['actual'] == r['expected'] for r in results), 'Routing regression'
+            except Exception:
+                log.flush()
+                print((directory / 'xray.log').read_text()[-12000:])
+                raise
+            finally:
+                process.terminate()
+                process.wait(timeout=5)
+                dns.close()
+                direct.close()
+                proxy.close()
+
+
+if __name__ == '__main__':
+    main()

@@ -15,6 +15,13 @@ class KaringTests(unittest.TestCase):
         c = configs[0]
         self.assertNotIn('dns', c)
         self.assertNotIn('fakedns', c)
+        self.assertEqual(c['geodata'], {
+            'cron': '17 */12 * * *',
+            'assets': [
+                {'url': profile['Geoipurl'], 'file': 'geoip.dat'},
+                {'url': profile['Geositeurl'], 'file': 'geosite.dat'},
+            ],
+        })
         self.assertFalse(any((o.get('protocol') in ('dns', 'loopback') for o in c['outbounds'])))
         self.assertTrue(all((i['sniffing']['routeOnly'] for i in c['inbounds'])))
         self.assertEqual(c['routing']['domainStrategy'], 'IPOnDemand')
