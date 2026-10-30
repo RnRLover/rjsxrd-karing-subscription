@@ -73,13 +73,8 @@ def main(xray):
     old = json.loads((ROOT / 'ru.json').read_bytes())
     config = build(old, profile)
     config, variants = fit_client_pool(config)
-    from gemini_checks import check_pool, experimental_profile
-    selected, evidence = check_pool(config, xray)
-    experimental = experimental_profile(config, selected)
-    if experimental is not None:
-        variants.append(experimental)
     report = json.loads((ROOT / 'report.json').read_bytes())
-    report['gemini_check'] = evidence
+    report.pop('gemini_check', None)
     import tempfile
     with tempfile.TemporaryDirectory() as temp:
         for name, data in assets.items(): Path(temp, name).write_bytes(data)
@@ -99,5 +94,4 @@ def main(xray):
         (runtime / name).write_bytes(data)
     atomic_write(ROOT / 'subscription.json', body + '\n')
     atomic_write(ROOT / 'report.json', json.dumps(report, ensure_ascii=False, indent=2) + '\n')
-    print('Gemini page check:', evidence['checked'], 'tested,', evidence['passed'], 'passed,', evidence['selected'], 'selected')
     print('Published common subscription')
