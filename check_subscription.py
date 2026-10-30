@@ -50,12 +50,7 @@ def tcp_fixture(label):
     return server
 
 
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--xray', required=True)
-    parser.add_argument('--config', default='subscription.json')
-    parser.add_argument('--profile-index', type=int, default=0)
-    args = parser.parse_args()
+def check_profile(args):
     original = json.loads((ROOT / args.config).read_bytes())
     if isinstance(original, list):
         original = original[args.profile_index]
@@ -207,6 +202,20 @@ def main():
                 dns.close()
                 direct.close()
                 proxy.close()
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--xray', required=True)
+    parser.add_argument('--config', default='subscription.json')
+    parser.add_argument('--profile-index', type=int, default=None)
+    args = parser.parse_args()
+    content = json.loads((ROOT / args.config).read_bytes())
+    indices = ([args.profile_index] if args.profile_index is not None else
+               range(len(content)) if isinstance(content, list) else [0])
+    for index in indices:
+        print('Checking profile', index, flush=True)
+        check_profile(argparse.Namespace(xray=args.xray, config=args.config, profile_index=index))
 
 
 if __name__ == '__main__':

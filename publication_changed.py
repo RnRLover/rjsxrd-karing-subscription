@@ -19,6 +19,14 @@ def reputation_signature(data):
             'selection_priority': reputation.get('selection_priority')}
 
 
+def gemini_signature(data):
+    evidence = json.loads(data).get('gemini_check', {})
+    return {'status': evidence.get('status'),
+            'selected_source_tags': evidence.get('selected_source_tags', []),
+            'servers': [{k: e.get(k) for k in ('tag', 'passed', 'error', 'http_status')}
+                        for e in evidence.get('servers', [])]}
+
+
 def changed(root):
     for name in CLIENT_FILES:
         old = subprocess.run(['git', 'show', 'HEAD:' + name], cwd=root, capture_output=True)
@@ -27,7 +35,7 @@ def changed(root):
     report = root / 'report.json'
     if report.exists():
         old = subprocess.run(['git', 'show', 'HEAD:report.json'], cwd=root, capture_output=True)
-        if old.returncode or reputation_signature(old.stdout) != reputation_signature(report.read_bytes()) or transport_signature(old.stdout) != transport_signature(report.read_bytes()) or latency_signature(old.stdout) != latency_signature(report.read_bytes()):
+        if old.returncode or reputation_signature(old.stdout) != reputation_signature(report.read_bytes()) or transport_signature(old.stdout) != transport_signature(report.read_bytes()) or latency_signature(old.stdout) != latency_signature(report.read_bytes()) or gemini_signature(old.stdout) != gemini_signature(report.read_bytes()):
             return True
     return False
 

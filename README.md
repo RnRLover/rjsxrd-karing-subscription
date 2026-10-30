@@ -4,13 +4,19 @@ Use the same URL in both clients:
 
 https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/subscription.json
 
-One pure JSON array, one **Основной** configuration. No provider interval, routing import command or separate routing profile is attached. Disable/remove a previously imported Russia profile in the app, or import the common URL as a new subscription.
+One pure JSON array with **Основной** and, when eligible nodes exist, **Gemini · проверка страницы**. No provider interval, routing import command or separate routing profile is attached. Disable/remove a previously imported Russia profile in the app, or import the common URL as a new subscription.
 
 ## Routing
 
 Embedded rules block `geosite:category-ads-all`; route `geosite:category-ru`, `geoip:ru` and private/local networks directly; route other TCP/UDP via the automatic pool. The JSON `geodata` block updates `geoip.dat` and `geosite.dat` from Loyalsoldier's official latest-release HTTPS URLs at 00:17 and 12:17 in the core's local timezone, while Xray is running. Downloads follow the existing routing and a failed reload rolls back the update. This requires a recent core with geodata support and writable, already-present asset files; it is not a first-start bootstrap or an immediate download on connection. Client builds may restrict writes or omit this core feature. CI validates against the same databases in ignored `.runtime/` files. No separate routing profile or custom DNS is imported.
 
 The subscription supplies **no DNS configuration**, no DNS outbound and no FakeDNS. Port 53 traffic keeps its original destination and goes directly. DNS settings belong to the client. `IPIfNonMatch` first matches domains and original destination IPs, then resolves unmatched domains for a second GeoIP pass using the resolver available to Xray. Unmatched traffic enters the automatic pool through the first/default `loopback` outbound and the scoped `default-auto` inbound-tag rule. There is no unconditional proxy catch-all to suppress the second pass. This preserves an original RU destination when a sniffed hostname resolves abroad, and does not supply a resolver address. Sniffing recovers HTTP/TLS/QUIC hostnames for routing without changing the destination.
+
+## Experimental Gemini profile
+
+The second full JSON profile is generated from the already admitted base pool; the main profile is not filtered by Gemini results. Each node is tested through its exact Xray outbound with verified HTTPS: HTTP 200 at the final `gemini.google.com` host, a Gemini HTML title, no explicit visible region/traffic denial, then a complete 256 KiB transfer from Cloudflare. The response body is not stored. This is logged-out page reachability from GitHub, not authenticated Gemini eligibility, mobile-app compatibility or a test through the user's operator.
+
+Up to 40 passing nodes are selected, preferring distinct entry hosts, then retained in the base HTTPS-latency order. Both profiles keep embedded RU/LAN-direct and ad-blocking rules, client DNS, automatic selection and geodata updates. Failed nodes never fall back into the experimental pool; if all fail, only the main profile is published. Checks run fresh on each rebuild; `report.json.gemini_check` records outcomes and selected source tags. The shared subscription URL stays unchanged. Runtime routing checks exercise every published profile.
 
 ## Pool and automatic selection
 
