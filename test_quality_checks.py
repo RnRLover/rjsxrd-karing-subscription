@@ -2,6 +2,7 @@ import copy
 import io
 import json
 import unittest
+from pathlib import Path
 from quality_checks import (probe_quality, HEALTH_URLS, TRANSFER_URL, TRANSFER_BYTES,
                             TTL, reusable_quality, record_result, history_summary,
                             quality_admitted, quality_signature, MAX_AGE)
@@ -23,7 +24,7 @@ class Response:
 class Opener:
     def __init__(self, failures=(), body=None, redirect=False, kind='application/octet-stream'):
         self.calls = []; self.failures = set(failures)
-        self.body = b'x' * TRANSFER_BYTES if body is None else body
+        self.body = Path(__file__).with_name('quality-probe.bin').read_bytes() if body is None else body
         self.redirect, self.kind = redirect, kind
     def open(self, request, timeout):
         i = len(self.calls); self.calls.append(request.full_url)
@@ -65,7 +66,7 @@ class QualityTests(unittest.TestCase):
 
     def test_short_oversized_html_redirect_and_stalled_download_fail(self):
         for opener in (Opener(body=b'x'*16000), Opener(body=b'x'*(TRANSFER_BYTES+1)),
-                       Opener(kind='text/html'), Opener(redirect=True)):
+                       Opener(kind='text/html'), Opener(redirect=True), Opener(body=b'x'*TRANSFER_BYTES)):
             self.assertFalse(probe_quality(opener, Clock())['passed'])
         self.assertFalse(probe_quality(Opener(), Clock(step=2))['passed'])
 

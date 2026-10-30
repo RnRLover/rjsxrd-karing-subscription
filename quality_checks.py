@@ -1,4 +1,5 @@
 """Bounded, verified HTTPS transfer checks and actual-observation history."""
+import hashlib
 import json
 import math
 import statistics
@@ -7,7 +8,8 @@ import urllib.request
 
 VERSION = 1
 HEALTH_URLS = ('https://www.gstatic.com/generate_204', 'https://cp.cloudflare.com/generate_204')
-TRANSFER_URL = 'https://speed.cloudflare.com/__down?bytes=262144'
+TRANSFER_URL = 'https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/quality-probe.bin'
+TRANSFER_SHA256 = 'd3b2a355ae949b5d2b2abb2e8af9310b489c10d54c5da75095036c6198805fb4'
 TRANSFER_BYTES = 262144
 TTL = 900
 WINDOW = 10
@@ -34,9 +36,10 @@ def probe_quality(opener, clock=time.monotonic, now=time.time):
                     raise ValueError('invalid_timing')
                 samples.append(round(elapsed, 1)); passed += 1
             except Exception as error:
-                errors.append(type(error).__name__)
+                errors.append(type(error).__name__ + (':' + str(error.code) if hasattr(error, 'code') else ''))
         sites.append({'url': url, 'passed': passed, 'attempts': 2})
     transferred, transfer_ms, transfer_ok = 0, None, False
+    digest = hashlib.sha256()
     if all(s['passed'] for s in sites) and len(samples) >= 3:
         start = clock()
         try:
@@ -55,11 +58,13 @@ def probe_quality(opener, clock=time.monotonic, now=time.time):
                     chunk = response.read(min(16384, TRANSFER_BYTES + 1 - transferred))
                     if not chunk: break
                     transferred += len(chunk)
+                    digest.update(chunk)
             transfer_ms = round((clock() - start) * 1000, 1)
-            transfer_ok = transferred == TRANSFER_BYTES and 0 < transfer_ms <= TRANSFER_SECONDS * 1000
+            transfer_ok = (transferred == TRANSFER_BYTES and 0 < transfer_ms <= TRANSFER_SECONDS * 1000
+                           and digest.hexdigest() == TRANSFER_SHA256)
             if not transfer_ok: raise ValueError('incomplete_or_slow_transfer')
         except Exception as error:
-            errors.append(type(error).__name__)
+            errors.append(type(error).__name__ + (':' + str(error.code) if hasattr(error, 'code') else ''))
     median = round(statistics.median(samples), 1) if samples else None
     spread = round(max(samples) - min(samples), 1) if samples else None
     return {'version': VERSION, 'checked_at': int(now()),
@@ -67,7 +72,7 @@ def probe_quality(opener, clock=time.monotonic, now=time.time):
             'sites': sites, 'samples_ms': samples, 'median_ms': median,
             'spread_ms': spread, 'worst_ms': max(samples) if samples else None,
             'transfer_bytes': transferred, 'transfer_ms': transfer_ms,
-            'transfer_url': TRANSFER_URL, 'errors': errors}
+            'transfer_url': TRANSFER_URL, 'sha256_verified': transfer_ok, 'errors': errors}
 
 
 def reusable_quality(evidence, now):
@@ -116,7 +121,7 @@ def quality_priority(node):
 def quality_report(nodes, selected):
     return {'version': VERSION, 'vantage': 'GitHub Actions runner',
             'health_urls': list(HEALTH_URLS), 'transfer_url': TRANSFER_URL,
-            'transfer_bytes': TRANSFER_BYTES, 'transfer_deadline_seconds': TRANSFER_SECONDS,
+            'transfer_bytes': TRANSFER_BYTES, 'transfer_sha256': TRANSFER_SHA256, 'transfer_deadline_seconds': TRANSFER_SECONDS,
             'cache_seconds': TTL, 'history_window': WINDOW, 'history_max_age_seconds': MAX_AGE,
             'history_min_success_rate': .9, 'established_after_observations': 3,
             'warning': 'Runner tests do not measure reachability or speed on the device/operator; provisional is not established reliability.',
