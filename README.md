@@ -10,7 +10,7 @@ One pure JSON array, one **Основной** configuration. No provider interva
 
 Embedded rules block `geosite:category-ads-all`; route `geosite:category-ru`, `geoip:ru` and private/local networks directly; route other TCP/UDP via the automatic pool. The JSON `geodata` block updates `geoip.dat` and `geosite.dat` from Loyalsoldier's official latest-release HTTPS URLs at 00:17 and 12:17 in the core's local timezone, while Xray is running. Downloads follow the existing routing and a failed reload rolls back the update. This requires a recent core with geodata support and writable, already-present asset files; it is not a first-start bootstrap or an immediate download on connection. Client builds may restrict writes or omit this core feature. CI validates against the same databases in ignored `.runtime/` files. No separate routing profile or custom DNS is imported.
 
-The subscription supplies **no DNS configuration**, no DNS outbound and no FakeDNS. Port 53 traffic keeps its original destination and goes directly. DNS settings belong to the client. `IPOnDemand` lets domain destinations be checked against GeoIP before the final proxy rule, using the resolver available to Xray; it does not supply a resolver address. Sniffing recovers HTTP/TLS/QUIC hostnames for routing without changing the destination.
+The subscription supplies **no DNS configuration**, no DNS outbound and no FakeDNS. Port 53 traffic keeps its original destination and goes directly. DNS settings belong to the client. `IPIfNonMatch` first matches domains and original destination IPs, then resolves unmatched domains for a second GeoIP pass using the resolver available to Xray. Unmatched traffic enters the automatic pool through the first/default `loopback` outbound and the scoped `default-auto` inbound-tag rule. There is no unconditional proxy catch-all to suppress the second pass. This preserves an original RU destination when a sniffed hostname resolves abroad, and does not supply a resolver address. Sniffing recovers HTTP/TLS/QUIC hostnames for routing without changing the destination.
 
 ## Pool and automatic selection
 
@@ -28,7 +28,7 @@ IPsum refreshes daily and expires after 72 hours; a usable cache may cover a fee
 
 Every GitHub Actions run resolves the latest stable official Xray release, downloads assets from that exact version, and verifies the archive's publisher SHA256 before installation. A release lookup, download or validation failure stops publication and keeps the previous subscription. This updates only the CI core, not the apps on devices. The selected version and checksum appear in the job log.
 
-GitHub Actions runs at minutes 7, 22, 37 and 52 each hour. CI checks JSON/Xray validity plus 13 isolated routing cases covering RU domains, GeoIP, LAN, ads, foreign traffic, sniffing and DNS with the production rule order and balancer tags; it cannot confirm device connectivity on a particular mobile operator.
+GitHub Actions runs at minutes 7, 22, 37 and 52 each hour. CI checks JSON/Xray validity plus 14 isolated routing cases covering RU domains, GeoIP, LAN, ads, foreign traffic, sniffing, conflicting original-IP/DNS destinations and DNS with the production rule order and balancer tags; it cannot confirm device connectivity on a particular mobile operator.
 
 ## Repository files
 

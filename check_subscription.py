@@ -60,8 +60,13 @@ def main():
     if isinstance(original, list):
         original = original[args.profile_index]
     assert 'dns' not in original and 'fakedns' not in original
-    assert original['routing']['domainStrategy'] == 'IPOnDemand'
-    assert not any(o['protocol'] in ('dns', 'loopback') for o in original['outbounds'])
+    assert original['routing']['domainStrategy'] == 'IPIfNonMatch'
+    assert not any(o['protocol'] == 'dns' for o in original['outbounds'])
+    assert original['outbounds'][0] == {
+        'tag': 'default-proxy', 'protocol': 'loopback',
+        'settings': {'inboundTag': 'default-auto'}}
+    assert not any(r.get('network') == 'tcp,udp' and r.get('balancerTag') == 'auto'
+                   and not r.get('inboundTag') for r in original['routing']['rules'])
     assert any(r.get('port') == '53' and r.get('outboundTag') == 'direct'
                for r in original['routing']['rules'])
     config = copy.deepcopy(original)
@@ -90,7 +95,7 @@ def main():
                 return
     threading.Thread(target=dns_worker, daemon=True).start()
     for outbound in config['outbounds']:
-        if outbound['tag'] == 'block':
+        if outbound['tag'] == 'block' or outbound['protocol'] == 'loopback':
             continue
         port = (direct if outbound['tag'] == 'direct' else proxy).getsockname()[1]
         tag = outbound['tag']
@@ -167,6 +172,11 @@ def main():
                 actual = request('8.8.8.8', b'GET / HTTP/1.1\r\nHost: routing-fixture.ru\r\n\r\n')
                 results.append({'case': 'Sniffed RU host at foreign IP',
                                 'expected': 'DIRECT', 'actual': actual})
+                # Preserve a real RU destination even when a sniffed hostname
+                # has a different, foreign DNS answer in the core resolver.
+                results.append({'case': 'Original RU IP with foreign DNS answer',
+                                'expected': 'DIRECT',
+                                'actual': request('77.88.8.8', b'GET / HTTP/1.1\r\nHost: foreign.invalid\r\n\r\n')})
                 # Exercise original port-53 routing and UDP delivery to the local
                 # resolver fixture; production has no redirect or supplied DNS.
                 with socket.create_connection(('127.0.0.1', port), timeout=5) as conn:

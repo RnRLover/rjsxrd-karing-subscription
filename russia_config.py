@@ -21,19 +21,22 @@ def build(config, profile):
             {'url': profile['Geositeurl'], 'file': 'geosite.dat'},
         ],
     }
-    # No DNS resolver, DNS interception, loopback or external routing profile.
-    # A real proxy first also keeps full-JSON detection compatible across clients.
+    # No subscription-owned DNS resolver, interception or routing profile.
+    # Unmatched traffic uses the default loopback only after both GeoIP passes.
     result['outbounds'] = [o for o in result['outbounds']
                            if o.get('protocol') not in ('dns', 'loopback')]
     proxies = [o for o in result['outbounds']
                if o.get('protocol') in ('vless', 'vmess', 'trojan', 'shadowsocks')]
-    result['outbounds'] = proxies + [o for o in result['outbounds'] if o not in proxies]
+    result['outbounds'] = [{'tag': 'default-proxy', 'protocol': 'loopback',
+                            'settings': {'inboundTag': 'default-auto'}}] + proxies + [
+                                o for o in result['outbounds'] if o not in proxies]
     for balancer in result['routing'].get('balancers', []):
         balancer['fallbackTag'] = proxies[0]['tag'] if proxies else 'block'
     for inbound in result['inbounds']:
         inbound['sniffing'] = {'enabled': True, 'destOverride': ['http', 'tls', 'quic'], 'routeOnly': True}
-    # With the explicit final auto rule, IPOnDemand checks domain IPs before it.
-    result['routing']['domainStrategy'] = 'IPOnDemand'
+    # Prefer the original destination IP. Resolve unmatched domains on a second
+    # pass; an unconditional catch-all would prevent that pass from happening.
+    result['routing']['domainStrategy'] = 'IPIfNonMatch'
     rules = []
     order = profile.get('RouteOrder', 'block-proxy-direct').split('-')
     if len(order) != 3 or set(order) != {'block', 'direct', 'proxy'}:
@@ -47,7 +50,9 @@ def build(config, profile):
                 rules.append({'type': 'field', field: profile[prefix + key], **action})
     # Preserve the DNS destination chosen by the client/system.
     rules.insert(0, {'type': 'field', 'port': '53', 'network': 'tcp,udp', 'outboundTag': 'direct'})
-    rules.append({'type': 'field', 'network': 'tcp,udp', 'balancerTag': 'auto'})
+    # Loopback re-entry is scoped to a synthetic tag, not a catch-all. It
+    # reaches the automatic pool without repeating classification indefinitely.
+    rules.insert(0, {'type': 'field', 'inboundTag': ['default-auto'], 'balancerTag': 'auto'})
     result['routing']['rules'] = rules
     return result
 

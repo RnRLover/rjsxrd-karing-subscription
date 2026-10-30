@@ -22,17 +22,21 @@ class KaringTests(unittest.TestCase):
                 {'url': profile['Geositeurl'], 'file': 'geosite.dat'},
             ],
         })
-        self.assertFalse(any((o.get('protocol') in ('dns', 'loopback') for o in c['outbounds'])))
+        self.assertFalse(any(o.get('protocol') == 'dns' for o in c['outbounds']))
+        self.assertEqual(c['outbounds'][0], {'tag': 'default-proxy', 'protocol': 'loopback', 'settings': {'inboundTag': 'default-auto'}})
         self.assertTrue(all((i['sniffing']['routeOnly'] for i in c['inbounds'])))
-        self.assertEqual(c['routing']['domainStrategy'], 'IPOnDemand')
-        self.assertEqual(c['outbounds'][0]['tag'], 'Основной')
+        self.assertEqual(c['routing']['domainStrategy'], 'IPIfNonMatch')
+        self.assertEqual(c['outbounds'][1]['tag'], 'Основной')
         self.assertEqual(c['routing']['balancers'][0]['fallbackTag'], 'Основной')
-        self.assertEqual(c['routing']['rules'][0]['outboundTag'], 'direct')
-        self.assertEqual(c['routing']['rules'][0]['port'], '53')
-        self.assertEqual(c['routing']['rules'][1]['domain'], ['geosite:category-ads-all'])
-        self.assertEqual(c['routing']['rules'][2]['domain'], ['geosite:category-ru'])
-        self.assertIn('geoip:ru', c['routing']['rules'][-2]['ip'])
-        self.assertEqual(c['routing']['rules'][-1]['balancerTag'], 'auto')
+        self.assertEqual(c['routing']['rules'][1]['outboundTag'], 'direct')
+        self.assertEqual(c['routing']['rules'][1]['port'], '53')
+        self.assertEqual(c['routing']['rules'][2]['domain'], ['geosite:category-ads-all'])
+        self.assertEqual(c['routing']['rules'][3]['domain'], ['geosite:category-ru'])
+        self.assertIn('geoip:ru', c['routing']['rules'][-1]['ip'])
+        self.assertEqual(c['routing']['rules'][0], {'type': 'field', 'inboundTag': ['default-auto'], 'balancerTag': 'auto'})
+        self.assertFalse(any(r.get('network') == 'tcp,udp' and r.get('balancerTag') == 'auto' and not r.get('inboundTag') for r in c['routing']['rules']))
+        rebuilt = build(c, profile)
+        self.assertEqual(rebuilt, c)
         self.assertEqual(json.loads(common_subscription(configs)), configs)
         self.assertNotIn('DomesticDNS', profile)
         self.assertNotIn('ExternalDNS', profile)
@@ -46,10 +50,10 @@ class KaringTests(unittest.TestCase):
             profile[prefix + 'Ip'] = ['192.0.2.0/24']
         base = {'inbounds': [], 'outbounds': [], 'routing': {}}
         rules = build(base, profile)['routing']['rules']
-        self.assertEqual([r.get('outboundTag', r.get('balancerTag')) for r in rules[1:-1]], ['block', 'block', 'direct', 'direct', 'auto', 'auto'])
+        self.assertEqual([r.get('outboundTag', r.get('balancerTag')) for r in rules[2:]], ['block', 'block', 'direct', 'direct', 'auto', 'auto'])
         profile['RouteOrder'] = 'proxy-block-direct'
         rules = build(base, profile)['routing']['rules']
-        self.assertEqual([r.get('outboundTag', r.get('balancerTag')) for r in rules[1:-1]], ['auto', 'auto', 'block', 'block', 'direct', 'direct'])
+        self.assertEqual([r.get('outboundTag', r.get('balancerTag')) for r in rules[2:]], ['auto', 'auto', 'block', 'block', 'direct', 'direct'])
         profile['RouteOrder'] = 'direct-direct-proxy'
         with self.assertRaises(ValueError):
             build(base, profile)
