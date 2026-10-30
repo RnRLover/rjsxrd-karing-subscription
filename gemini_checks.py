@@ -2,6 +2,7 @@
 import concurrent.futures
 import copy
 import html
+import http.cookiejar
 from html.parser import HTMLParser
 import json
 import re
@@ -36,7 +37,8 @@ class VisibleText(HTMLParser):
 def probe(opener):
     started = time.monotonic()
     request = urllib.request.Request(PAGE_URL, headers={
-        'User-Agent': 'Mozilla/5.0', 'Accept-Language': 'en-US,en;q=0.9'})
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36',
+        'Accept-Language': 'en-US,en;q=0.9'})
     with opener.open(request, timeout=TIMEOUT) as response:
         final = urllib.parse.urlsplit(response.geturl())
         if response.getcode() != 200 or final.scheme != 'https' or final.hostname != 'gemini.google.com':
@@ -91,7 +93,8 @@ def check_pool(config, xray):
                 def check(pair):
                     outbound, port = pair
                     opener = urllib.request.build_opener(urllib.request.ProxyHandler({
-                        'http': f'http://127.0.0.1:{port}', 'https': f'http://127.0.0.1:{port}'}))
+                        'http': f'http://127.0.0.1:{port}', 'https': f'http://127.0.0.1:{port}'}),
+                        urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()))
                     try: evidence = probe(opener)
                     except Exception as error:
                         evidence = {'passed': False, 'checked_at': int(time.time()),
