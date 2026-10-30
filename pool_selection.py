@@ -27,13 +27,16 @@ def transport(node):
     return (ob['protocol'], stream.get('network', 'tcp'), stream.get('security', 'none'))
 
 
-def select_pool(nodes, limit, previous=(), network_lookup=endpoint_network):
-    """Keep all eligible nodes up to the cap, spreading exits and infrastructure.
+def select_pool(nodes, limit, previous=(), network_lookup=endpoint_network, require_quality=False):
+    """Quality-gated production selection with strict infrastructure limits.
 
-    Missing reputation coverage is not a positive clean verdict. Any known
-    blacklist listing is excluded; ping is measured by the client, not ranked here.
-    The greedy result preserves diversity if a size guard trims its tail.
+    Legacy callers can inspect diversity without quality evidence. Publication
+    explicitly enables require_quality; there is no unchecked fill fallback.
     """
+    from quality_checks import quality_admitted, quality_priority
+    if require_quality:
+        nodes = [n for n in nodes if quality_admitted(n)]
+        limit = min(limit, 40)
     unique = {node_key(n): n for n in nodes
               if n.get('reputation', {}).get('status') != 'listed'}
     networks = {host: network_lookup(host) for host in {n['host'] for n in unique.values()}}
@@ -41,12 +44,24 @@ def select_pool(nodes, limit, previous=(), network_lookup=endpoint_network):
     previous = set(ranks)
     exit_count, net_count, host_count, type_count = Counter(), Counter(), Counter(), Counter()
     result = []
+    established = sum(not n.get('quality_history', {}).get('provisional', True) for n in unique.values())
+    provisional_limit = 8 if established >= 10 else limit
+    provisional_count = 0
     while unique and len(result) < limit:
-        key, node = min(unique.items(), key=lambda item: (
+        choices = unique
+        if require_quality:
+            choices = {k: n for k, n in unique.items()
+                       if exit_count[n.get('exit_ip', n['host'])] < 2
+                       and net_count[networks[n['host']]] < 4 and host_count[n['host']] < 2
+                       and (not n['quality_history']['provisional'] or provisional_count < provisional_limit)}
+        if not choices: break
+        key, node = min(choices.items(), key=lambda item: (
+            quality_priority(item[1]) if require_quality else (),
             exit_count[item[1].get('exit_ip', item[1]['host'])],
             net_count[networks[item[1]['host']]], host_count[item[1]['host']],
             type_count[transport(item[1])], item[0] not in previous, ranks.get(item[0], len(ranks)), item[0]))
         result.append(node)
+        if require_quality and node['quality_history']['provisional']: provisional_count += 1
         del unique[key]
         exit_count[node.get('exit_ip', node['host'])] += 1
         net_count[networks[node['host']]] += 1

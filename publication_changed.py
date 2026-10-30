@@ -2,6 +2,7 @@
 import json
 from certificate_checks import transport_signature
 from latency_checks import latency_signature
+from quality_checks import quality_signature
 from pathlib import Path
 import subprocess
 
@@ -27,7 +28,7 @@ def changed(root):
     report = root / 'report.json'
     if report.exists():
         old = subprocess.run(['git', 'show', 'HEAD:report.json'], cwd=root, capture_output=True)
-        if old.returncode or reputation_signature(old.stdout) != reputation_signature(report.read_bytes()) or transport_signature(old.stdout) != transport_signature(report.read_bytes()) or latency_signature(old.stdout) != latency_signature(report.read_bytes()):
+        if old.returncode or reputation_signature(old.stdout) != reputation_signature(report.read_bytes()) or transport_signature(old.stdout) != transport_signature(report.read_bytes()) or latency_signature(old.stdout) != latency_signature(report.read_bytes()) or quality_signature(old.stdout) != quality_signature(report.read_bytes()):
             return True
         if set(json.loads(old.stdout)) - set(json.loads(report.read_bytes())):
             return True

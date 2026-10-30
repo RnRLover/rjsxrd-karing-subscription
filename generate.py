@@ -20,8 +20,9 @@ from pathlib import Path
 from rjsxrd_parser import parse_url
 from routing import domains, policy
 from pool_selection import node_key, select_pool, recent_exit
-from latency_checks import measure_latency, reusable_latency, latency_report, order_by_latency
+from latency_checks import measure_latency, reusable_latency, latency_report
 from ip_reputation import load_feed, rank_nodes, reputation_report
+from quality_checks import probe_quality, reusable_quality, record_result, history_summary, quality_report, quality_priority
 from certificate_checks import probe_transport, complete_transport, reusable_transport, transport_report
 
 ROOT = Path(__file__).resolve().parent
@@ -209,10 +210,16 @@ def verify_exits(nodes, ranges, xray, failures=None):
                     evidence = probe_transport(node)
                     stage = 'xray_https'
                     with opener.open("https://api.ipify.org?format=json", timeout=12) as response:
+                        if response.getcode() != 200: raise ValueError('exit_status')
                         ip = json.loads(response.read(1000))["ip"]
+                    if not egress_allowed(ip, ranges):
+                        return {**node, 'exit_ip': str(ipaddress.ip_address(ip)),
+                                'transport_check': complete_transport(evidence)}
+                    stage = 'quality'
+                    quality = probe_quality(opener)
                     return {**node, 'exit_ip': str(ipaddress.ip_address(ip)),
                             'transport_check': complete_transport(evidence),
-                            'latency_check': measure_latency(opener)}
+                            'latency_check': measure_latency(opener), 'quality_check': quality}
                 except Exception as error:
                     return {'probe_failure': stage + ':' + type(error).__name__}
             with concurrent.futures.ThreadPoolExecutor(max_workers=12) as executor:
@@ -284,33 +291,63 @@ def main():
     ttl = settings.get('exit_country_cache_seconds', 86400)
     checked, pending = [], []
     for node in eligible:
+        key = node_key(node)
+        entry = exit_cache.get(key, {})
         cached = recent_exit(node, exit_cache, now, ranges, ttl)
-        if (cached and reusable_transport(exit_cache[node_key(node)].get('transport_check'), now)
-                and reusable_latency(exit_cache[node_key(node)].get('latency_check'), now)):
-            checked.append({**cached, 'transport_check': exit_cache[node_key(node)]['transport_check'],
-                            'latency_check': exit_cache[node_key(node)]['latency_check']})
+        if (cached and reusable_transport(entry.get('transport_check'), now)
+                and reusable_latency(entry.get('latency_check'), now)
+                and reusable_quality(entry.get('quality_check'), now)):
+            checked.append({**cached, 'transport_check': entry['transport_check'],
+                            'latency_check': entry['latency_check'],
+                            'quality_check': entry['quality_check'],
+                            'quality_history': history_summary(entry, now)})
         else:
-            entry = exit_cache.get(node_key(node), {})
-            # Known RU exits need no repeated probe; unknown exits retry hourly.
-            fresh = 0 <= now - entry.get('verified_at', 0) < ttl
-            failed_recently = 0 <= now - entry.get('failed_at', 0) < 3600
-            if cached or (not fresh and not failed_recently):
+            fresh_ru = (not cached and 'exit_ip' in entry
+                        and 0 <= now - entry.get('verified_at', 0) < ttl
+                        and not egress_allowed(entry['exit_ip'], ranges))
+            failed_recently = 0 <= now - entry.get('failed_at', 0) < 900
+            if not fresh_ru and not failed_recently:
                 pending.append(node)
     counters['cached_foreign_exits'] = len(checked)
-    # Measure HTTPS latency through the same authenticated outbound as egress.
     transport_failures = Counter()
+    if pending:
+        control = probe_quality(urllib.request.build_opener(urllib.request.ProxyHandler({})))
+        if not control['passed']:
+            raise RuntimeError('Quality test destinations unavailable from runner; preserve existing pool/history: ' + json.dumps(control))
     measured = verify_exits(pending, ranges, args.xray, transport_failures) if pending else []
-    print(json.dumps({'transport_failure_counts': dict(transport_failures)}))
+    print(json.dumps({'transport_failure_counts': dict(transport_failures),
+                      'quality_tested': len(measured),
+                      'quality_passed': sum(n.get('quality_check', {}).get('passed') is True for n in measured),
+                      'quality_errors': dict(Counter(e for n in measured for e in n.get('quality_check', {}).get('errors', [])))}))
     measured_keys = {node_key(node) for node in measured}
     for node in pending:
-        if node_key(node) not in measured_keys:
-            exit_cache[node_key(node)] = {'failed_at': now}
+        key = node_key(node)
+        if key not in measured_keys:
+            entry = record_result(exit_cache.get(key, {}), False, now)
+            entry['failed_at'] = now
+            # Never admit stale success after a failed current probe.
+            entry.pop('quality_check', None)
+            exit_cache[key] = entry
     for node in measured:
         key = node_key(node)
-        exit_cache[key] = {'exit_ip': node['exit_ip'], 'verified_at': now, 'transport_check': node['transport_check'],
-                           'latency_check': node['latency_check']}
+        passed = egress_allowed(node['exit_ip'], ranges) and node.get('quality_check', {}).get('passed') is True
+        entry = record_result(exit_cache.get(key, {}), passed, now)
+        entry.update({k: node[k] for k in ('exit_ip', 'transport_check', 'latency_check', 'quality_check') if k in node})
+        entry['verified_at'] = now
+        if passed: entry.pop('failed_at', None)
+        else: entry['failed_at'] = now; entry.pop('quality_check', None)
+        exit_cache[key] = entry
         if egress_allowed(node['exit_ip'], ranges):
-            checked.append(node)
+            checked.append({**node, 'quality_history': history_summary(entry, now)})
+    # Persist observations even when no pool can be published. A cached result
+    # does not add an observation. A missing CI cache starts provisional history.
+    active_keys = {node_key(n) for n in eligible}
+    for key in list(exit_cache):
+        if len(key) == 64 and key not in active_keys:
+            last = max(exit_cache[key].get('verified_at', 0), exit_cache[key].get('failed_at', 0))
+            if now - last > 7 * 86400: del exit_cache[key]
+    cache_path.parent.mkdir(exist_ok=True)
+    atomic_write(cache_path, json.dumps(exit_cache, sort_keys=True) + '\n')
     feed, reputation_source = load_feed(exit_cache, fetch, now)
     checked = rank_nodes(checked, feed)
     cache_path.parent.mkdir(exist_ok=True)
@@ -319,9 +356,8 @@ def main():
     previous = []
     if previous_path.exists():
         previous = [node_key({'outbound': ob}) for ob in json.loads(previous_path.read_bytes())['outbounds'] if ob['protocol'] in ('vless', 'vmess', 'trojan', 'shadowsocks')]
-    selected = select_pool(checked, settings['max_nodes'], previous)
-    # Grow until the Android serialization budget is reached, preserving the
-    # greedy diversity order instead of an arbitrary 24-node restriction.
+    selected = select_pool(checked, min(settings['max_nodes'], 40), previous, require_quality=True)
+    # Preserve the quality/diversity order if the Android budget trims a tail.
     while True:
         config = build(selected, routing)
         try:
@@ -333,8 +369,9 @@ def main():
             if 'publication size budget' not in str(error) or len(selected) <= 2:
                 raise
             selected.pop()
-    # Membership/size are fixed by diversity first; ping only orders this pool.
-    selected = order_by_latency(selected)
+    # A stable node starts first; device-side leastPing is unchanged.
+    from latency_checks import latency_value
+    selected = sorted(selected, key=lambda n: (quality_priority(n), latency_value(n)))
     reputation = reputation_report(checked, selected, feed, reputation_source)
     print(json.dumps({'ip_reputation': reputation}, ensure_ascii=False))
     config = build(selected, routing)
@@ -344,10 +381,13 @@ def main():
     report["service_acl"] = False
     report["routing_policy"] = "local direct; RU direct; everything else proxy"
     report['ru_reachability_required'] = False
-    report['pool_selection'] = 'exclude all IPsum-listed exits; maximize count within size budget; exit/network-prefix/host/transport diversity; order selected pool by HTTPS latency; client leastPing'
+    report['pool_selection'] = 'verified transfer and two-site HTTPS health; actual rolling success >=90%; prefer established stability/performance bands; strict infrastructure caps; up to 40 nodes; client leastPing'
+    report['quality_selection'] = quality_report(checked, selected)
     report['ip_reputation'] = reputation
     report['transport_checks'] = transport_report(selected, transport_failures)
     report['latency_selection'] = latency_report(checked, selected)
+    report['latency_selection']['policy'] = 'quality/history bands first, exact median HTTPS latency within band; client leastPing unchanged'
+    report['latency_selection']['failed_probe_policy'] = 'current two-site health and full transfer required independently of legacy HEAD measurements'
     report['reputation_excluded'] = sum(n['reputation']['status'] == 'listed' for n in checked)
     report['foreign_exit_candidates'] = len(checked)
     report["geosite_sources"] = geo_sources
