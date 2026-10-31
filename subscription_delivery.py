@@ -39,3 +39,14 @@ def read_previous(path):
         return json.loads(path.read_bytes())
     except FileNotFoundError:
         return None
+
+
+def incy_subscription(configs):
+    """INCY body metadata; requires verification in the target client build."""
+    from karing import common_subscription
+    body = common_subscription(configs)
+    return body + (
+        'incy://autorouting/onadd/https://raw.githubusercontent.com/'
+        'RnRLover/rjsxrd-karing-subscription/refs/heads/main/russia-routing.json\n'
+        '#routing-geo-update-interval: 24\n'
+    )

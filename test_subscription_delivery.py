@@ -42,3 +42,14 @@ class DeliveryTests(unittest.TestCase):
     def test_missing_asset_stops_publication(self):
         with self.assertRaises(KeyError):
             bundle(self.configs, self.policy, {}, now=100)
+
+    def test_incy_body_preserves_full_config_and_attaches_bootstrap_commands(self):
+        from subscription_delivery import incy_subscription
+        body = incy_subscription(self.configs)
+        lines = body.splitlines()
+        self.assertEqual(json.loads(lines[0]), self.configs)
+        self.assertEqual(len(lines), 3)
+        self.assertEqual(lines[1], 'incy://autorouting/onadd/https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/russia-routing.json')
+        self.assertEqual(lines[2], '#routing-geo-update-interval: 24')
+        self.assertNotIn('workers.dev', body)
+        self.assertLess(len(body.encode()), 2_000_000)

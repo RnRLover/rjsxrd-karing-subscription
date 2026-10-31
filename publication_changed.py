@@ -6,7 +6,7 @@ from quality_checks import quality_signature
 from pathlib import Path
 import subprocess
 
-CLIENT_FILES = ('subscription.json', 'subscription-delivery.json', 'ru-karing-happ.txt', 'russia-routing.json', 'ru.json')
+CLIENT_FILES = ('incy.txt', 'subscription.json', 'subscription-delivery.json', 'ru-karing-happ.txt', 'russia-routing.json', 'ru.json')
 
 
 def canonical(name, data):
