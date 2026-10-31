@@ -61,7 +61,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           if python publication_changed.py; then
-            git add subscription.json subscription-delivery.json incy.txt ru-karing-happ.txt russia-routing.json ru.json report.json
+            git add subscription.json subscription-delivery.json incy.txt happ.txt ru-karing-happ.txt russia-routing.json ru.json report.json
             git commit -m "Update validated rjsxrd subscription"
             git push
           fi
