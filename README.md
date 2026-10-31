@@ -36,6 +36,14 @@ Both contain exactly the same single TLS/TCP Trojan node taken from the current 
 
 Record the INCY version/platform and results. This test checks native-profile activation for ordinary subscriptions; it does not by itself prove geofile-path isolation for full JSON. After testing, remove the two diagnostic subscriptions and their diagnostic profile, then reconnect using the production subscription.
 
+## Happ Android geodata field probe
+
+The uploaded Happ Android logs identify Xray 26.10.21 and show no geodata messages during nearly nine minutes of operation. This does not establish whether Happ removes the field, its bundled core differs, or a different effective config is used. Upstream 26.10.21 already contains the geodata module. Happ documentation states full JSON is passed through unchanged.
+
+[geodata-field-probe.json](https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/geodata-field-probe.json) is an intentionally invalid disposable diagnostic. Import it as a separate subscription and select its **Geodata field probe - EXPECTED STARTUP ERROR** configuration. It contains `geodata.cron: "__invalid_geodata_cron_probe__"` with no assets, so upstream Xray must reject it with `invalid geodata cron` before any downloads; no geofiles are required for this negative check. Local Xray validation confirms that expected rejection. Do not use it as a working subscription or merge it into production.
+
+If Happ reports `invalid geodata cron`, the field reached a compatible parser; inspect the actual minute-test configuration next. If it starts the correct probe without that error, the supplied field is being ignored, removed or otherwise not processed as upstream Xray would; this alone cannot identify which component does it. Disconnect immediately and return to the normal subscription. An import failure or unrelated network error is inconclusive.
+
 ## Core geodata download-only diagnostic
 
 [geodata-download-test.json](https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/geodata-download-test.json) is a disposable pure-JSON subscription for both Happ and INCY. It contains no native routing/autorouting command and creates no routing profile. It retains the current pool/balancer and client DNS policy, removes every GeoIP/GeoSite rule, and blocks only `example.org` as a simple explicit-domain marker. It is not the production RU-direct/adblock configuration.
