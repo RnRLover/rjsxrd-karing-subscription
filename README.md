@@ -36,6 +36,18 @@ Both contain exactly the same single TLS/TCP Trojan node taken from the current 
 
 Record the INCY version/platform and results. This test checks native-profile activation for ordinary subscriptions; it does not by itself prove geofile-path isolation for full JSON. After testing, remove the two diagnostic subscriptions and their diagnostic profile, then reconnect using the production subscription.
 
+## Core geodata download-only diagnostic
+
+[geodata-download-test.json](https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/geodata-download-test.json) is a disposable pure-JSON subscription for both Happ and INCY. It contains no native routing/autorouting command and creates no routing profile. It retains the current pool/balancer and client DNS policy, removes every GeoIP/GeoSite rule, and blocks only `example.org` as a simple explicit-domain marker. It is not the production RU-direct/adblock configuration.
+
+The `geodata` section keeps the official Loyalsoldier download URLs and runs `* * * * *`, every minute while the core is running. The files need not be referenced by routing rules to be listed as download assets. Disconnect this diagnostic after two minutes to stop repeated downloads (both full files may be fetched each minute). Use new private browser tabs to avoid cached pages.
+
+Before testing, switch off the previously imported diagnostic/native routing profile locally so its own downloads cannot be mistaken for core downloads. Add this JSON as a new subscription, connect, enable Info logs in the client if necessary, and leave it connected across a minute boundary. The observable evidence is `app/geodata` scheduling/download/reload messages or an explicit file/permission/unsupported-feature error; an imported server or successful browsing alone does not prove a download. Collect the geodata-related log lines from both clients. App builds can override log settings or omit the core feature.
+
+Local Xray validation succeeded with existing `geoip.dat` and `geosite.dat`. The same diagnostic failed with an empty asset directory: `invalid geodata asset file: geoip.dat ... no such file or directory`. Thus it cannot bootstrap a completely missing local file; client-bundled files must exist at the asset path and be writable. This diagnostic has not yet been tested in either client and no actual local scheduled download was claimed. The production JSON already contains the same mechanism at `17 */12 * * *`; this test isolates and accelerates it without using geo categories.
+
+Reference: [Xray geodata](https://xtls.github.io/en/config/geodata.html).
+
 ## Routing
 
 Embedded rules block `geosite:category-ads-all`; route `geosite:category-ru`, `geoip:ru` and private/local networks directly; route other TCP/UDP via the automatic pool. The JSON `geodata` block updates `geoip.dat` and `geosite.dat` from Loyalsoldier's official latest-release HTTPS URLs at 00:17 and 12:17 in the core's local timezone, while Xray is running. Downloads follow the existing routing and a failed reload rolls back the update. This requires a recent core with geodata support and writable, already-present asset files; it is not a first-start bootstrap or an immediate download on connection. Client builds may restrict writes or omit this core feature. CI validates against the same databases in ignored `.runtime/` files. No custom DNS resolver is supplied; the automatically bundled native profile manages initial geofile installation.
