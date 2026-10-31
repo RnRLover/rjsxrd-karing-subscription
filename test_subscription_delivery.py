@@ -1,4 +1,5 @@
 import copy
+import base64
 import json
 from pathlib import Path
 import unittest
@@ -53,3 +54,25 @@ class DeliveryTests(unittest.TestCase):
         self.assertEqual(lines[2], '#routing-geo-update-interval: 24')
         self.assertNotIn('workers.dev', body)
         self.assertLess(len(body.encode()), 2_000_000)
+
+    def test_happ_body_keeps_config_and_exact_geodata_policy(self):
+        from subscription_delivery import happ_subscription
+        profile = bundle(self.configs, self.policy, self.assets, now=100)['profile']
+        original = copy.deepcopy(profile)
+        body = happ_subscription(self.configs, profile)
+        config, command = body.splitlines()
+        self.assertEqual(json.loads(config), self.configs)
+        self.assertTrue(command.startswith('happ://routing/onadd/'))
+        native = json.loads(base64.b64decode(command.removeprefix('happ://routing/onadd/'), validate=True))
+        self.assertEqual(native.pop('UseChunkFiles'), 'false')
+        self.assertEqual(native, {k: v for k, v in profile.items() if k != 'useChunkFiles'})
+        self.assertEqual(profile, original)
+        self.assertNotIn('workers.dev', body)
+
+    def test_publication_comparison_handles_native_body_commands(self):
+        from publication_changed import canonical
+        from subscription_delivery import happ_subscription, incy_subscription
+        for name, body in [('happ.txt', happ_subscription(self.configs, self.policy)),
+                           ('incy.txt', incy_subscription(self.configs))]:
+            self.assertEqual(canonical(name, body.encode()), canonical(name, (body + '\n').rstrip('\n').encode()))
+            self.assertNotEqual(canonical(name, body.encode()), canonical(name, (body + '#changed: 1\n').encode()))

@@ -6,7 +6,17 @@ https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads
 
 It contains the unchanged single full Xray JSON followed by INCY's native autorouting command and `routing-geo-update-interval: 24`. The command installs the routing/geodata profile from `russia-routing.json` automatically and enables profile refresh. The geodata interval is separate from the subscription interval. No manual second import or Cloudflare endpoint is involved. INCY documents full JSON and body metadata, but their combination must still be confirmed in the installed client version: verify that both the one **Основной** server and the native profile appear, and that both geofiles finish downloading. Do not interpret core validation as successful client import.
 
-The existing `subscription.json` stays a pure-JSON fallback. Its contents, routing, DNS policy and automatic server pool are unchanged. Happ/Cloudflare deployment changes are paused until the actual deployed Worker code and version history can be inspected; the repository's `happ-worker.js` is a historical copy, not a verified export of the deployed code.
+The existing `subscription.json` stays a pure-JSON fallback. Its contents, routing, DNS policy and automatic server pool are unchanged. Cloudflare deployment changes are paused until the actual deployed Worker code and version history can be inspected; the repository's `happ-worker.js` is a historical copy, not a verified export of the deployed code.
+
+Happ: a separate automatic-install candidate is published at:
+
+https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/happ.txt
+
+It contains the unchanged full Xray JSON on the first line and `happ://routing/onadd/<base64 JSON>` on the second. The native profile carries Loyalsoldier download URLs, matching routing categories, `LastUpdated`, and `UseChunkFiles: "false"`; the databases themselves are not embedded. Both parts are regenerated together on successful builds. This file needs no custom HTTP headers or Worker.
+
+**Client verification is pending.** Happ documents body routing commands and subscription-local profiles, but its body example uses server links, not full JSON followed by a command. This mixed file is not a standalone valid JSON document. Do not claim automatic installation or strict isolation is confirmed until a current Happ build imports one **Основной** configuration, installs its native profile and downloads both databases. Then reconnect through ours → another subscription → ours: each subscription must keep its own profile and geofiles. If the mixed body is rejected, this transport remains unsupported; the existing pure JSON and Worker files stay available. No client import or switching test has been performed in CI.
+
+References: [Happ routing](https://www.happ.su/main/ru/dev-docs/routing), [Happ full JSON handling](https://www.happ.su/main/ru/dev-docs/examples-of-links-and-parameters).
 
 `LastUpdated` advances when the downloaded database hashes or routing policy change, not when servers rotate. The existing core geodata schedule remains as an additional update mechanism while running. The native metadata profile includes the same domain/IP categories as the full JSON and disables geofile trimming. No forced subscription-refresh interval or custom DNS resolver is added.
 
@@ -40,6 +50,7 @@ GitHub Actions runs at minutes 7, 22, 37 and 52 each hour. CI checks JSON/Xray v
 
 ## Repository files
 
+- `happ.txt`, `incy.txt`: client-specific mixed-body import candidates; device verification pending.
 - `subscription.json`: pure JSON fallback; `ru-karing-happ.txt`: identical JSON consumed by the existing Worker.
 - `subscription-delivery.json`: consistent config/profile/hash evidence; `subscription_delivery.py`: generates stable geofile version metadata.
 - `happ-worker.js`: historical source copy; deployed version not yet verified; `test_happ_worker.mjs`: header/body compatibility tests.

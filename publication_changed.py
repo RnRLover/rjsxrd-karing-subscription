@@ -6,10 +6,15 @@ from quality_checks import quality_signature
 from pathlib import Path
 import subprocess
 
-CLIENT_FILES = ('incy.txt', 'subscription.json', 'subscription-delivery.json', 'ru-karing-happ.txt', 'russia-routing.json', 'ru.json')
+CLIENT_FILES = ('happ.txt', 'incy.txt', 'subscription.json', 'subscription-delivery.json', 'ru-karing-happ.txt', 'russia-routing.json', 'ru.json')
 
 
 def canonical(name, data):
+    if name in ('incy.txt', 'happ.txt'):
+        lines = data.decode('utf-8-sig').splitlines()
+        # The first line is full JSON; following lines are native commands.
+        return (json.dumps(json.loads(lines[0]), sort_keys=True, ensure_ascii=False),
+                tuple(lines[1:]))
     return json.dumps(json.loads(data.decode('utf-8-sig')), sort_keys=True, ensure_ascii=False)
 
 

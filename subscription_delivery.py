@@ -1,5 +1,6 @@
 """Bundle full configs and native geofile bootstrap metadata in one publication."""
 import copy
+import base64
 import hashlib
 import json
 import time
@@ -50,3 +51,15 @@ def incy_subscription(configs):
         'RnRLover/rjsxrd-karing-subscription/refs/heads/main/russia-routing.json\n'
         '#routing-geo-update-interval: 24\n'
     )
+
+
+def happ_subscription(configs, profile):
+    """Full JSON plus native body command; target-client import is unverified."""
+    from karing import common_subscription
+    native = copy.deepcopy(profile)
+    # Happ's exported profile schema uses a string flag with this spelling.
+    native['UseChunkFiles'] = 'false'
+    native.pop('useChunkFiles', None)
+    payload = json.dumps(native, ensure_ascii=False, separators=(',', ':')).encode('utf-8')
+    command = 'happ://routing/onadd/' + base64.b64encode(payload).decode('ascii')
+    return common_subscription(configs) + command + '\n'
