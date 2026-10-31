@@ -14,6 +14,8 @@ on:
       - '*.py'
       - 'settings.json'
       - 'russia-routing.json'
+      - 'happ-worker.js'
+      - 'test_happ_worker.mjs'
       - '.github/workflows/update.yml'
 permissions:
   contents: write
@@ -31,6 +33,8 @@ jobs:
           python-version: '3.12'
       - name: Tests
         run: python -m unittest discover -v
+      - name: Check automatic subscription delivery
+        run: node --test test_happ_worker.mjs
       - name: Prepare official Xray
         run: python setup_xray.py
       - name: Restore recent exit-country evidence
@@ -57,7 +61,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           if python publication_changed.py; then
-            git add subscription.json ru.json report.json
+            git add subscription.json subscription-delivery.json incy.txt ru-karing-happ.txt russia-routing.json ru.json report.json
             git commit -m "Update validated rjsxrd subscription"
             git push
           fi
