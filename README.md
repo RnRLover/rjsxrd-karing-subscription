@@ -14,11 +14,27 @@ https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads
 
 It contains the unchanged full Xray JSON on the first line and `happ://routing/onadd/<base64 JSON>` on the second. The native profile carries Loyalsoldier download URLs, matching routing categories, `LastUpdated`, and `UseChunkFiles: "false"`; the databases themselves are not embedded. Both parts are regenerated together on successful builds. This file needs no custom HTTP headers or Worker.
 
-**Client verification is pending.** Happ documents body routing commands and subscription-local profiles, but its body example uses server links, not full JSON followed by a command. This mixed file is not a standalone valid JSON document. Do not claim automatic installation or strict isolation is confirmed until a current Happ build imports one **Основной** configuration, installs its native profile and downloads both databases. Then reconnect through ours → another subscription → ours: each subscription must keep its own profile and geofiles. If the mixed body is rejected, this transport remains unsupported; the existing pure JSON and Worker files stay available. No client import or switching test has been performed in CI.
+**Observed client results:** the user tested `happ.txt` in Happ: the subscription appeared without servers, while the geofiles downloaded. This mixed-body transport therefore failed to import the full config in that tested build. Do not use it as the recommended Happ delivery URL. The same file imported successfully in INCY. After switching to the old full-JSON subscription, the routing toggle stayed enabled; no actual cross-subscription rule application has been demonstrated. The dedicated `incy.txt` autorouting variant is a different transport and has not yet been separately confirmed by that test. For Happ, the next delivery approach is a pure-JSON body plus the native `routing` HTTP header. The deployed Cloudflare Worker source still needs inspection before any deployment change.
 
 References: [Happ routing](https://www.happ.su/main/ru/dev-docs/routing), [Happ full JSON handling](https://www.happ.su/main/ru/dev-docs/examples-of-links-and-parameters).
 
 `LastUpdated` advances when the downloaded database hashes or routing policy change, not when servers rotate. The existing core geodata schedule remains as an additional update mechanism while running. The native metadata profile includes the same domain/IP categories as the full JSON and disables geofile trimming. No forced subscription-refresh interval or custom DNS resolver is added.
+
+## Disposable INCY isolation check
+
+These two files are manual test snapshots, outside the production generator and scheduled publication:
+
+- [Isolation B — no native profile](https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/isolation-b.txt)
+- [Isolation A — block example.org](https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/isolation-a.txt)
+
+Both contain exactly the same single TLS/TCP Trojan node taken from the current published pool. They use ordinary share links, so a full JSON cannot hide whether native routing applies. A supplies a dedicated native profile that blocks only `example.org` (including its subdomains); B supplies no profile or routing-off command. These are diagnostic subscriptions, not replacements for the automatic pool. The shared node may later stop working. Rebuild both together with `python routing_isolation.py` when needed; this never changes production files.
+
+1. Import **B first**, connect, and check that both `https://example.org/?isolation=B1` and `https://example.com/?isolation=B1` open. If they do not, the test is inconclusive: check connectivity or the existing active profile before continuing.
+2. Import A, select its server, reconnect, and open fresh private browser tabs: `https://example.org/?isolation=A1` must fail while `https://example.com/?isolation=A1` must open. Otherwise, A was not applied and isolation cannot yet be assessed.
+3. Select B again, reconnect, and open `https://example.org/?isolation=B2` in a fresh private tab. It must open. If only example.org is still blocked while example.com opens, the result is evidence that A's rules continue to affect a subscription without its own profile.
+4. Return to A, reconnect, and repeat with a new query value: example.org must be blocked again. A selected profile remaining visible in settings is not itself a failed result.
+
+Record the INCY version/platform and results. This test checks native-profile activation for ordinary subscriptions; it does not by itself prove geofile-path isolation for full JSON. After testing, remove the two diagnostic subscriptions and their diagnostic profile, then reconnect using the production subscription.
 
 ## Routing
 
