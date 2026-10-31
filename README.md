@@ -1,14 +1,18 @@
 # Common automatic subscription for INCY and Happ
 
-Use the same URL in both clients:
+Use the same automatic-install URL in both clients:
 
-https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/subscription.json
+https://rjsxrd-happ-routing.freedomfightertruthfinder.workers.dev/happ
 
-One pure JSON array, one **Основной** configuration. No provider interval, routing import command or separate routing profile is attached. Disable/remove a previously imported Russia profile in the app, or import the common URL as a new subscription.
+This existing Worker returns one full Xray JSON array and a native `routing` HTTP header. Adding the URL imports the one **Основной** configuration and automatically downloads GeoIP/GeoSite from Loyalsoldier through the client's routing-profile manager. The bundled metadata profile is installed with the subscription; no separate link, file import or manual profile setup is needed. The `/happ` path is historical; INCY accepts this routing header too. Actual import on each installed client version still needs device verification.
+
+The raw `subscription.json` URL remains a pure-JSON fallback. GitHub Raw cannot attach the routing header, so that fallback alone does not provide initial geofile installation. Existing raw subscriptions must be replaced with the automatic-install URL once.
+
+`LastUpdated` advances when the downloaded database hashes or routing policy change, not when servers rotate. Clients receive the new marker on subscription refresh. The existing core geodata schedule remains as an additional update mechanism while running. Initial installation requires successful download; network or client restrictions can still prevent it. No forced subscription-refresh interval or custom DNS resolver is added. The metadata profile includes exactly the domain/IP categories used by the full JSON and disables geofile trimming.
 
 ## Routing
 
-Embedded rules block `geosite:category-ads-all`; route `geosite:category-ru`, `geoip:ru` and private/local networks directly; route other TCP/UDP via the automatic pool. The JSON `geodata` block updates `geoip.dat` and `geosite.dat` from Loyalsoldier's official latest-release HTTPS URLs at 00:17 and 12:17 in the core's local timezone, while Xray is running. Downloads follow the existing routing and a failed reload rolls back the update. This requires a recent core with geodata support and writable, already-present asset files; it is not a first-start bootstrap or an immediate download on connection. Client builds may restrict writes or omit this core feature. CI validates against the same databases in ignored `.runtime/` files. No separate routing profile or custom DNS is imported.
+Embedded rules block `geosite:category-ads-all`; route `geosite:category-ru`, `geoip:ru` and private/local networks directly; route other TCP/UDP via the automatic pool. The JSON `geodata` block updates `geoip.dat` and `geosite.dat` from Loyalsoldier's official latest-release HTTPS URLs at 00:17 and 12:17 in the core's local timezone, while Xray is running. Downloads follow the existing routing and a failed reload rolls back the update. This requires a recent core with geodata support and writable, already-present asset files; it is not a first-start bootstrap or an immediate download on connection. Client builds may restrict writes or omit this core feature. CI validates against the same databases in ignored `.runtime/` files. No custom DNS resolver is supplied; the automatically bundled native profile manages initial geofile installation.
 
 The subscription supplies **no DNS configuration**, no DNS outbound and no FakeDNS. Port 53 traffic keeps its original destination and goes directly. DNS settings belong to the client. `IPIfNonMatch` first matches domains and original destination IPs, then resolves unmatched domains for a second GeoIP pass using the resolver available to Xray. Unmatched traffic enters the automatic pool through the first/default `loopback` outbound and the scoped `default-auto` inbound-tag rule. There is no unconditional proxy catch-all to suppress the second pass. This preserves an original RU destination when a sniffed hostname resolves abroad, and does not supply a resolver address. Sniffing recovers HTTP/TLS/QUIC hostnames for routing without changing the destination.
 
@@ -36,11 +40,13 @@ GitHub Actions runs at minutes 7, 22, 37 and 52 each hour. CI checks JSON/Xray v
 
 ## Repository files
 
-- `subscription.json`: the only client subscription URL, shared by both applications.
+- `subscription.json`: pure JSON fallback; `ru-karing-happ.txt`: identical JSON consumed by the existing Worker.
+- `subscription-delivery.json`: consistent config/profile/hash evidence; `subscription_delivery.py`: generates stable geofile version metadata.
+- `happ-worker.js`: exact source of the existing deployed delivery endpoint; `test_happ_worker.mjs`: header/body compatibility tests.
 - `generate.py`, `rjsxrd_parser.py`, `pool_selection.py`, `certificate_checks.py`, `ip_reputation.py`, `latency_checks.py`: collect, verify, select and rank servers.
 - `karing.py`, `russia_config.py`, `routing.py`, `settings.json`, `russia-routing.json`: common JSON generation and embedded routing policy.
 - `ru.json`: last checked base pool, used for stable selection and routing-only rebuilds; `report.json`: selected-node verification and latency evidence.
 - `setup_xray.py`, `check_subscription.py`, `publication_changed.py`, active `test_*.py` and `.github/workflows/update.yml`: reproducible validation and scheduled publication.
 - `LICENSE.rjsxrd`: upstream parser licence and attribution.
 
-Obsolete normal pools, diagnostic snapshots, separate routing/FakeDNS generators, Happ Worker, sing-box setup, experimental subscriptions and committed validation databases are removed. No history rewriting is required.
+Obsolete normal pools, diagnostic snapshots, old FakeDNS generators, sing-box setup, experimental subscriptions and committed validation databases are removed. No history rewriting is required.

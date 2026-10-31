@@ -87,11 +87,19 @@ def main(xray):
             if prior is None: os.environ.pop('XRAY_LOCATION_ASSET', None)
             else: os.environ['XRAY_LOCATION_ASSET'] = prior
     body = common_subscription(variants)
+    from subscription_delivery import bundle, read_previous
+    delivery_path = ROOT / 'subscription-delivery.json'
+    delivery = bundle(variants, profile, assets, read_previous(delivery_path))
     # Local validation assets; clients download their own copies via geodata.
     runtime = ROOT / '.runtime'
     runtime.mkdir(exist_ok=True)
     for name, data in assets.items():
         (runtime / name).write_bytes(data)
     atomic_write(ROOT / 'subscription.json', body + '\n')
+    atomic_write(delivery_path, json.dumps(delivery, ensure_ascii=False, separators=(',', ':')) + '\n')
+    # Restore the two filenames consumed by the existing deployed Worker.
+    # Its pure-JSON body and routing header work in both clients.
+    atomic_write(ROOT / 'ru-karing-happ.txt', body + '\n')
+    atomic_write(ROOT / 'russia-routing.json', json.dumps(delivery['profile'], ensure_ascii=False, indent=2) + '\n')
     atomic_write(ROOT / 'report.json', json.dumps(report, ensure_ascii=False, indent=2) + '\n')
     print('Published common subscription')
