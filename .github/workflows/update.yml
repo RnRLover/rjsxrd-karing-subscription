@@ -29,9 +29,6 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Stage removal of retired delivery variants
-        run: |
-          git rm --ignore-unmatch geodata-download-test.json geodata-field-probe.json happ-worker.js happ.txt incy.txt isolation-a.txt isolation-b.txt routing_isolation.py ru-karing-happ.txt russia-routing.json subscription-delivery.json subscription_delivery.py test_happ_worker.mjs test_routing_isolation.py test_subscription_delivery.py
       - name: Tests
         run: python -m unittest discover -v
       - name: Prepare official Xray
@@ -61,7 +58,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          if python publication_changed.py || ! git diff --cached --quiet; then
+          if python publication_changed.py; then
             git add subscription.json ru.json report.json
             git commit -m "Update validated rjsxrd subscription"
             git push
