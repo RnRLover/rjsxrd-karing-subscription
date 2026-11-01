@@ -13,9 +13,7 @@ on:
     paths:
       - '*.py'
       - 'settings.json'
-      - 'russia-routing.json'
-      - 'happ-worker.js'
-      - 'test_happ_worker.mjs'
+      - 'routing-policy.json'
       - '.github/workflows/update.yml'
 permissions:
   contents: write
@@ -31,10 +29,11 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Stage removal of retired delivery variants
+        run: |
+          git rm --ignore-unmatch geodata-download-test.json geodata-field-probe.json happ-worker.js happ.txt incy.txt isolation-a.txt isolation-b.txt routing_isolation.py ru-karing-happ.txt russia-routing.json subscription-delivery.json subscription_delivery.py test_happ_worker.mjs test_routing_isolation.py test_subscription_delivery.py
       - name: Tests
         run: python -m unittest discover -v
-      - name: Check automatic subscription delivery
-        run: node --test test_happ_worker.mjs
       - name: Prepare official Xray
         run: python setup_xray.py
       - name: Restore recent exit-country evidence
@@ -54,14 +53,16 @@ jobs:
           key: exit-country-v1-${{ github.run_id }}-${{ github.run_attempt }}
       - name: Generate common subscription
         run: python karing.py --xray .runtime/xray
-      - name: Check common JSON, LAN TCP and client DNS
+      - name: Check common routing, DNS interception and ad blocking
         run: python check_subscription.py --xray .runtime/xray
+      - name: Check actual automatic selection and failover
+        run: python check_auto_selection.py --xray .runtime/xray
       - name: Publish validated files
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          if python publication_changed.py; then
-            git add subscription.json subscription-delivery.json incy.txt happ.txt ru-karing-happ.txt russia-routing.json ru.json report.json
+          if python publication_changed.py || ! git diff --cached --quiet; then
+            git add subscription.json ru.json report.json
             git commit -m "Update validated rjsxrd subscription"
             git push
           fi
