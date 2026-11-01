@@ -1,17 +1,17 @@
 {
-  "generated_at_utc": "2026-11-01T00:17:08Z",
+  "generated_at_utc": "2026-11-01T01:34:59Z",
   "pool": "whitelist",
   "source": "https://raw.githubusercontent.com/whoahaow/rjsxrd/main/githubmirror/bypass/bypass-all.txt",
-  "source_sha256": "f006f15a09b4520468ec83eb7ad0c1a745389d2a153a82b665b9f27bfb9265ee",
+  "source_sha256": "354ea5f0bf68ce247235ebb3921c4fa1bec7b34006522c9d9808173a8ec2cca3",
   "counts": {
-    "source_nodes": 956,
-    "russian_label_candidates": 124,
-    "unsupported_or_invalid": 195,
-    "duplicate": 101,
+    "source_nodes": 1028,
+    "unsupported_or_invalid": 221,
+    "russian_label_candidates": 174,
+    "duplicate": 124,
     "nonpublic_or_unresolved_endpoint": 0,
     "cached_foreign_exits": 0
   },
-  "eligible": 660,
+  "eligible": 683,
   "selected": 40,
   "xray_validated": true,
   "actual_egress_checked": true,
@@ -24,9 +24,9 @@
   "excluded_country": "RU",
   "exclusion_basis": "mandatory actual HTTPS egress IP against RU CIDRs; public Russian entry IPs and RU labels permitted",
   "selected_protocols": {
-    "shadowsocks": 12,
-    "trojan": 9,
-    "vless": 18,
+    "shadowsocks": 14,
+    "trojan": 10,
+    "vless": 15,
     "vmess": 1
   },
   "routing_policy": "local direct; RU direct; everything else proxy",
@@ -49,8 +49,8 @@
     "history_min_success_rate": 0.9,
     "established_after_observations": 3,
     "warning": "Runner tests do not measure reachability or speed on the device/operator; provisional is not established reliability.",
-    "candidates": 547,
-    "admitted": 391,
+    "candidates": 533,
+    "admitted": 346,
     "selected": 40,
     "provisional_selected": 0,
     "caps": {
@@ -64,7 +64,7 @@
         "tag": "pool-01",
         "check": {
           "version": 1,
-          "checked_at": 1793491874,
+          "checked_at": 1793496646,
           "passed": true,
           "sites": [
             {
@@ -79,16 +79,16 @@
             }
           ],
           "samples_ms": [
-            80.6,
-            51.5,
-            57.8,
-            82.1
+            60.0,
+            63.3,
+            64.4,
+            63.5
           ],
-          "median_ms": 69.2,
-          "spread_ms": 30.6,
-          "worst_ms": 82.1,
+          "median_ms": 63.4,
+          "spread_ms": 4.4,
+          "worst_ms": 64.4,
           "transfer_bytes": 262144,
-          "transfer_ms": 107.4,
+          "transfer_ms": 126.3,
           "transfer_url": "https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/quality-probe.bin",
           "sha256_verified": true,
           "errors": []
@@ -108,7 +108,7 @@
         "tag": "pool-02",
         "check": {
           "version": 1,
-          "checked_at": 1793491872,
+          "checked_at": 1793496528,
           "passed": true,
           "sites": [
             {
@@ -123,16 +123,16 @@
             }
           ],
           "samples_ms": [
-            55.4,
-            76.6,
-            63.2,
-            82.7
+            60.9,
+            62.0,
+            68.5,
+            71.3
           ],
-          "median_ms": 69.9,
-          "spread_ms": 27.3,
-          "worst_ms": 82.7,
+          "median_ms": 65.2,
+          "spread_ms": 10.4,
+          "worst_ms": 71.3,
           "transfer_bytes": 262144,
-          "transfer_ms": 104.4,
+          "transfer_ms": 135.5,
           "transfer_url": "https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/quality-probe.bin",
           "sha256_verified": true,
           "errors": []
@@ -152,7 +152,7 @@
         "tag": "pool-03",
         "check": {
           "version": 1,
-          "checked_at": 1793491873,
+          "checked_at": 1793496648,
           "passed": true,
           "sites": [
             {
@@ -167,16 +167,16 @@
             }
           ],
           "samples_ms": [
-            54.7,
-            53.2,
-            72.2,
-            93.1
+            60.9,
+            60.9,
+            65.7,
+            67.2
           ],
-          "median_ms": 63.5,
-          "spread_ms": 39.9,
-          "worst_ms": 93.1,
+          "median_ms": 63.3,
+          "spread_ms": 6.3,
+          "worst_ms": 67.2,
           "transfer_bytes": 262144,
-          "transfer_ms": 177.9,
+          "transfer_ms": 132.2,
           "transfer_url": "https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/quality-probe.bin",
           "sha256_verified": true,
           "errors": []
@@ -196,7 +196,95 @@
         "tag": "pool-04",
         "check": {
           "version": 1,
-          "checked_at": 1793491878,
+          "checked_at": 1793496648,
+          "passed": true,
+          "sites": [
+            {
+              "url": "https://www.gstatic.com/generate_204",
+              "passed": 2,
+              "attempts": 2
+            },
+            {
+              "url": "https://cp.cloudflare.com/generate_204",
+              "passed": 2,
+              "attempts": 2
+            }
+          ],
+          "samples_ms": [
+            61.6,
+            62.5,
+            64.6,
+            64.6
+          ],
+          "median_ms": 63.5,
+          "spread_ms": 3.0,
+          "worst_ms": 64.6,
+          "transfer_bytes": 262144,
+          "transfer_ms": 136.7,
+          "transfer_url": "https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/quality-probe.bin",
+          "sha256_verified": true,
+          "errors": []
+        },
+        "history": {
+          "observations": 10,
+          "passed": 10,
+          "success_rate": 1.0,
+          "provisional": false
+        },
+        "priority": [
+          0,
+          0
+        ]
+      },
+      {
+        "tag": "pool-05",
+        "check": {
+          "version": 1,
+          "checked_at": 1793496663,
+          "passed": true,
+          "sites": [
+            {
+              "url": "https://www.gstatic.com/generate_204",
+              "passed": 2,
+              "attempts": 2
+            },
+            {
+              "url": "https://cp.cloudflare.com/generate_204",
+              "passed": 2,
+              "attempts": 2
+            }
+          ],
+          "samples_ms": [
+            109.4,
+            110.5,
+            121.7,
+            110.6
+          ],
+          "median_ms": 110.5,
+          "spread_ms": 12.3,
+          "worst_ms": 121.7,
+          "transfer_bytes": 262144,
+          "transfer_ms": 253.3,
+          "transfer_url": "https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/quality-probe.bin",
+          "sha256_verified": true,
+          "errors": []
+        },
+        "history": {
+          "observations": 10,
+          "passed": 10,
+          "success_rate": 1.0,
+          "provisional": false
+        },
+        "priority": [
+          0,
+          0
+        ]
+      },
+      {
+        "tag": "pool-06",
+        "check": {
+          "version": 1,
+          "checked_at": 1793496657,
           "passed": true,
           "sites": [
             {
@@ -212,110 +300,22 @@
           ],
           "samples_ms": [
             114.1,
-            107.0,
-            107.7,
-            52.6
+            115.0,
+            93.6,
+            92.2
           ],
-          "median_ms": 107.3,
-          "spread_ms": 61.5,
-          "worst_ms": 114.1,
+          "median_ms": 103.8,
+          "spread_ms": 22.8,
+          "worst_ms": 115.0,
           "transfer_bytes": 262144,
-          "transfer_ms": 109.2,
+          "transfer_ms": 301.6,
           "transfer_url": "https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/quality-probe.bin",
           "sha256_verified": true,
           "errors": []
         },
         "history": {
-          "observations": 9,
-          "passed": 9,
-          "success_rate": 1.0,
-          "provisional": false
-        },
-        "priority": [
-          0,
-          0
-        ]
-      },
-      {
-        "tag": "pool-05",
-        "check": {
-          "version": 1,
-          "checked_at": 1793491879,
-          "passed": true,
-          "sites": [
-            {
-              "url": "https://www.gstatic.com/generate_204",
-              "passed": 2,
-              "attempts": 2
-            },
-            {
-              "url": "https://cp.cloudflare.com/generate_204",
-              "passed": 2,
-              "attempts": 2
-            }
-          ],
-          "samples_ms": [
-            115.1,
-            103.9,
-            60.9,
-            65.5
-          ],
-          "median_ms": 84.7,
-          "spread_ms": 54.2,
-          "worst_ms": 115.1,
-          "transfer_bytes": 262144,
-          "transfer_ms": 207.1,
-          "transfer_url": "https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/quality-probe.bin",
-          "sha256_verified": true,
-          "errors": []
-        },
-        "history": {
-          "observations": 5,
-          "passed": 5,
-          "success_rate": 1.0,
-          "provisional": false
-        },
-        "priority": [
-          0,
-          0
-        ]
-      },
-      {
-        "tag": "pool-06",
-        "check": {
-          "version": 1,
-          "checked_at": 1793492017,
-          "passed": true,
-          "sites": [
-            {
-              "url": "https://www.gstatic.com/generate_204",
-              "passed": 2,
-              "attempts": 2
-            },
-            {
-              "url": "https://cp.cloudflare.com/generate_204",
-              "passed": 2,
-              "attempts": 2
-            }
-          ],
-          "samples_ms": [
-            124.2,
-            126.7,
-            114.8,
-            106.1
-          ],
-          "median_ms": 119.5,
-          "spread_ms": 20.6,
-          "worst_ms": 126.7,
-          "transfer_bytes": 262144,
-          "transfer_ms": 193.8,
-          "transfer_url": "https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/quality-probe.bin",
-          "sha256_verified": true,
-          "errors": []
-        },
-        "history": {
-          "observations": 6,
-          "passed": 6,
+          "observations": 10,
+          "passed": 10,
           "success_rate": 1.0,
           "provisional": false
         },
@@ -328,7 +328,7 @@
         "tag": "pool-07",
         "check": {
           "version": 1,
-          "checked_at": 1793491983,
+          "checked_at": 1793496653,
           "passed": true,
           "sites": [
             {
@@ -343,16 +343,16 @@
             }
           ],
           "samples_ms": [
-            142.1,
-            130.3,
-            112.4,
-            108.5
+            111.8,
+            122.1,
+            121.1,
+            110.1
           ],
-          "median_ms": 121.4,
-          "spread_ms": 33.6,
-          "worst_ms": 142.1,
+          "median_ms": 116.4,
+          "spread_ms": 12.0,
+          "worst_ms": 122.1,
           "transfer_bytes": 262144,
-          "transfer_ms": 378.9,
+          "transfer_ms": 194.4,
           "transfer_url": "https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/quality-probe.bin",
           "sha256_verified": true,
           "errors": []
@@ -372,7 +372,7 @@
         "tag": "pool-08",
         "check": {
           "version": 1,
-          "checked_at": 1793491876,
+          "checked_at": 1793496823,
           "passed": true,
           "sites": [
             {
@@ -387,23 +387,23 @@
             }
           ],
           "samples_ms": [
-            126.7,
-            136.8,
-            129.6,
-            133.0
+            134.5,
+            142.1,
+            116.9,
+            120.1
           ],
-          "median_ms": 131.3,
-          "spread_ms": 10.1,
-          "worst_ms": 136.8,
+          "median_ms": 127.3,
+          "spread_ms": 25.2,
+          "worst_ms": 142.1,
           "transfer_bytes": 262144,
-          "transfer_ms": 231.3,
+          "transfer_ms": 285.0,
           "transfer_url": "https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/quality-probe.bin",
           "sha256_verified": true,
           "errors": []
         },
         "history": {
-          "observations": 9,
-          "passed": 9,
+          "observations": 3,
+          "passed": 3,
           "success_rate": 1.0,
           "provisional": false
         },
@@ -416,7 +416,7 @@
         "tag": "pool-09",
         "check": {
           "version": 1,
-          "checked_at": 1793491982,
+          "checked_at": 1793496656,
           "passed": true,
           "sites": [
             {
@@ -431,16 +431,16 @@
             }
           ],
           "samples_ms": [
-            143.7,
-            137.2,
-            146.9,
-            131.8
+            152.2,
+            153.3,
+            156.6,
+            156.0
           ],
-          "median_ms": 140.4,
-          "spread_ms": 15.1,
-          "worst_ms": 146.9,
+          "median_ms": 154.7,
+          "spread_ms": 4.4,
+          "worst_ms": 156.6,
           "transfer_bytes": 262144,
-          "transfer_ms": 314.3,
+          "transfer_ms": 411.0,
           "transfer_url": "https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/quality-probe.bin",
           "sha256_verified": true,
           "errors": []
@@ -460,7 +460,7 @@
         "tag": "pool-10",
         "check": {
           "version": 1,
-          "checked_at": 1793491983,
+          "checked_at": 1793496656,
           "passed": true,
           "sites": [
             {
@@ -475,23 +475,23 @@
             }
           ],
           "samples_ms": [
-            156.2,
-            165.2,
-            143.6,
-            133.8
+            174.0,
+            163.3,
+            161.7,
+            169.9
           ],
-          "median_ms": 149.9,
-          "spread_ms": 31.4,
-          "worst_ms": 165.2,
+          "median_ms": 166.6,
+          "spread_ms": 12.3,
+          "worst_ms": 174.0,
           "transfer_bytes": 262144,
-          "transfer_ms": 415.6,
+          "transfer_ms": 308.2,
           "transfer_url": "https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/quality-probe.bin",
           "sha256_verified": true,
           "errors": []
         },
         "history": {
-          "observations": 3,
-          "passed": 3,
+          "observations": 5,
+          "passed": 5,
           "success_rate": 1.0,
           "provisional": false
         },
@@ -504,7 +504,7 @@
         "tag": "pool-11",
         "check": {
           "version": 1,
-          "checked_at": 1793492125,
+          "checked_at": 1793496634,
           "passed": true,
           "sites": [
             {
@@ -519,16 +519,16 @@
             }
           ],
           "samples_ms": [
-            175.3,
-            158.9,
-            164.2,
-            157.7
+            192.8,
+            181.7,
+            131.7,
+            140.0
           ],
-          "median_ms": 161.6,
-          "spread_ms": 17.6,
-          "worst_ms": 175.3,
+          "median_ms": 160.8,
+          "spread_ms": 61.1,
+          "worst_ms": 192.8,
           "transfer_bytes": 262144,
-          "transfer_ms": 289.9,
+          "transfer_ms": 298.2,
           "transfer_url": "https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/quality-probe.bin",
           "sha256_verified": true,
           "errors": []
@@ -548,7 +548,7 @@
         "tag": "pool-12",
         "check": {
           "version": 1,
-          "checked_at": 1793491984,
+          "checked_at": 1793496531,
           "passed": true,
           "sites": [
             {
@@ -563,23 +563,23 @@
             }
           ],
           "samples_ms": [
-            193.2,
-            182.3,
-            186.0,
-            193.7
+            174.4,
+            181.3,
+            186.1,
+            177.1
           ],
-          "median_ms": 189.6,
-          "spread_ms": 11.4,
-          "worst_ms": 193.7,
+          "median_ms": 179.2,
+          "spread_ms": 11.7,
+          "worst_ms": 186.1,
           "transfer_bytes": 262144,
-          "transfer_ms": 328.1,
+          "transfer_ms": 365.7,
           "transfer_url": "https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/quality-probe.bin",
           "sha256_verified": true,
           "errors": []
         },
         "history": {
-          "observations": 6,
-          "passed": 6,
+          "observations": 10,
+          "passed": 10,
           "success_rate": 1.0,
           "provisional": false
         },
@@ -592,7 +592,7 @@
         "tag": "pool-13",
         "check": {
           "version": 1,
-          "checked_at": 1793491982,
+          "checked_at": 1793496653,
           "passed": true,
           "sites": [
             {
@@ -607,16 +607,60 @@
             }
           ],
           "samples_ms": [
-            140.4,
-            187.7,
-            83.1,
-            148.3
+            177.7,
+            209.6,
+            178.3,
+            174.2
           ],
-          "median_ms": 144.4,
-          "spread_ms": 104.6,
-          "worst_ms": 187.7,
+          "median_ms": 178.0,
+          "spread_ms": 35.4,
+          "worst_ms": 209.6,
           "transfer_bytes": 262144,
-          "transfer_ms": 272.6,
+          "transfer_ms": 536.6,
+          "transfer_url": "https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/quality-probe.bin",
+          "sha256_verified": true,
+          "errors": []
+        },
+        "history": {
+          "observations": 7,
+          "passed": 7,
+          "success_rate": 1.0,
+          "provisional": false
+        },
+        "priority": [
+          0,
+          0
+        ]
+      },
+      {
+        "tag": "pool-14",
+        "check": {
+          "version": 1,
+          "checked_at": 1793496796,
+          "passed": true,
+          "sites": [
+            {
+              "url": "https://www.gstatic.com/generate_204",
+              "passed": 2,
+              "attempts": 2
+            },
+            {
+              "url": "https://cp.cloudflare.com/generate_204",
+              "passed": 2,
+              "attempts": 2
+            }
+          ],
+          "samples_ms": [
+            185.7,
+            192.0,
+            167.3,
+            178.1
+          ],
+          "median_ms": 181.9,
+          "spread_ms": 24.7,
+          "worst_ms": 192.0,
+          "transfer_bytes": 262144,
+          "transfer_ms": 314.6,
           "transfer_url": "https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/quality-probe.bin",
           "sha256_verified": true,
           "errors": []
@@ -633,10 +677,10 @@
         ]
       },
       {
-        "tag": "pool-14",
+        "tag": "pool-15",
         "check": {
           "version": 1,
-          "checked_at": 1793491888,
+          "checked_at": 1793496652,
           "passed": true,
           "sites": [
             {
@@ -651,16 +695,16 @@
             }
           ],
           "samples_ms": [
-            179.4,
-            177.6,
-            206.7,
-            242.9
+            198.4,
+            193.3,
+            190.9,
+            170.7
           ],
-          "median_ms": 193.1,
-          "spread_ms": 65.3,
-          "worst_ms": 242.9,
+          "median_ms": 192.1,
+          "spread_ms": 27.7,
+          "worst_ms": 198.4,
           "transfer_bytes": 262144,
-          "transfer_ms": 368.3,
+          "transfer_ms": 705.5,
           "transfer_url": "https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/quality-probe.bin",
           "sha256_verified": true,
           "errors": []
@@ -677,54 +721,10 @@
         ]
       },
       {
-        "tag": "pool-15",
-        "check": {
-          "version": 1,
-          "checked_at": 1793491874,
-          "passed": true,
-          "sites": [
-            {
-              "url": "https://www.gstatic.com/generate_204",
-              "passed": 2,
-              "attempts": 2
-            },
-            {
-              "url": "https://cp.cloudflare.com/generate_204",
-              "passed": 2,
-              "attempts": 2
-            }
-          ],
-          "samples_ms": [
-            209.1,
-            162.0,
-            219.9,
-            205.4
-          ],
-          "median_ms": 207.2,
-          "spread_ms": 57.9,
-          "worst_ms": 219.9,
-          "transfer_bytes": 262144,
-          "transfer_ms": 254.7,
-          "transfer_url": "https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/quality-probe.bin",
-          "sha256_verified": true,
-          "errors": []
-        },
-        "history": {
-          "observations": 8,
-          "passed": 8,
-          "success_rate": 1.0,
-          "provisional": false
-        },
-        "priority": [
-          0,
-          0
-        ]
-      },
-      {
         "tag": "pool-16",
         "check": {
           "version": 1,
-          "checked_at": 1793491979,
+          "checked_at": 1793496654,
           "passed": true,
           "sites": [
             {
@@ -739,23 +739,23 @@
             }
           ],
           "samples_ms": [
-            214.3,
-            162.3,
-            171.0,
-            215.8
+            198.5,
+            202.3,
+            145.9,
+            144.3
           ],
-          "median_ms": 192.7,
-          "spread_ms": 53.5,
-          "worst_ms": 215.8,
+          "median_ms": 172.2,
+          "spread_ms": 58.0,
+          "worst_ms": 202.3,
           "transfer_bytes": 262144,
-          "transfer_ms": 317.2,
+          "transfer_ms": 318.7,
           "transfer_url": "https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/quality-probe.bin",
           "sha256_verified": true,
           "errors": []
         },
         "history": {
-          "observations": 8,
-          "passed": 8,
+          "observations": 7,
+          "passed": 7,
           "success_rate": 1.0,
           "provisional": false
         },
@@ -768,7 +768,7 @@
         "tag": "pool-17",
         "check": {
           "version": 1,
-          "checked_at": 1793491977,
+          "checked_at": 1793496652,
           "passed": true,
           "sites": [
             {
@@ -783,16 +783,16 @@
             }
           ],
           "samples_ms": [
-            155.3,
-            204.5,
-            163.5,
-            165.1
+            163.3,
+            188.3,
+            167.7,
+            166.8
           ],
-          "median_ms": 164.3,
-          "spread_ms": 49.2,
-          "worst_ms": 204.5,
+          "median_ms": 167.2,
+          "spread_ms": 25.0,
+          "worst_ms": 188.3,
           "transfer_bytes": 262144,
-          "transfer_ms": 240.9,
+          "transfer_ms": 303.2,
           "transfer_url": "https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/quality-probe.bin",
           "sha256_verified": true,
           "errors": []
@@ -812,7 +812,7 @@
         "tag": "pool-18",
         "check": {
           "version": 1,
-          "checked_at": 1793492121,
+          "checked_at": 1793496660,
           "passed": true,
           "sites": [
             {
@@ -827,23 +827,23 @@
             }
           ],
           "samples_ms": [
-            144.1,
-            145.4,
-            219.7,
-            180.3
+            194.2,
+            196.8,
+            193.1,
+            205.0
           ],
-          "median_ms": 162.9,
-          "spread_ms": 75.6,
-          "worst_ms": 219.7,
+          "median_ms": 195.5,
+          "spread_ms": 11.9,
+          "worst_ms": 205.0,
           "transfer_bytes": 262144,
-          "transfer_ms": 386.2,
+          "transfer_ms": 327.4,
           "transfer_url": "https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/quality-probe.bin",
           "sha256_verified": true,
           "errors": []
         },
         "history": {
-          "observations": 6,
-          "passed": 6,
+          "observations": 10,
+          "passed": 10,
           "success_rate": 1.0,
           "provisional": false
         },
@@ -856,7 +856,7 @@
         "tag": "pool-19",
         "check": {
           "version": 1,
-          "checked_at": 1793491859,
+          "checked_at": 1793496661,
           "passed": true,
           "sites": [
             {
@@ -871,16 +871,148 @@
             }
           ],
           "samples_ms": [
-            94.3,
-            155.5,
-            142.0,
-            132.2
+            206.2,
+            190.4,
+            202.7,
+            204.9
           ],
-          "median_ms": 137.1,
-          "spread_ms": 61.2,
-          "worst_ms": 155.5,
+          "median_ms": 203.8,
+          "spread_ms": 15.8,
+          "worst_ms": 206.2,
           "transfer_bytes": 262144,
-          "transfer_ms": 380.3,
+          "transfer_ms": 354.2,
+          "transfer_url": "https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/quality-probe.bin",
+          "sha256_verified": true,
+          "errors": []
+        },
+        "history": {
+          "observations": 4,
+          "passed": 4,
+          "success_rate": 1.0,
+          "provisional": false
+        },
+        "priority": [
+          0,
+          0
+        ]
+      },
+      {
+        "tag": "pool-20",
+        "check": {
+          "version": 1,
+          "checked_at": 1793496779,
+          "passed": true,
+          "sites": [
+            {
+              "url": "https://www.gstatic.com/generate_204",
+              "passed": 2,
+              "attempts": 2
+            },
+            {
+              "url": "https://cp.cloudflare.com/generate_204",
+              "passed": 2,
+              "attempts": 2
+            }
+          ],
+          "samples_ms": [
+            196.9,
+            203.5,
+            192.7,
+            204.5
+          ],
+          "median_ms": 200.2,
+          "spread_ms": 11.8,
+          "worst_ms": 204.5,
+          "transfer_bytes": 262144,
+          "transfer_ms": 356.2,
+          "transfer_url": "https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/quality-probe.bin",
+          "sha256_verified": true,
+          "errors": []
+        },
+        "history": {
+          "observations": 4,
+          "passed": 4,
+          "success_rate": 1.0,
+          "provisional": false
+        },
+        "priority": [
+          0,
+          0
+        ]
+      },
+      {
+        "tag": "pool-21",
+        "check": {
+          "version": 1,
+          "checked_at": 1793496853,
+          "passed": true,
+          "sites": [
+            {
+              "url": "https://www.gstatic.com/generate_204",
+              "passed": 2,
+              "attempts": 2
+            },
+            {
+              "url": "https://cp.cloudflare.com/generate_204",
+              "passed": 2,
+              "attempts": 2
+            }
+          ],
+          "samples_ms": [
+            216.4,
+            211.0,
+            209.2,
+            231.5
+          ],
+          "median_ms": 213.7,
+          "spread_ms": 22.3,
+          "worst_ms": 231.5,
+          "transfer_bytes": 262144,
+          "transfer_ms": 353.0,
+          "transfer_url": "https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/quality-probe.bin",
+          "sha256_verified": true,
+          "errors": []
+        },
+        "history": {
+          "observations": 4,
+          "passed": 4,
+          "success_rate": 1.0,
+          "provisional": false
+        },
+        "priority": [
+          0,
+          0
+        ]
+      },
+      {
+        "tag": "pool-22",
+        "check": {
+          "version": 1,
+          "checked_at": 1793496657,
+          "passed": true,
+          "sites": [
+            {
+              "url": "https://www.gstatic.com/generate_204",
+              "passed": 2,
+              "attempts": 2
+            },
+            {
+              "url": "https://cp.cloudflare.com/generate_204",
+              "passed": 2,
+              "attempts": 2
+            }
+          ],
+          "samples_ms": [
+            211.8,
+            216.9,
+            209.2,
+            209.2
+          ],
+          "median_ms": 210.5,
+          "spread_ms": 7.7,
+          "worst_ms": 216.9,
+          "transfer_bytes": 262144,
+          "transfer_ms": 412.7,
           "transfer_url": "https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/quality-probe.bin",
           "sha256_verified": true,
           "errors": []
@@ -897,142 +1029,10 @@
         ]
       },
       {
-        "tag": "pool-20",
-        "check": {
-          "version": 1,
-          "checked_at": 1793491867,
-          "passed": true,
-          "sites": [
-            {
-              "url": "https://www.gstatic.com/generate_204",
-              "passed": 2,
-              "attempts": 2
-            },
-            {
-              "url": "https://cp.cloudflare.com/generate_204",
-              "passed": 2,
-              "attempts": 2
-            }
-          ],
-          "samples_ms": [
-            153.5,
-            136.2,
-            120.8,
-            123.8
-          ],
-          "median_ms": 130.0,
-          "spread_ms": 32.7,
-          "worst_ms": 153.5,
-          "transfer_bytes": 262144,
-          "transfer_ms": 406.5,
-          "transfer_url": "https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/quality-probe.bin",
-          "sha256_verified": true,
-          "errors": []
-        },
-        "history": {
-          "observations": 5,
-          "passed": 5,
-          "success_rate": 1.0,
-          "provisional": false
-        },
-        "priority": [
-          0,
-          0
-        ]
-      },
-      {
-        "tag": "pool-21",
-        "check": {
-          "version": 1,
-          "checked_at": 1793491873,
-          "passed": true,
-          "sites": [
-            {
-              "url": "https://www.gstatic.com/generate_204",
-              "passed": 2,
-              "attempts": 2
-            },
-            {
-              "url": "https://cp.cloudflare.com/generate_204",
-              "passed": 2,
-              "attempts": 2
-            }
-          ],
-          "samples_ms": [
-            85.1,
-            78.5,
-            57.8,
-            80.7
-          ],
-          "median_ms": 79.6,
-          "spread_ms": 27.3,
-          "worst_ms": 85.1,
-          "transfer_bytes": 262144,
-          "transfer_ms": 177.8,
-          "transfer_url": "https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/quality-probe.bin",
-          "sha256_verified": true,
-          "errors": []
-        },
-        "history": {
-          "observations": 10,
-          "passed": 9,
-          "success_rate": 0.9,
-          "provisional": false
-        },
-        "priority": [
-          0,
-          1
-        ]
-      },
-      {
-        "tag": "pool-22",
-        "check": {
-          "version": 1,
-          "checked_at": 1793491981,
-          "passed": true,
-          "sites": [
-            {
-              "url": "https://www.gstatic.com/generate_204",
-              "passed": 2,
-              "attempts": 2
-            },
-            {
-              "url": "https://cp.cloudflare.com/generate_204",
-              "passed": 2,
-              "attempts": 2
-            }
-          ],
-          "samples_ms": [
-            174.5,
-            175.6,
-            184.6,
-            172.7
-          ],
-          "median_ms": 175.1,
-          "spread_ms": 11.9,
-          "worst_ms": 184.6,
-          "transfer_bytes": 262144,
-          "transfer_ms": 398.7,
-          "transfer_url": "https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/quality-probe.bin",
-          "sha256_verified": true,
-          "errors": []
-        },
-        "history": {
-          "observations": 10,
-          "passed": 9,
-          "success_rate": 0.9,
-          "provisional": false
-        },
-        "priority": [
-          0,
-          1
-        ]
-      },
-      {
         "tag": "pool-23",
         "check": {
           "version": 1,
-          "checked_at": 1793491890,
+          "checked_at": 1793496785,
           "passed": true,
           "sites": [
             {
@@ -1047,16 +1047,60 @@
             }
           ],
           "samples_ms": [
-            187.5,
-            182.7,
-            190.8,
-            188.0
+            175.6,
+            175.7,
+            177.7,
+            181.7
           ],
-          "median_ms": 187.8,
-          "spread_ms": 8.1,
-          "worst_ms": 190.8,
+          "median_ms": 176.7,
+          "spread_ms": 6.1,
+          "worst_ms": 181.7,
           "transfer_bytes": 262144,
-          "transfer_ms": 1525.9,
+          "transfer_ms": 544.0,
+          "transfer_url": "https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/quality-probe.bin",
+          "sha256_verified": true,
+          "errors": []
+        },
+        "history": {
+          "observations": 10,
+          "passed": 9,
+          "success_rate": 0.9,
+          "provisional": false
+        },
+        "priority": [
+          0,
+          1
+        ]
+      },
+      {
+        "tag": "pool-24",
+        "check": {
+          "version": 1,
+          "checked_at": 1793496656,
+          "passed": true,
+          "sites": [
+            {
+              "url": "https://www.gstatic.com/generate_204",
+              "passed": 2,
+              "attempts": 2
+            },
+            {
+              "url": "https://cp.cloudflare.com/generate_204",
+              "passed": 2,
+              "attempts": 2
+            }
+          ],
+          "samples_ms": [
+            214.5,
+            241.0,
+            198.5,
+            233.6
+          ],
+          "median_ms": 224.1,
+          "spread_ms": 42.5,
+          "worst_ms": 241.0,
+          "transfer_bytes": 262144,
+          "transfer_ms": 576.1,
           "transfer_url": "https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/quality-probe.bin",
           "sha256_verified": true,
           "errors": []
@@ -1073,54 +1117,10 @@
         ]
       },
       {
-        "tag": "pool-24",
-        "check": {
-          "version": 1,
-          "checked_at": 1793491878,
-          "passed": true,
-          "sites": [
-            {
-              "url": "https://www.gstatic.com/generate_204",
-              "passed": 2,
-              "attempts": 2
-            },
-            {
-              "url": "https://cp.cloudflare.com/generate_204",
-              "passed": 2,
-              "attempts": 2
-            }
-          ],
-          "samples_ms": [
-            215.4,
-            205.9,
-            163.2,
-            197.8
-          ],
-          "median_ms": 201.9,
-          "spread_ms": 52.2,
-          "worst_ms": 215.4,
-          "transfer_bytes": 262144,
-          "transfer_ms": 525.2,
-          "transfer_url": "https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/quality-probe.bin",
-          "sha256_verified": true,
-          "errors": []
-        },
-        "history": {
-          "observations": 8,
-          "passed": 8,
-          "success_rate": 1.0,
-          "provisional": false
-        },
-        "priority": [
-          0,
-          1
-        ]
-      },
-      {
         "tag": "pool-25",
         "check": {
           "version": 1,
-          "checked_at": 1793491989,
+          "checked_at": 1793496530,
           "passed": true,
           "sites": [
             {
@@ -1135,23 +1135,23 @@
             }
           ],
           "samples_ms": [
-            222.3,
-            219.1,
-            223.6,
-            186.9
+            228.8,
+            234.1,
+            229.6,
+            236.2
           ],
-          "median_ms": 220.7,
-          "spread_ms": 36.7,
-          "worst_ms": 223.6,
+          "median_ms": 231.8,
+          "spread_ms": 7.4,
+          "worst_ms": 236.2,
           "transfer_bytes": 262144,
-          "transfer_ms": 440.3,
+          "transfer_ms": 403.5,
           "transfer_url": "https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/quality-probe.bin",
           "sha256_verified": true,
           "errors": []
         },
         "history": {
-          "observations": 5,
-          "passed": 5,
+          "observations": 9,
+          "passed": 9,
           "success_rate": 1.0,
           "provisional": false
         },
@@ -1164,7 +1164,7 @@
         "tag": "pool-26",
         "check": {
           "version": 1,
-          "checked_at": 1793491970,
+          "checked_at": 1793496650,
           "passed": true,
           "sites": [
             {
@@ -1179,16 +1179,16 @@
             }
           ],
           "samples_ms": [
-            219.7,
-            219.1,
-            222.2,
-            229.0
+            319.9,
+            250.7,
+            378.1,
+            327.0
           ],
-          "median_ms": 220.9,
-          "spread_ms": 9.9,
-          "worst_ms": 229.0,
+          "median_ms": 323.4,
+          "spread_ms": 127.4,
+          "worst_ms": 378.1,
           "transfer_bytes": 262144,
-          "transfer_ms": 671.1,
+          "transfer_ms": 452.0,
           "transfer_url": "https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/quality-probe.bin",
           "sha256_verified": true,
           "errors": []
@@ -1208,7 +1208,7 @@
         "tag": "pool-27",
         "check": {
           "version": 1,
-          "checked_at": 1793491982,
+          "checked_at": 1793496608,
           "passed": true,
           "sites": [
             {
@@ -1223,23 +1223,23 @@
             }
           ],
           "samples_ms": [
-            252.2,
-            201.2,
-            248.6,
-            196.4
+            255.0,
+            261.0,
+            261.6,
+            262.4
           ],
-          "median_ms": 224.9,
-          "spread_ms": 55.8,
-          "worst_ms": 252.2,
+          "median_ms": 261.3,
+          "spread_ms": 7.4,
+          "worst_ms": 262.4,
           "transfer_bytes": 262144,
-          "transfer_ms": 436.2,
+          "transfer_ms": 754.0,
           "transfer_url": "https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/quality-probe.bin",
           "sha256_verified": true,
           "errors": []
         },
         "history": {
-          "observations": 4,
-          "passed": 4,
+          "observations": 6,
+          "passed": 6,
           "success_rate": 1.0,
           "provisional": false
         },
@@ -1252,7 +1252,7 @@
         "tag": "pool-28",
         "check": {
           "version": 1,
-          "checked_at": 1793491961,
+          "checked_at": 1793496658,
           "passed": true,
           "sites": [
             {
@@ -1267,236 +1267,16 @@
             }
           ],
           "samples_ms": [
-            235.3,
-            238.7,
-            243.2,
-            241.2
+            274.0,
+            269.6,
+            188.8,
+            189.7
           ],
-          "median_ms": 239.9,
-          "spread_ms": 7.9,
-          "worst_ms": 243.2,
+          "median_ms": 229.7,
+          "spread_ms": 85.2,
+          "worst_ms": 274.0,
           "transfer_bytes": 262144,
-          "transfer_ms": 719.0,
-          "transfer_url": "https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/quality-probe.bin",
-          "sha256_verified": true,
-          "errors": []
-        },
-        "history": {
-          "observations": 5,
-          "passed": 5,
-          "success_rate": 1.0,
-          "provisional": false
-        },
-        "priority": [
-          0,
-          1
-        ]
-      },
-      {
-        "tag": "pool-29",
-        "check": {
-          "version": 1,
-          "checked_at": 1793491984,
-          "passed": true,
-          "sites": [
-            {
-              "url": "https://www.gstatic.com/generate_204",
-              "passed": 2,
-              "attempts": 2
-            },
-            {
-              "url": "https://cp.cloudflare.com/generate_204",
-              "passed": 2,
-              "attempts": 2
-            }
-          ],
-          "samples_ms": [
-            233.5,
-            225.7,
-            147.4,
-            174.2
-          ],
-          "median_ms": 199.9,
-          "spread_ms": 86.1,
-          "worst_ms": 233.5,
-          "transfer_bytes": 262144,
-          "transfer_ms": 1504.0,
-          "transfer_url": "https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/quality-probe.bin",
-          "sha256_verified": true,
-          "errors": []
-        },
-        "history": {
-          "observations": 7,
-          "passed": 7,
-          "success_rate": 1.0,
-          "provisional": false
-        },
-        "priority": [
-          0,
-          1
-        ]
-      },
-      {
-        "tag": "pool-30",
-        "check": {
-          "version": 1,
-          "checked_at": 1793491858,
-          "passed": true,
-          "sites": [
-            {
-              "url": "https://www.gstatic.com/generate_204",
-              "passed": 2,
-              "attempts": 2
-            },
-            {
-              "url": "https://cp.cloudflare.com/generate_204",
-              "passed": 2,
-              "attempts": 2
-            }
-          ],
-          "samples_ms": [
-            271.7,
-            283.0,
-            272.6,
-            274.8
-          ],
-          "median_ms": 273.7,
-          "spread_ms": 11.3,
-          "worst_ms": 283.0,
-          "transfer_bytes": 262144,
-          "transfer_ms": 754.8,
-          "transfer_url": "https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/quality-probe.bin",
-          "sha256_verified": true,
-          "errors": []
-        },
-        "history": {
-          "observations": 3,
-          "passed": 3,
-          "success_rate": 1.0,
-          "provisional": false
-        },
-        "priority": [
-          0,
-          1
-        ]
-      },
-      {
-        "tag": "pool-31",
-        "check": {
-          "version": 1,
-          "checked_at": 1793492200,
-          "passed": true,
-          "sites": [
-            {
-              "url": "https://www.gstatic.com/generate_204",
-              "passed": 2,
-              "attempts": 2
-            },
-            {
-              "url": "https://cp.cloudflare.com/generate_204",
-              "passed": 2,
-              "attempts": 2
-            }
-          ],
-          "samples_ms": [
-            334.8,
-            330.2,
-            405.3,
-            404.2
-          ],
-          "median_ms": 369.5,
-          "spread_ms": 75.1,
-          "worst_ms": 405.3,
-          "transfer_bytes": 262144,
-          "transfer_ms": 896.8,
-          "transfer_url": "https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/quality-probe.bin",
-          "sha256_verified": true,
-          "errors": []
-        },
-        "history": {
-          "observations": 4,
-          "passed": 4,
-          "success_rate": 1.0,
-          "provisional": false
-        },
-        "priority": [
-          0,
-          1
-        ]
-      },
-      {
-        "tag": "pool-32",
-        "check": {
-          "version": 1,
-          "checked_at": 1793492113,
-          "passed": true,
-          "sites": [
-            {
-              "url": "https://www.gstatic.com/generate_204",
-              "passed": 2,
-              "attempts": 2
-            },
-            {
-              "url": "https://cp.cloudflare.com/generate_204",
-              "passed": 2,
-              "attempts": 2
-            }
-          ],
-          "samples_ms": [
-            356.4,
-            355.0,
-            304.7,
-            302.3
-          ],
-          "median_ms": 329.9,
-          "spread_ms": 54.1,
-          "worst_ms": 356.4,
-          "transfer_bytes": 262144,
-          "transfer_ms": 902.8,
-          "transfer_url": "https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/quality-probe.bin",
-          "sha256_verified": true,
-          "errors": []
-        },
-        "history": {
-          "observations": 4,
-          "passed": 4,
-          "success_rate": 1.0,
-          "provisional": false
-        },
-        "priority": [
-          0,
-          1
-        ]
-      },
-      {
-        "tag": "pool-33",
-        "check": {
-          "version": 1,
-          "checked_at": 1793491820,
-          "passed": true,
-          "sites": [
-            {
-              "url": "https://www.gstatic.com/generate_204",
-              "passed": 2,
-              "attempts": 2
-            },
-            {
-              "url": "https://cp.cloudflare.com/generate_204",
-              "passed": 2,
-              "attempts": 2
-            }
-          ],
-          "samples_ms": [
-            374.5,
-            363.5,
-            379.4,
-            375.7
-          ],
-          "median_ms": 375.1,
-          "spread_ms": 15.9,
-          "worst_ms": 379.4,
-          "transfer_bytes": 262144,
-          "transfer_ms": 984.7,
+          "transfer_ms": 1719.4,
           "transfer_url": "https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/quality-probe.bin",
           "sha256_verified": true,
           "errors": []
@@ -1513,10 +1293,10 @@
         ]
       },
       {
-        "tag": "pool-34",
+        "tag": "pool-29",
         "check": {
           "version": 1,
-          "checked_at": 1793491820,
+          "checked_at": 1793496612,
           "passed": true,
           "sites": [
             {
@@ -1531,16 +1311,236 @@
             }
           ],
           "samples_ms": [
-            358.6,
-            353.8,
-            356.8,
-            386.5
+            267.2,
+            264.5,
+            273.3,
+            274.0
           ],
-          "median_ms": 357.7,
-          "spread_ms": 32.7,
-          "worst_ms": 386.5,
+          "median_ms": 270.2,
+          "spread_ms": 9.5,
+          "worst_ms": 274.0,
           "transfer_bytes": 262144,
-          "transfer_ms": 1033.8,
+          "transfer_ms": 803.9,
+          "transfer_url": "https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/quality-probe.bin",
+          "sha256_verified": true,
+          "errors": []
+        },
+        "history": {
+          "observations": 6,
+          "passed": 6,
+          "success_rate": 1.0,
+          "provisional": false
+        },
+        "priority": [
+          0,
+          1
+        ]
+      },
+      {
+        "tag": "pool-30",
+        "check": {
+          "version": 1,
+          "checked_at": 1793496648,
+          "passed": true,
+          "sites": [
+            {
+              "url": "https://www.gstatic.com/generate_204",
+              "passed": 2,
+              "attempts": 2
+            },
+            {
+              "url": "https://cp.cloudflare.com/generate_204",
+              "passed": 2,
+              "attempts": 2
+            }
+          ],
+          "samples_ms": [
+            272.9,
+            287.5,
+            282.9,
+            275.0
+          ],
+          "median_ms": 278.9,
+          "spread_ms": 14.6,
+          "worst_ms": 287.5,
+          "transfer_bytes": 262144,
+          "transfer_ms": 329.7,
+          "transfer_url": "https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/quality-probe.bin",
+          "sha256_verified": true,
+          "errors": []
+        },
+        "history": {
+          "observations": 5,
+          "passed": 5,
+          "success_rate": 1.0,
+          "provisional": false
+        },
+        "priority": [
+          0,
+          1
+        ]
+      },
+      {
+        "tag": "pool-31",
+        "check": {
+          "version": 1,
+          "checked_at": 1793496659,
+          "passed": true,
+          "sites": [
+            {
+              "url": "https://www.gstatic.com/generate_204",
+              "passed": 2,
+              "attempts": 2
+            },
+            {
+              "url": "https://cp.cloudflare.com/generate_204",
+              "passed": 2,
+              "attempts": 2
+            }
+          ],
+          "samples_ms": [
+            289.9,
+            261.0,
+            319.5,
+            209.5
+          ],
+          "median_ms": 275.4,
+          "spread_ms": 110.0,
+          "worst_ms": 319.5,
+          "transfer_bytes": 262144,
+          "transfer_ms": 455.5,
+          "transfer_url": "https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/quality-probe.bin",
+          "sha256_verified": true,
+          "errors": []
+        },
+        "history": {
+          "observations": 5,
+          "passed": 5,
+          "success_rate": 1.0,
+          "provisional": false
+        },
+        "priority": [
+          0,
+          1
+        ]
+      },
+      {
+        "tag": "pool-32",
+        "check": {
+          "version": 1,
+          "checked_at": 1793496777,
+          "passed": true,
+          "sites": [
+            {
+              "url": "https://www.gstatic.com/generate_204",
+              "passed": 2,
+              "attempts": 2
+            },
+            {
+              "url": "https://cp.cloudflare.com/generate_204",
+              "passed": 2,
+              "attempts": 2
+            }
+          ],
+          "samples_ms": [
+            251.0,
+            371.1,
+            264.2,
+            319.2
+          ],
+          "median_ms": 291.7,
+          "spread_ms": 120.1,
+          "worst_ms": 371.1,
+          "transfer_bytes": 262144,
+          "transfer_ms": 500.3,
+          "transfer_url": "https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/quality-probe.bin",
+          "sha256_verified": true,
+          "errors": []
+        },
+        "history": {
+          "observations": 7,
+          "passed": 7,
+          "success_rate": 1.0,
+          "provisional": false
+        },
+        "priority": [
+          0,
+          1
+        ]
+      },
+      {
+        "tag": "pool-33",
+        "check": {
+          "version": 1,
+          "checked_at": 1793496660,
+          "passed": true,
+          "sites": [
+            {
+              "url": "https://www.gstatic.com/generate_204",
+              "passed": 2,
+              "attempts": 2
+            },
+            {
+              "url": "https://cp.cloudflare.com/generate_204",
+              "passed": 2,
+              "attempts": 2
+            }
+          ],
+          "samples_ms": [
+            368.4,
+            368.9,
+            366.5,
+            369.8
+          ],
+          "median_ms": 368.6,
+          "spread_ms": 3.3,
+          "worst_ms": 369.8,
+          "transfer_bytes": 262144,
+          "transfer_ms": 838.7,
+          "transfer_url": "https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/quality-probe.bin",
+          "sha256_verified": true,
+          "errors": []
+        },
+        "history": {
+          "observations": 6,
+          "passed": 6,
+          "success_rate": 1.0,
+          "provisional": false
+        },
+        "priority": [
+          0,
+          1
+        ]
+      },
+      {
+        "tag": "pool-34",
+        "check": {
+          "version": 1,
+          "checked_at": 1793496530,
+          "passed": true,
+          "sites": [
+            {
+              "url": "https://www.gstatic.com/generate_204",
+              "passed": 2,
+              "attempts": 2
+            },
+            {
+              "url": "https://cp.cloudflare.com/generate_204",
+              "passed": 2,
+              "attempts": 2
+            }
+          ],
+          "samples_ms": [
+            312.2,
+            377.0,
+            397.3,
+            329.9
+          ],
+          "median_ms": 353.4,
+          "spread_ms": 85.1,
+          "worst_ms": 397.3,
+          "transfer_bytes": 262144,
+          "transfer_ms": 454.5,
           "transfer_url": "https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/quality-probe.bin",
           "sha256_verified": true,
           "errors": []
@@ -1560,7 +1560,7 @@
         "tag": "pool-35",
         "check": {
           "version": 1,
-          "checked_at": 1793492056,
+          "checked_at": 1793496773,
           "passed": true,
           "sites": [
             {
@@ -1575,23 +1575,23 @@
             }
           ],
           "samples_ms": [
-            377.4,
-            387.0,
-            356.0,
-            387.4
+            391.7,
+            391.9,
+            340.2,
+            341.7
           ],
-          "median_ms": 382.2,
-          "spread_ms": 31.4,
-          "worst_ms": 387.4,
+          "median_ms": 366.7,
+          "spread_ms": 51.7,
+          "worst_ms": 391.9,
           "transfer_bytes": 262144,
-          "transfer_ms": 833.1,
+          "transfer_ms": 1017.6,
           "transfer_url": "https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/quality-probe.bin",
           "sha256_verified": true,
           "errors": []
         },
         "history": {
-          "observations": 9,
-          "passed": 9,
+          "observations": 8,
+          "passed": 8,
           "success_rate": 1.0,
           "provisional": false
         },
@@ -1604,7 +1604,7 @@
         "tag": "pool-36",
         "check": {
           "version": 1,
-          "checked_at": 1793491974,
+          "checked_at": 1793496471,
           "passed": true,
           "sites": [
             {
@@ -1619,23 +1619,23 @@
             }
           ],
           "samples_ms": [
-            382.0,
-            379.5,
-            444.8,
-            444.9
+            414.8,
+            415.7,
+            412.0,
+            406.5
           ],
           "median_ms": 413.4,
-          "spread_ms": 65.4,
-          "worst_ms": 444.9,
+          "spread_ms": 9.2,
+          "worst_ms": 415.7,
           "transfer_bytes": 262144,
-          "transfer_ms": 1009.9,
+          "transfer_ms": 1106.1,
           "transfer_url": "https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/quality-probe.bin",
           "sha256_verified": true,
           "errors": []
         },
         "history": {
-          "observations": 6,
-          "passed": 6,
+          "observations": 3,
+          "passed": 3,
           "success_rate": 1.0,
           "provisional": false
         },
@@ -1648,7 +1648,7 @@
         "tag": "pool-37",
         "check": {
           "version": 1,
-          "checked_at": 1793492054,
+          "checked_at": 1793496471,
           "passed": true,
           "sites": [
             {
@@ -1663,60 +1663,16 @@
             }
           ],
           "samples_ms": [
-            372.4,
-            360.6,
-            375.6,
-            353.6
+            402.4,
+            410.1,
+            420.7,
+            418.0
           ],
-          "median_ms": 366.5,
-          "spread_ms": 22.0,
-          "worst_ms": 375.6,
+          "median_ms": 414.1,
+          "spread_ms": 18.3,
+          "worst_ms": 420.7,
           "transfer_bytes": 262144,
-          "transfer_ms": 854.7,
-          "transfer_url": "https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/quality-probe.bin",
-          "sha256_verified": true,
-          "errors": []
-        },
-        "history": {
-          "observations": 6,
-          "passed": 6,
-          "success_rate": 1.0,
-          "provisional": false
-        },
-        "priority": [
-          0,
-          1
-        ]
-      },
-      {
-        "tag": "pool-38",
-        "check": {
-          "version": 1,
-          "checked_at": 1793491924,
-          "passed": true,
-          "sites": [
-            {
-              "url": "https://www.gstatic.com/generate_204",
-              "passed": 2,
-              "attempts": 2
-            },
-            {
-              "url": "https://cp.cloudflare.com/generate_204",
-              "passed": 2,
-              "attempts": 2
-            }
-          ],
-          "samples_ms": [
-            394.6,
-            389.5,
-            377.3,
-            389.7
-          ],
-          "median_ms": 389.6,
-          "spread_ms": 17.3,
-          "worst_ms": 394.6,
-          "transfer_bytes": 262144,
-          "transfer_ms": 897.9,
+          "transfer_ms": 1101.2,
           "transfer_url": "https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/quality-probe.bin",
           "sha256_verified": true,
           "errors": []
@@ -1733,10 +1689,10 @@
         ]
       },
       {
-        "tag": "pool-39",
+        "tag": "pool-38",
         "check": {
           "version": 1,
-          "checked_at": 1793491985,
+          "checked_at": 1793496579,
           "passed": true,
           "sites": [
             {
@@ -1751,23 +1707,67 @@
             }
           ],
           "samples_ms": [
-            408.7,
-            379.1,
-            346.7,
-            359.2
+            427.4,
+            404.9,
+            423.7,
+            428.9
           ],
-          "median_ms": 369.1,
-          "spread_ms": 62.0,
-          "worst_ms": 408.7,
+          "median_ms": 425.5,
+          "spread_ms": 24.0,
+          "worst_ms": 428.9,
           "transfer_bytes": 262144,
-          "transfer_ms": 624.7,
+          "transfer_ms": 943.8,
           "transfer_url": "https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/quality-probe.bin",
           "sha256_verified": true,
           "errors": []
         },
         "history": {
-          "observations": 4,
-          "passed": 4,
+          "observations": 5,
+          "passed": 5,
+          "success_rate": 1.0,
+          "provisional": false
+        },
+        "priority": [
+          0,
+          1
+        ]
+      },
+      {
+        "tag": "pool-39",
+        "check": {
+          "version": 1,
+          "checked_at": 1793496833,
+          "passed": true,
+          "sites": [
+            {
+              "url": "https://www.gstatic.com/generate_204",
+              "passed": 2,
+              "attempts": 2
+            },
+            {
+              "url": "https://cp.cloudflare.com/generate_204",
+              "passed": 2,
+              "attempts": 2
+            }
+          ],
+          "samples_ms": [
+            403.2,
+            420.7,
+            435.3,
+            416.1
+          ],
+          "median_ms": 418.4,
+          "spread_ms": 32.1,
+          "worst_ms": 435.3,
+          "transfer_bytes": 262144,
+          "transfer_ms": 959.9,
+          "transfer_url": "https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/quality-probe.bin",
+          "sha256_verified": true,
+          "errors": []
+        },
+        "history": {
+          "observations": 10,
+          "passed": 10,
           "success_rate": 1.0,
           "provisional": false
         },
@@ -1780,7 +1780,7 @@
         "tag": "pool-40",
         "check": {
           "version": 1,
-          "checked_at": 1793491887,
+          "checked_at": 1793496587,
           "passed": true,
           "sites": [
             {
@@ -1795,23 +1795,23 @@
             }
           ],
           "samples_ms": [
-            417.3,
-            417.4,
-            417.6,
-            414.2
+            443.2,
+            434.9,
+            430.2,
+            420.7
           ],
-          "median_ms": 417.4,
-          "spread_ms": 3.4,
-          "worst_ms": 417.6,
+          "median_ms": 432.5,
+          "spread_ms": 22.5,
+          "worst_ms": 443.2,
           "transfer_bytes": 262144,
-          "transfer_ms": 1085.8,
+          "transfer_ms": 996.2,
           "transfer_url": "https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/quality-probe.bin",
           "sha256_verified": true,
           "errors": []
         },
         "history": {
-          "observations": 5,
-          "passed": 5,
+          "observations": 10,
+          "passed": 10,
           "success_rate": 1.0,
           "provisional": false
         },
@@ -1835,8 +1835,9 @@
     "selection_priority": "exclude listed exits; retain unlisted and unknown coverage; maximize count and infrastructure diversity",
     "meaning": "No listing in this feed is not a positive whitelist or proof of Gemini access.",
     "candidates": {
-      "not_listed": 510,
-      "listed": 37
+      "not_listed": 499,
+      "listed": 32,
+      "unknown": 2
     },
     "selected": {
       "not_listed": 40
@@ -1844,14 +1845,14 @@
     "servers": [
       {
         "tag": "pool-01",
-        "exit_ip": "156.146.38.170",
+        "exit_ip": "156.146.38.168",
         "status": "not_listed",
         "score": 100,
         "blacklist_count": 0
       },
       {
         "tag": "pool-02",
-        "exit_ip": "156.146.38.168",
+        "exit_ip": "156.146.38.167",
         "status": "not_listed",
         "score": 100,
         "blacklist_count": 0
@@ -1865,259 +1866,259 @@
       },
       {
         "tag": "pool-04",
-        "exit_ip": "216.152.155.59",
+        "exit_ip": "156.146.38.170",
         "status": "not_listed",
         "score": 100,
         "blacklist_count": 0
       },
       {
         "tag": "pool-05",
-        "exit_ip": "216.152.155.50",
+        "exit_ip": "45.207.207.25",
         "status": "not_listed",
         "score": 100,
         "blacklist_count": 0
       },
       {
         "tag": "pool-06",
-        "exit_ip": "149.248.50.252",
+        "exit_ip": "66.163.114.114",
         "status": "not_listed",
         "score": 100,
         "blacklist_count": 0
       },
       {
         "tag": "pool-07",
-        "exit_ip": "66.163.114.245",
+        "exit_ip": "216.152.155.50",
         "status": "not_listed",
         "score": 100,
         "blacklist_count": 0
       },
       {
         "tag": "pool-08",
-        "exit_ip": "47.253.226.114",
+        "exit_ip": "43.173.78.139",
         "status": "not_listed",
         "score": 100,
         "blacklist_count": 0
       },
       {
         "tag": "pool-09",
-        "exit_ip": "216.152.156.212",
+        "exit_ip": "216.152.156.242",
         "status": "not_listed",
         "score": 100,
         "blacklist_count": 0
       },
       {
         "tag": "pool-10",
-        "exit_ip": "149.248.50.252",
+        "exit_ip": "173.244.56.9",
         "status": "not_listed",
         "score": 100,
         "blacklist_count": 0
       },
       {
         "tag": "pool-11",
-        "exit_ip": "179.254.92.134",
+        "exit_ip": "185.230.230.142",
         "status": "not_listed",
         "score": 100,
         "blacklist_count": 0
       },
       {
         "tag": "pool-12",
-        "exit_ip": "169.197.140.208",
+        "exit_ip": "47.253.226.114",
         "status": "not_listed",
         "score": 100,
         "blacklist_count": 0
       },
       {
         "tag": "pool-13",
-        "exit_ip": "170.101.101.211",
+        "exit_ip": "149.248.50.252",
         "status": "not_listed",
         "score": 100,
         "blacklist_count": 0
       },
       {
         "tag": "pool-14",
-        "exit_ip": "66.163.112.76",
-        "status": "not_listed",
-        "score": 100,
-        "blacklist_count": 0
-      },
-      {
-        "tag": "pool-15",
-        "exit_ip": "167.17.69.171",
-        "status": "not_listed",
-        "score": 100,
-        "blacklist_count": 0
-      },
-      {
-        "tag": "pool-16",
-        "exit_ip": "162.120.69.82",
-        "status": "not_listed",
-        "score": 100,
-        "blacklist_count": 0
-      },
-      {
-        "tag": "pool-17",
-        "exit_ip": "185.195.57.174",
-        "status": "not_listed",
-        "score": 100,
-        "blacklist_count": 0
-      },
-      {
-        "tag": "pool-18",
-        "exit_ip": "45.144.112.55",
-        "status": "not_listed",
-        "score": 100,
-        "blacklist_count": 0
-      },
-      {
-        "tag": "pool-19",
-        "exit_ip": "193.151.163.139",
-        "status": "not_listed",
-        "score": 100,
-        "blacklist_count": 0
-      },
-      {
-        "tag": "pool-20",
-        "exit_ip": "195.211.98.43",
-        "status": "not_listed",
-        "score": 100,
-        "blacklist_count": 0
-      },
-      {
-        "tag": "pool-21",
-        "exit_ip": "156.146.38.167",
-        "status": "not_listed",
-        "score": 100,
-        "blacklist_count": 0
-      },
-      {
-        "tag": "pool-22",
-        "exit_ip": "179.254.92.190",
-        "status": "not_listed",
-        "score": 100,
-        "blacklist_count": 0
-      },
-      {
-        "tag": "pool-23",
-        "exit_ip": "47.251.25.74",
-        "status": "not_listed",
-        "score": 100,
-        "blacklist_count": 0
-      },
-      {
-        "tag": "pool-24",
-        "exit_ip": "149.22.95.183",
-        "status": "not_listed",
-        "score": 100,
-        "blacklist_count": 0
-      },
-      {
-        "tag": "pool-25",
         "exit_ip": "154.29.159.211",
         "status": "not_listed",
         "score": 100,
         "blacklist_count": 0
       },
       {
-        "tag": "pool-26",
-        "exit_ip": "79.141.164.81",
+        "tag": "pool-15",
+        "exit_ip": "149.22.95.183",
         "status": "not_listed",
         "score": 100,
         "blacklist_count": 0
       },
       {
-        "tag": "pool-27",
+        "tag": "pool-16",
+        "exit_ip": "170.101.101.237",
+        "status": "not_listed",
+        "score": 100,
+        "blacklist_count": 0
+      },
+      {
+        "tag": "pool-17",
         "exit_ip": "195.123.240.65",
         "status": "not_listed",
         "score": 100,
         "blacklist_count": 0
       },
       {
-        "tag": "pool-28",
-        "exit_ip": "84.32.52.70",
+        "tag": "pool-18",
+        "exit_ip": "66.163.112.13",
         "status": "not_listed",
         "score": 100,
         "blacklist_count": 0
       },
       {
-        "tag": "pool-29",
+        "tag": "pool-19",
+        "exit_ip": "167.88.61.52",
+        "status": "not_listed",
+        "score": 100,
+        "blacklist_count": 0
+      },
+      {
+        "tag": "pool-20",
+        "exit_ip": "185.95.231.156",
+        "status": "not_listed",
+        "score": 100,
+        "blacklist_count": 0
+      },
+      {
+        "tag": "pool-21",
+        "exit_ip": "130.94.19.95",
+        "status": "not_listed",
+        "score": 100,
+        "blacklist_count": 0
+      },
+      {
+        "tag": "pool-22",
+        "exit_ip": "169.197.140.214",
+        "status": "not_listed",
+        "score": 100,
+        "blacklist_count": 0
+      },
+      {
+        "tag": "pool-23",
+        "exit_ip": "179.254.92.190",
+        "status": "not_listed",
+        "score": 100,
+        "blacklist_count": 0
+      },
+      {
+        "tag": "pool-24",
+        "exit_ip": "149.248.50.252",
+        "status": "not_listed",
+        "score": 100,
+        "blacklist_count": 0
+      },
+      {
+        "tag": "pool-25",
+        "exit_ip": "167.17.69.171",
+        "status": "not_listed",
+        "score": 100,
+        "blacklist_count": 0
+      },
+      {
+        "tag": "pool-26",
+        "exit_ip": "185.195.57.169",
+        "status": "not_listed",
+        "score": 100,
+        "blacklist_count": 0
+      },
+      {
+        "tag": "pool-27",
+        "exit_ip": "79.141.164.81",
+        "status": "not_listed",
+        "score": 100,
+        "blacklist_count": 0
+      },
+      {
+        "tag": "pool-28",
         "exit_ip": "23.191.200.207",
         "status": "not_listed",
         "score": 100,
         "blacklist_count": 0
       },
       {
+        "tag": "pool-29",
+        "exit_ip": "84.32.52.70",
+        "status": "not_listed",
+        "score": 100,
+        "blacklist_count": 0
+      },
+      {
         "tag": "pool-30",
-        "exit_ip": "152.228.139.33",
+        "exit_ip": "104.248.124.24",
         "status": "not_listed",
         "score": 100,
         "blacklist_count": 0
       },
       {
         "tag": "pool-31",
-        "exit_ip": "150.40.126.24",
-        "status": "not_listed",
-        "score": 100,
-        "blacklist_count": 0
-      },
-      {
-        "tag": "pool-32",
-        "exit_ip": "62.133.63.45",
-        "status": "not_listed",
-        "score": 100,
-        "blacklist_count": 0
-      },
-      {
-        "tag": "pool-33",
-        "exit_ip": "193.29.139.239",
-        "status": "not_listed",
-        "score": 100,
-        "blacklist_count": 0
-      },
-      {
-        "tag": "pool-34",
-        "exit_ip": "193.29.139.204",
-        "status": "not_listed",
-        "score": 100,
-        "blacklist_count": 0
-      },
-      {
-        "tag": "pool-35",
-        "exit_ip": "193.29.139.169",
-        "status": "not_listed",
-        "score": 100,
-        "blacklist_count": 0
-      },
-      {
-        "tag": "pool-36",
-        "exit_ip": "150.40.126.21",
-        "status": "not_listed",
-        "score": 100,
-        "blacklist_count": 0
-      },
-      {
-        "tag": "pool-37",
-        "exit_ip": "193.29.139.212",
-        "status": "not_listed",
-        "score": 100,
-        "blacklist_count": 0
-      },
-      {
-        "tag": "pool-38",
-        "exit_ip": "193.29.139.251",
-        "status": "not_listed",
-        "score": 100,
-        "blacklist_count": 0
-      },
-      {
-        "tag": "pool-39",
         "exit_ip": "104.160.191.232",
         "status": "not_listed",
         "score": 100,
         "blacklist_count": 0
       },
       {
-        "tag": "pool-40",
+        "tag": "pool-32",
+        "exit_ip": "45.144.112.55",
+        "status": "not_listed",
+        "score": 100,
+        "blacklist_count": 0
+      },
+      {
+        "tag": "pool-33",
         "exit_ip": "149.22.87.240",
+        "status": "not_listed",
+        "score": 100,
+        "blacklist_count": 0
+      },
+      {
+        "tag": "pool-34",
+        "exit_ip": "162.120.69.88",
+        "status": "not_listed",
+        "score": 100,
+        "blacklist_count": 0
+      },
+      {
+        "tag": "pool-35",
+        "exit_ip": "62.133.63.45",
+        "status": "not_listed",
+        "score": 100,
+        "blacklist_count": 0
+      },
+      {
+        "tag": "pool-36",
+        "exit_ip": "185.176.204.143",
+        "status": "not_listed",
+        "score": 100,
+        "blacklist_count": 0
+      },
+      {
+        "tag": "pool-37",
+        "exit_ip": "193.29.139.239",
+        "status": "not_listed",
+        "score": 100,
+        "blacklist_count": 0
+      },
+      {
+        "tag": "pool-38",
+        "exit_ip": "193.29.139.212",
+        "status": "not_listed",
+        "score": 100,
+        "blacklist_count": 0
+      },
+      {
+        "tag": "pool-39",
+        "exit_ip": "193.29.139.169",
+        "status": "not_listed",
+        "score": 100,
+        "blacklist_count": 0
+      },
+      {
+        "tag": "pool-40",
+        "exit_ip": "193.29.139.251",
         "status": "not_listed",
         "score": 100,
         "blacklist_count": 0
@@ -2129,9 +2130,9 @@
     "cache_seconds": 3600,
     "expiry_warning_days": 7,
     "failure_counts": {
-      "xray_https:URLError": 51,
       "transport:SSLError": 6,
-      "xray_https:HTTPError": 6,
+      "xray_https:URLError": 73,
+      "transport:TimeoutError": 5,
       "xray_https:TimeoutError": 1
     },
     "servers": [
@@ -2139,64 +2140,39 @@
         "tag": "pool-01",
         "kind": "none",
         "status": "not_applicable",
-        "checked_at": 1793491874,
-        "next_check_at": 1793495474
+        "checked_at": 1793496646,
+        "next_check_at": 1793500246
       },
       {
         "tag": "pool-02",
         "kind": "none",
         "status": "not_applicable",
-        "checked_at": 1793491872,
-        "next_check_at": 1793495472
+        "checked_at": 1793496528,
+        "next_check_at": 1793500128
       },
       {
         "tag": "pool-03",
         "kind": "none",
         "status": "not_applicable",
-        "checked_at": 1793491873,
-        "next_check_at": 1793495473
+        "checked_at": 1793496648,
+        "next_check_at": 1793500248
       },
       {
         "tag": "pool-04",
-        "kind": "tls",
-        "status": "passed",
-        "server_name": "www.nextjobopportunityandclaimyouridealrole.com",
-        "not_after": 1798802140,
-        "expires_soon": false,
-        "sha256": "c7e923a23ba4edd9559ed02f2cdb7362c025be2cd611d8d5e0b3001ab954ea90",
-        "tls_version": "TLSv1.3",
-        "trust_store": "Python system CA",
-        "checked_at": 1793491878,
-        "next_check_at": 1793495478
+        "kind": "none",
+        "status": "not_applicable",
+        "checked_at": 1793496648,
+        "next_check_at": 1793500248
       },
       {
         "tag": "pool-05",
-        "kind": "tls",
-        "status": "passed",
-        "server_name": "learn.nextjobopportunityandclaimyouridealrole.com",
-        "not_after": 1798802140,
-        "expires_soon": false,
-        "sha256": "c7e923a23ba4edd9559ed02f2cdb7362c025be2cd611d8d5e0b3001ab954ea90",
-        "tls_version": "TLSv1.3",
-        "trust_store": "Python system CA",
-        "checked_at": 1793491879,
-        "next_check_at": 1793495479
+        "kind": "none",
+        "status": "not_applicable",
+        "checked_at": 1793496663,
+        "next_check_at": 1793500263
       },
       {
         "tag": "pool-06",
-        "kind": "tls",
-        "status": "passed",
-        "server_name": "ca001.zestapp778.com",
-        "not_after": 1798257522,
-        "expires_soon": false,
-        "sha256": "aac4138d1e5b498f0d053c0c5774ae498ec0f3c8581707436276eb3c8c0e439d",
-        "tls_version": "TLSv1.3",
-        "trust_store": "Python system CA",
-        "checked_at": 1793492017,
-        "next_check_at": 1793495617
-      },
-      {
-        "tag": "pool-07",
         "kind": "tls",
         "status": "passed",
         "server_name": "www.findconnectwithemployersandbuildprofessionalnetwork.com",
@@ -2205,15 +2181,28 @@
         "sha256": "dfab1ec157497c4065ea72ad17efd21cd41bd77807386d718efa743e0a41e9cf",
         "tls_version": "TLSv1.3",
         "trust_store": "Python system CA",
-        "checked_at": 1793491983,
-        "next_check_at": 1793495583
+        "checked_at": 1793496657,
+        "next_check_at": 1793500257
+      },
+      {
+        "tag": "pool-07",
+        "kind": "tls",
+        "status": "passed",
+        "server_name": "www.nextjobopportunityandclaimyouridealrole.com",
+        "not_after": 1798802140,
+        "expires_soon": false,
+        "sha256": "c7e923a23ba4edd9559ed02f2cdb7362c025be2cd611d8d5e0b3001ab954ea90",
+        "tls_version": "TLSv1.3",
+        "trust_store": "Python system CA",
+        "checked_at": 1793496653,
+        "next_check_at": 1793500253
       },
       {
         "tag": "pool-08",
         "kind": "reality",
         "status": "passed",
-        "checked_at": 1793491876,
-        "next_check_at": 1793495476
+        "checked_at": 1793496823,
+        "next_check_at": 1793500423
       },
       {
         "tag": "pool-09",
@@ -2225,11 +2214,32 @@
         "sha256": "ffc169e754614b63fe39a2f26723074c527d4653e7ef031e2fe32f2af66a55bb",
         "tls_version": "TLSv1.3",
         "trust_store": "Python system CA",
-        "checked_at": 1793491982,
-        "next_check_at": 1793495582
+        "checked_at": 1793496656,
+        "next_check_at": 1793500256
       },
       {
         "tag": "pool-10",
+        "kind": "none",
+        "status": "not_applicable",
+        "checked_at": 1793496656,
+        "next_check_at": 1793500256
+      },
+      {
+        "tag": "pool-11",
+        "kind": "none",
+        "status": "not_applicable",
+        "checked_at": 1793496634,
+        "next_check_at": 1793500234
+      },
+      {
+        "tag": "pool-12",
+        "kind": "reality",
+        "status": "passed",
+        "checked_at": 1793496531,
+        "next_check_at": 1793500131
+      },
+      {
+        "tag": "pool-13",
         "kind": "tls",
         "status": "passed",
         "server_name": "ca001.zestapp778.com",
@@ -2238,31 +2248,25 @@
         "sha256": "aac4138d1e5b498f0d053c0c5774ae498ec0f3c8581707436276eb3c8c0e439d",
         "tls_version": "TLSv1.3",
         "trust_store": "Python system CA",
-        "checked_at": 1793491983,
-        "next_check_at": 1793495583
+        "checked_at": 1793496653,
+        "next_check_at": 1793500253
       },
       {
-        "tag": "pool-11",
+        "tag": "pool-14",
         "kind": "reality",
         "status": "passed",
-        "checked_at": 1793492125,
-        "next_check_at": 1793495725
+        "checked_at": 1793496796,
+        "next_check_at": 1793500396
       },
       {
-        "tag": "pool-12",
-        "kind": "tls",
-        "status": "passed",
-        "server_name": "cdn.discoverfreshgraduatejobsstartyourprofessionaljourney.com",
-        "not_after": 1798715745,
-        "expires_soon": false,
-        "sha256": "e431393fd4a1a3725a9080232e6e4fd845fd4c76c2119fb75954726faf290e2b",
-        "tls_version": "TLSv1.3",
-        "trust_store": "Python system CA",
-        "checked_at": 1793491984,
-        "next_check_at": 1793495584
+        "tag": "pool-15",
+        "kind": "none",
+        "status": "not_applicable",
+        "checked_at": 1793496652,
+        "next_check_at": 1793500252
       },
       {
-        "tag": "pool-13",
+        "tag": "pool-16",
         "kind": "tls",
         "status": "passed",
         "server_name": "www.explorecreativejobsandenhanceyourcareerportfolio.com",
@@ -2271,11 +2275,18 @@
         "sha256": "a9434eb3765893f1d7915d446f7cdb12261fe87560f7f9bf699f732e07d8d11b",
         "tls_version": "TLSv1.3",
         "trust_store": "Python system CA",
-        "checked_at": 1793491982,
-        "next_check_at": 1793495582
+        "checked_at": 1793496654,
+        "next_check_at": 1793500254
       },
       {
-        "tag": "pool-14",
+        "tag": "pool-17",
+        "kind": "reality",
+        "status": "passed",
+        "checked_at": 1793496652,
+        "next_check_at": 1793500252
+      },
+      {
+        "tag": "pool-18",
         "kind": "tls",
         "status": "passed",
         "server_name": "www.unlockyourfuturefindyourperfectcareer.com",
@@ -2284,179 +2295,125 @@
         "sha256": "aafd5f6e25540bfb5a3c8311cca79fd958dfc52c7b999019e4492dc34616334a",
         "tls_version": "TLSv1.3",
         "trust_store": "Python system CA",
-        "checked_at": 1793491888,
-        "next_check_at": 1793495488
-      },
-      {
-        "tag": "pool-15",
-        "kind": "reality",
-        "status": "passed",
-        "checked_at": 1793491874,
-        "next_check_at": 1793495474
-      },
-      {
-        "tag": "pool-16",
-        "kind": "reality",
-        "status": "passed",
-        "checked_at": 1793491979,
-        "next_check_at": 1793495579
-      },
-      {
-        "tag": "pool-17",
-        "kind": "reality",
-        "status": "passed",
-        "checked_at": 1793491977,
-        "next_check_at": 1793495577
-      },
-      {
-        "tag": "pool-18",
-        "kind": "reality",
-        "status": "passed",
-        "checked_at": 1793492121,
-        "next_check_at": 1793495721
+        "checked_at": 1793496660,
+        "next_check_at": 1793500260
       },
       {
         "tag": "pool-19",
-        "kind": "none",
-        "status": "not_applicable",
-        "checked_at": 1793491859,
-        "next_check_at": 1793495459
+        "kind": "tls",
+        "status": "passed",
+        "server_name": "browseseniorrolesandenhanceyourcareertoday.com",
+        "not_after": 1798715936,
+        "expires_soon": false,
+        "sha256": "4823274b6bf445a8817e87b1947654019798f7f91ba0d1d8255300bbebca4801",
+        "tls_version": "TLSv1.3",
+        "trust_store": "Python system CA",
+        "checked_at": 1793496661,
+        "next_check_at": 1793500261
       },
       {
         "tag": "pool-20",
         "kind": "reality",
         "status": "passed",
-        "checked_at": 1793491867,
-        "next_check_at": 1793495467
+        "checked_at": 1793496779,
+        "next_check_at": 1793500379
       },
       {
         "tag": "pool-21",
-        "kind": "none",
-        "status": "not_applicable",
-        "checked_at": 1793491873,
-        "next_check_at": 1793495473
+        "kind": "tls",
+        "status": "passed",
+        "server_name": "us001.zestapp778.com",
+        "not_after": 1798257522,
+        "expires_soon": false,
+        "sha256": "aac4138d1e5b498f0d053c0c5774ae498ec0f3c8581707436276eb3c8c0e439d",
+        "tls_version": "TLSv1.3",
+        "trust_store": "Python system CA",
+        "checked_at": 1793496853,
+        "next_check_at": 1793500453
       },
       {
         "tag": "pool-22",
-        "kind": "reality",
+        "kind": "tls",
         "status": "passed",
-        "checked_at": 1793491981,
-        "next_check_at": 1793495581
+        "server_name": "cdn.discoverfreshgraduatejobsstartyourprofessionaljourney.com",
+        "not_after": 1798715745,
+        "expires_soon": false,
+        "sha256": "e431393fd4a1a3725a9080232e6e4fd845fd4c76c2119fb75954726faf290e2b",
+        "tls_version": "TLSv1.3",
+        "trust_store": "Python system CA",
+        "checked_at": 1793496657,
+        "next_check_at": 1793500257
       },
       {
         "tag": "pool-23",
         "kind": "reality",
         "status": "passed",
-        "checked_at": 1793491890,
-        "next_check_at": 1793495490
+        "checked_at": 1793496785,
+        "next_check_at": 1793500385
       },
       {
         "tag": "pool-24",
-        "kind": "none",
-        "status": "not_applicable",
-        "checked_at": 1793491878,
-        "next_check_at": 1793495478
+        "kind": "tls",
+        "status": "passed",
+        "server_name": "ca001.zestapp778.com",
+        "not_after": 1798257522,
+        "expires_soon": false,
+        "sha256": "aac4138d1e5b498f0d053c0c5774ae498ec0f3c8581707436276eb3c8c0e439d",
+        "tls_version": "TLSv1.3",
+        "trust_store": "Python system CA",
+        "checked_at": 1793496656,
+        "next_check_at": 1793500256
       },
       {
         "tag": "pool-25",
         "kind": "reality",
         "status": "passed",
-        "checked_at": 1793491989,
-        "next_check_at": 1793495589
+        "checked_at": 1793496530,
+        "next_check_at": 1793500130
       },
       {
         "tag": "pool-26",
         "kind": "reality",
         "status": "passed",
-        "checked_at": 1793491970,
-        "next_check_at": 1793495570
+        "checked_at": 1793496650,
+        "next_check_at": 1793500250
       },
       {
         "tag": "pool-27",
         "kind": "reality",
         "status": "passed",
-        "checked_at": 1793491982,
-        "next_check_at": 1793495582
+        "checked_at": 1793496608,
+        "next_check_at": 1793500208
       },
       {
         "tag": "pool-28",
         "kind": "reality",
         "status": "passed",
-        "checked_at": 1793491961,
-        "next_check_at": 1793495561
+        "checked_at": 1793496658,
+        "next_check_at": 1793500258
       },
       {
         "tag": "pool-29",
         "kind": "reality",
         "status": "passed",
-        "checked_at": 1793491984,
-        "next_check_at": 1793495584
+        "checked_at": 1793496612,
+        "next_check_at": 1793500212
       },
       {
         "tag": "pool-30",
-        "kind": "reality",
+        "kind": "tls",
         "status": "passed",
-        "checked_at": 1793491858,
-        "next_check_at": 1793495458
+        "server_name": "fast.145779.xyz",
+        "not_after": 1798432355,
+        "expires_soon": false,
+        "sha256": "ea2e55d24cfc501588f18263269b2d3b1f7cdafe80f45fa0f04e6ac20500d168",
+        "tls_version": "TLSv1.3",
+        "trust_store": "Python system CA",
+        "checked_at": 1793496648,
+        "next_check_at": 1793500248
       },
       {
         "tag": "pool-31",
-        "kind": "reality",
-        "status": "passed",
-        "checked_at": 1793492200,
-        "next_check_at": 1793495800
-      },
-      {
-        "tag": "pool-32",
-        "kind": "reality",
-        "status": "passed",
-        "checked_at": 1793492113,
-        "next_check_at": 1793495713
-      },
-      {
-        "tag": "pool-33",
-        "kind": "none",
-        "status": "not_applicable",
-        "checked_at": 1793491820,
-        "next_check_at": 1793495420
-      },
-      {
-        "tag": "pool-34",
-        "kind": "none",
-        "status": "not_applicable",
-        "checked_at": 1793491820,
-        "next_check_at": 1793495420
-      },
-      {
-        "tag": "pool-35",
-        "kind": "none",
-        "status": "not_applicable",
-        "checked_at": 1793492056,
-        "next_check_at": 1793495656
-      },
-      {
-        "tag": "pool-36",
-        "kind": "reality",
-        "status": "passed",
-        "checked_at": 1793491974,
-        "next_check_at": 1793495574
-      },
-      {
-        "tag": "pool-37",
-        "kind": "none",
-        "status": "not_applicable",
-        "checked_at": 1793492054,
-        "next_check_at": 1793495654
-      },
-      {
-        "tag": "pool-38",
-        "kind": "none",
-        "status": "not_applicable",
-        "checked_at": 1793491924,
-        "next_check_at": 1793495524
-      },
-      {
-        "tag": "pool-39",
         "kind": "tls",
         "status": "passed",
         "server_name": "cg1c02.waimaojd.com",
@@ -2465,15 +2422,71 @@
         "sha256": "a587ed67cac9dd9c8f70c2b7e4c5886ea8ae40aa850c2988462b704372a529bb",
         "tls_version": "TLSv1.3",
         "trust_store": "Python system CA",
-        "checked_at": 1793491985,
-        "next_check_at": 1793495585
+        "checked_at": 1793496659,
+        "next_check_at": 1793500259
+      },
+      {
+        "tag": "pool-32",
+        "kind": "reality",
+        "status": "passed",
+        "checked_at": 1793496777,
+        "next_check_at": 1793500377
+      },
+      {
+        "tag": "pool-33",
+        "kind": "none",
+        "status": "not_applicable",
+        "checked_at": 1793496660,
+        "next_check_at": 1793500260
+      },
+      {
+        "tag": "pool-34",
+        "kind": "reality",
+        "status": "passed",
+        "checked_at": 1793496530,
+        "next_check_at": 1793500130
+      },
+      {
+        "tag": "pool-35",
+        "kind": "reality",
+        "status": "passed",
+        "checked_at": 1793496773,
+        "next_check_at": 1793500373
+      },
+      {
+        "tag": "pool-36",
+        "kind": "none",
+        "status": "not_applicable",
+        "checked_at": 1793496471,
+        "next_check_at": 1793500071
+      },
+      {
+        "tag": "pool-37",
+        "kind": "none",
+        "status": "not_applicable",
+        "checked_at": 1793496471,
+        "next_check_at": 1793500071
+      },
+      {
+        "tag": "pool-38",
+        "kind": "none",
+        "status": "not_applicable",
+        "checked_at": 1793496579,
+        "next_check_at": 1793500179
+      },
+      {
+        "tag": "pool-39",
+        "kind": "none",
+        "status": "not_applicable",
+        "checked_at": 1793496833,
+        "next_check_at": 1793500433
       },
       {
         "tag": "pool-40",
         "kind": "none",
         "status": "not_applicable",
-        "checked_at": 1793491887,
-        "next_check_at": 1793495487
+        "checked_at": 1793496587,
+        "next_check_at": 1793500187
       }
     ]
   },
@@ -2486,24 +2499,23 @@
     "vantage": "GitHub Actions runner",
     "policy": "quality/history bands first, exact median HTTPS latency within band; client leastPing unchanged",
     "failed_probe_policy": "current two-site health and full transfer required independently of legacy HEAD measurements",
-    "candidates": 547,
-    "candidates_measured": 542,
+    "candidates": 533,
+    "candidates_measured": 529,
     "servers": [
       {
         "tag": "pool-01",
         "latency": {
           "url": "https://www.gstatic.com/generate_204",
           "method": "HEAD",
-          "checked_at": 1793491879,
+          "checked_at": 1793496646,
           "samples_ms": [
-            52.9
+            59.7,
+            59.7
           ],
           "attempts": 2,
-          "failed": 1,
-          "median_ms": 52.9,
-          "errors": {
-            "URLError": 1
-          }
+          "failed": 0,
+          "median_ms": 59.7,
+          "errors": {}
         }
       },
       {
@@ -2511,14 +2523,14 @@
         "latency": {
           "url": "https://www.gstatic.com/generate_204",
           "method": "HEAD",
-          "checked_at": 1793491872,
+          "checked_at": 1793496528,
           "samples_ms": [
-            50.0,
-            76.2
+            63.4,
+            59.5
           ],
           "attempts": 2,
           "failed": 0,
-          "median_ms": 63.1,
+          "median_ms": 61.5,
           "errors": {}
         }
       },
@@ -2527,14 +2539,14 @@
         "latency": {
           "url": "https://www.gstatic.com/generate_204",
           "method": "HEAD",
-          "checked_at": 1793491873,
+          "checked_at": 1793496648,
           "samples_ms": [
-            81.9,
-            51.9
+            62.7,
+            61.5
           ],
           "attempts": 2,
           "failed": 0,
-          "median_ms": 66.9,
+          "median_ms": 62.1,
           "errors": {}
         }
       },
@@ -2543,14 +2555,14 @@
         "latency": {
           "url": "https://www.gstatic.com/generate_204",
           "method": "HEAD",
-          "checked_at": 1793491878,
+          "checked_at": 1793496648,
           "samples_ms": [
-            52.2,
-            111.2
+            63.3,
+            62.2
           ],
           "attempts": 2,
           "failed": 0,
-          "median_ms": 81.7,
+          "median_ms": 62.8,
           "errors": {}
         }
       },
@@ -2559,14 +2571,14 @@
         "latency": {
           "url": "https://www.gstatic.com/generate_204",
           "method": "HEAD",
-          "checked_at": 1793491879,
+          "checked_at": 1793496663,
           "samples_ms": [
-            122.2,
-            118.7
+            109.8,
+            110.0
           ],
           "attempts": 2,
           "failed": 0,
-          "median_ms": 120.5,
+          "median_ms": 109.9,
           "errors": {}
         }
       },
@@ -2575,14 +2587,14 @@
         "latency": {
           "url": "https://www.gstatic.com/generate_204",
           "method": "HEAD",
-          "checked_at": 1793492017,
+          "checked_at": 1793496657,
           "samples_ms": [
-            133.1,
-            128.0
+            114.1,
+            114.6
           ],
           "attempts": 2,
           "failed": 0,
-          "median_ms": 130.6,
+          "median_ms": 114.3,
           "errors": {}
         }
       },
@@ -2591,14 +2603,14 @@
         "latency": {
           "url": "https://www.gstatic.com/generate_204",
           "method": "HEAD",
-          "checked_at": 1793491983,
+          "checked_at": 1793496653,
           "samples_ms": [
-            139.0,
-            131.5
+            112.5,
+            118.8
           ],
           "attempts": 2,
           "failed": 0,
-          "median_ms": 135.2,
+          "median_ms": 115.7,
           "errors": {}
         }
       },
@@ -2607,14 +2619,14 @@
         "latency": {
           "url": "https://www.gstatic.com/generate_204",
           "method": "HEAD",
-          "checked_at": 1793491876,
+          "checked_at": 1793496823,
           "samples_ms": [
-            132.8,
-            141.1
+            142.1,
+            134.3
           ],
           "attempts": 2,
           "failed": 0,
-          "median_ms": 136.9,
+          "median_ms": 138.2,
           "errors": {}
         }
       },
@@ -2623,14 +2635,14 @@
         "latency": {
           "url": "https://www.gstatic.com/generate_204",
           "method": "HEAD",
-          "checked_at": 1793491982,
+          "checked_at": 1793496656,
           "samples_ms": [
-            139.1,
-            135.7
+            154.8,
+            154.2
           ],
           "attempts": 2,
           "failed": 0,
-          "median_ms": 137.4,
+          "median_ms": 154.5,
           "errors": {}
         }
       },
@@ -2639,14 +2651,14 @@
         "latency": {
           "url": "https://www.gstatic.com/generate_204",
           "method": "HEAD",
-          "checked_at": 1793491983,
+          "checked_at": 1793496656,
           "samples_ms": [
-            171.1,
-            127.5
+            160.5,
+            163.4
           ],
           "attempts": 2,
           "failed": 0,
-          "median_ms": 149.3,
+          "median_ms": 161.9,
           "errors": {}
         }
       },
@@ -2655,14 +2667,14 @@
         "latency": {
           "url": "https://www.gstatic.com/generate_204",
           "method": "HEAD",
-          "checked_at": 1793492125,
+          "checked_at": 1793496634,
           "samples_ms": [
-            166.2,
-            164.6
+            173.1,
+            172.5
           ],
           "attempts": 2,
           "failed": 0,
-          "median_ms": 165.4,
+          "median_ms": 172.8,
           "errors": {}
         }
       },
@@ -2671,14 +2683,14 @@
         "latency": {
           "url": "https://www.gstatic.com/generate_204",
           "method": "HEAD",
-          "checked_at": 1793491984,
+          "checked_at": 1793496532,
           "samples_ms": [
-            196.6,
-            183.4
+            181.2,
+            174.2
           ],
           "attempts": 2,
           "failed": 0,
-          "median_ms": 190.0,
+          "median_ms": 177.7,
           "errors": {}
         }
       },
@@ -2687,14 +2699,14 @@
         "latency": {
           "url": "https://www.gstatic.com/generate_204",
           "method": "HEAD",
-          "checked_at": 1793491982,
+          "checked_at": 1793496653,
           "samples_ms": [
-            192.9,
-            189.3
+            182.5,
+            180.7
           ],
           "attempts": 2,
           "failed": 0,
-          "median_ms": 191.1,
+          "median_ms": 181.6,
           "errors": {}
         }
       },
@@ -2703,14 +2715,14 @@
         "latency": {
           "url": "https://www.gstatic.com/generate_204",
           "method": "HEAD",
-          "checked_at": 1793491888,
+          "checked_at": 1793496797,
           "samples_ms": [
-            207.1,
-            175.7
+            187.3,
+            188.4
           ],
           "attempts": 2,
           "failed": 0,
-          "median_ms": 191.4,
+          "median_ms": 187.9,
           "errors": {}
         }
       },
@@ -2719,14 +2731,14 @@
         "latency": {
           "url": "https://www.gstatic.com/generate_204",
           "method": "HEAD",
-          "checked_at": 1793491874,
+          "checked_at": 1793496652,
           "samples_ms": [
-            220.2,
-            188.9
+            187.4,
+            190.9
           ],
           "attempts": 2,
           "failed": 0,
-          "median_ms": 204.6,
+          "median_ms": 189.2,
           "errors": {}
         }
       },
@@ -2735,14 +2747,14 @@
         "latency": {
           "url": "https://www.gstatic.com/generate_204",
           "method": "HEAD",
-          "checked_at": 1793491980,
+          "checked_at": 1793496654,
           "samples_ms": [
-            204.7,
-            212.7
+            191.2,
+            195.9
           ],
           "attempts": 2,
           "failed": 0,
-          "median_ms": 208.7,
+          "median_ms": 193.6,
           "errors": {}
         }
       },
@@ -2751,14 +2763,14 @@
         "latency": {
           "url": "https://www.gstatic.com/generate_204",
           "method": "HEAD",
-          "checked_at": 1793491978,
+          "checked_at": 1793496652,
           "samples_ms": [
-            214.9,
-            207.0
+            158.5,
+            231.1
           ],
           "attempts": 2,
           "failed": 0,
-          "median_ms": 210.9,
+          "median_ms": 194.8,
           "errors": {}
         }
       },
@@ -2767,14 +2779,14 @@
         "latency": {
           "url": "https://www.gstatic.com/generate_204",
           "method": "HEAD",
-          "checked_at": 1793492122,
+          "checked_at": 1793496660,
           "samples_ms": [
-            219.4,
-            213.8
+            191.9,
+            198.0
           ],
           "attempts": 2,
           "failed": 0,
-          "median_ms": 216.6,
+          "median_ms": 194.9,
           "errors": {}
         }
       },
@@ -2783,14 +2795,14 @@
         "latency": {
           "url": "https://www.gstatic.com/generate_204",
           "method": "HEAD",
-          "checked_at": 1793491860,
+          "checked_at": 1793496661,
           "samples_ms": [
-            101.3,
-            346.2
+            192.7,
+            198.3
           ],
           "attempts": 2,
           "failed": 0,
-          "median_ms": 223.8,
+          "median_ms": 195.5,
           "errors": {}
         }
       },
@@ -2799,14 +2811,14 @@
         "latency": {
           "url": "https://www.gstatic.com/generate_204",
           "method": "HEAD",
-          "checked_at": 1793491868,
+          "checked_at": 1793496779,
           "samples_ms": [
-            1128.3,
-            194.7
+            218.1,
+            202.3
           ],
           "attempts": 2,
           "failed": 0,
-          "median_ms": 661.5,
+          "median_ms": 210.2,
           "errors": {}
         }
       },
@@ -2815,14 +2827,14 @@
         "latency": {
           "url": "https://www.gstatic.com/generate_204",
           "method": "HEAD",
-          "checked_at": 1793491873,
+          "checked_at": 1793496853,
           "samples_ms": [
-            84.9,
-            74.5
+            201.0,
+            231.6
           ],
           "attempts": 2,
           "failed": 0,
-          "median_ms": 79.7,
+          "median_ms": 216.3,
           "errors": {}
         }
       },
@@ -2831,14 +2843,14 @@
         "latency": {
           "url": "https://www.gstatic.com/generate_204",
           "method": "HEAD",
-          "checked_at": 1793491982,
+          "checked_at": 1793496657,
           "samples_ms": [
-            166.4,
-            171.6
+            239.3,
+            423.7
           ],
           "attempts": 2,
           "failed": 0,
-          "median_ms": 169.0,
+          "median_ms": 331.5,
           "errors": {}
         }
       },
@@ -2847,14 +2859,14 @@
         "latency": {
           "url": "https://www.gstatic.com/generate_204",
           "method": "HEAD",
-          "checked_at": 1793491890,
+          "checked_at": 1793496786,
           "samples_ms": [
-            185.2,
-            196.3
+            174.8,
+            175.1
           ],
           "attempts": 2,
           "failed": 0,
-          "median_ms": 190.8,
+          "median_ms": 174.9,
           "errors": {}
         }
       },
@@ -2863,14 +2875,14 @@
         "latency": {
           "url": "https://www.gstatic.com/generate_204",
           "method": "HEAD",
-          "checked_at": 1793491878,
+          "checked_at": 1793496657,
           "samples_ms": [
-            218.3,
-            176.4
+            195.7,
+            242.0
           ],
           "attempts": 2,
           "failed": 0,
-          "median_ms": 197.4,
+          "median_ms": 218.8,
           "errors": {}
         }
       },
@@ -2879,14 +2891,14 @@
         "latency": {
           "url": "https://www.gstatic.com/generate_204",
           "method": "HEAD",
-          "checked_at": 1793491989,
+          "checked_at": 1793496530,
           "samples_ms": [
-            226.9,
-            185.8
+            244.3,
+            234.0
           ],
           "attempts": 2,
           "failed": 0,
-          "median_ms": 206.4,
+          "median_ms": 239.2,
           "errors": {}
         }
       },
@@ -2895,14 +2907,14 @@
         "latency": {
           "url": "https://www.gstatic.com/generate_204",
           "method": "HEAD",
-          "checked_at": 1793491970,
+          "checked_at": 1793496650,
           "samples_ms": [
-            214.8,
-            215.5
+            250.4,
+            246.1
           ],
           "attempts": 2,
           "failed": 0,
-          "median_ms": 215.2,
+          "median_ms": 248.2,
           "errors": {}
         }
       },
@@ -2911,14 +2923,14 @@
         "latency": {
           "url": "https://www.gstatic.com/generate_204",
           "method": "HEAD",
-          "checked_at": 1793491983,
+          "checked_at": 1793496609,
           "samples_ms": [
-            201.4,
-            229.5
+            251.5,
+            252.1
           ],
           "attempts": 2,
           "failed": 0,
-          "median_ms": 215.4,
+          "median_ms": 251.8,
           "errors": {}
         }
       },
@@ -2927,14 +2939,14 @@
         "latency": {
           "url": "https://www.gstatic.com/generate_204",
           "method": "HEAD",
-          "checked_at": 1793491962,
+          "checked_at": 1793496658,
           "samples_ms": [
-            234.5,
-            234.6
+            259.2,
+            266.6
           ],
           "attempts": 2,
           "failed": 0,
-          "median_ms": 234.6,
+          "median_ms": 262.9,
           "errors": {}
         }
       },
@@ -2943,14 +2955,14 @@
         "latency": {
           "url": "https://www.gstatic.com/generate_204",
           "method": "HEAD",
-          "checked_at": 1793491985,
+          "checked_at": 1793496612,
           "samples_ms": [
-            228.3,
-            242.0
+            264.2,
+            262.6
           ],
           "attempts": 2,
           "failed": 0,
-          "median_ms": 235.2,
+          "median_ms": 263.4,
           "errors": {}
         }
       },
@@ -2959,14 +2971,14 @@
         "latency": {
           "url": "https://www.gstatic.com/generate_204",
           "method": "HEAD",
-          "checked_at": 1793491859,
+          "checked_at": 1793496649,
           "samples_ms": [
-            269.9,
-            282.4
+            302.7,
+            277.6
           ],
           "attempts": 2,
           "failed": 0,
-          "median_ms": 276.1,
+          "median_ms": 290.1,
           "errors": {}
         }
       },
@@ -2975,14 +2987,14 @@
         "latency": {
           "url": "https://www.gstatic.com/generate_204",
           "method": "HEAD",
-          "checked_at": 1793492201,
+          "checked_at": 1793496660,
           "samples_ms": [
-            327.6,
-            326.5
+            376.6,
+            319.8
           ],
           "attempts": 2,
           "failed": 0,
-          "median_ms": 327.1,
+          "median_ms": 348.2,
           "errors": {}
         }
       },
@@ -2991,14 +3003,14 @@
         "latency": {
           "url": "https://www.gstatic.com/generate_204",
           "method": "HEAD",
-          "checked_at": 1793492114,
+          "checked_at": 1793496777,
           "samples_ms": [
-            348.8,
-            348.5
+            322.1,
+            380.0
           ],
           "attempts": 2,
           "failed": 0,
-          "median_ms": 348.6,
+          "median_ms": 351.1,
           "errors": {}
         }
       },
@@ -3007,26 +3019,10 @@
         "latency": {
           "url": "https://www.gstatic.com/generate_204",
           "method": "HEAD",
-          "checked_at": 1793491820,
+          "checked_at": 1793496661,
           "samples_ms": [
-            379.0,
-            351.5
-          ],
-          "attempts": 2,
-          "failed": 0,
-          "median_ms": 365.2,
-          "errors": {}
-        }
-      },
-      {
-        "tag": "pool-34",
-        "latency": {
-          "url": "https://www.gstatic.com/generate_204",
-          "method": "HEAD",
-          "checked_at": 1793491821,
-          "samples_ms": [
-            367.2,
-            366.1
+            366.4,
+            366.8
           ],
           "attempts": 2,
           "failed": 0,
@@ -3035,18 +3031,34 @@
         }
       },
       {
+        "tag": "pool-34",
+        "latency": {
+          "url": "https://www.gstatic.com/generate_204",
+          "method": "HEAD",
+          "checked_at": 1793496531,
+          "samples_ms": [
+            382.6,
+            392.2
+          ],
+          "attempts": 2,
+          "failed": 0,
+          "median_ms": 387.4,
+          "errors": {}
+        }
+      },
+      {
         "tag": "pool-35",
         "latency": {
           "url": "https://www.gstatic.com/generate_204",
           "method": "HEAD",
-          "checked_at": 1793492057,
+          "checked_at": 1793496774,
           "samples_ms": [
-            367.5,
-            374.0
+            402.4,
+            403.2
           ],
           "attempts": 2,
           "failed": 0,
-          "median_ms": 370.8,
+          "median_ms": 402.8,
           "errors": {}
         }
       },
@@ -3055,14 +3067,14 @@
         "latency": {
           "url": "https://www.gstatic.com/generate_204",
           "method": "HEAD",
-          "checked_at": 1793491974,
+          "checked_at": 1793496471,
           "samples_ms": [
-            373.1,
-            372.4
+            415.7,
+            411.1
           ],
           "attempts": 2,
           "failed": 0,
-          "median_ms": 372.8,
+          "median_ms": 413.4,
           "errors": {}
         }
       },
@@ -3071,14 +3083,14 @@
         "latency": {
           "url": "https://www.gstatic.com/generate_204",
           "method": "HEAD",
-          "checked_at": 1793492055,
+          "checked_at": 1793496471,
           "samples_ms": [
-            377.1,
-            370.6
+            411.0,
+            418.8
           ],
           "attempts": 2,
           "failed": 0,
-          "median_ms": 373.9,
+          "median_ms": 414.9,
           "errors": {}
         }
       },
@@ -3087,14 +3099,14 @@
         "latency": {
           "url": "https://www.gstatic.com/generate_204",
           "method": "HEAD",
-          "checked_at": 1793491924,
+          "checked_at": 1793496580,
           "samples_ms": [
-            389.8,
-            359.4
+            425.2,
+            416.5
           ],
           "attempts": 2,
           "failed": 0,
-          "median_ms": 374.6,
+          "median_ms": 420.9,
           "errors": {}
         }
       },
@@ -3103,14 +3115,14 @@
         "latency": {
           "url": "https://www.gstatic.com/generate_204",
           "method": "HEAD",
-          "checked_at": 1793491986,
+          "checked_at": 1793496834,
           "samples_ms": [
-            427.6,
-            339.6
+            410.4,
+            433.9
           ],
           "attempts": 2,
           "failed": 0,
-          "median_ms": 383.6,
+          "median_ms": 422.1,
           "errors": {}
         }
       },
@@ -3119,21 +3131,21 @@
         "latency": {
           "url": "https://www.gstatic.com/generate_204",
           "method": "HEAD",
-          "checked_at": 1793491888,
+          "checked_at": 1793496588,
           "samples_ms": [
-            408.4,
-            411.0
+            491.8,
+            417.0
           ],
           "attempts": 2,
           "failed": 0,
-          "median_ms": 409.7,
+          "median_ms": 454.4,
           "errors": {}
         }
       }
     ]
   },
-  "reputation_excluded": 37,
-  "foreign_exit_candidates": 547,
+  "reputation_excluded": 32,
+  "foreign_exit_candidates": 533,
   "geosite_sources": [
     {
       "category": "category-ru",
@@ -3143,8 +3155,8 @@
     }
   ],
   "client_geoip": "geoip:ru from client installed geoip.dat; update client geodata",
-  "config_utf16_bytes": 28156,
-  "config_utf8_bytes": 14078,
+  "config_utf16_bytes": 26450,
+  "config_utf8_bytes": 13225,
   "subscription_policy": {
     "clients": [
       "Happ",
