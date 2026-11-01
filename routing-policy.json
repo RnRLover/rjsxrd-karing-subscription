@@ -17,8 +17,8 @@
   ],
   "dns": {
     "queryStrategy": "UseIPv4",
-    "disableFallbackIfMatch": false,
-    "tag": "dns-direct",
+    "disableFallbackIfMatch": true,
+    "tag": "dns-proxy",
     "hosts": {
       "geosite:category-ads-all": "0.0.0.0"
     },
@@ -27,24 +27,34 @@
         "address": "77.88.8.8",
         "domains": [
           "geosite:category-ru",
+          "geosite:private",
           "domain:ru",
           "domain:su",
           "domain:xn--p1ai"
         ],
-        "skipFallback": true
+        "skipFallback": true,
+        "tag": "dns-direct"
       },
       {
         "address": "77.88.8.1",
         "domains": [
           "geosite:category-ru",
+          "geosite:private",
           "domain:ru",
           "domain:su",
           "domain:xn--p1ai"
         ],
-        "skipFallback": true
+        "skipFallback": true,
+        "tag": "dns-direct"
       },
-      "https+local://1.1.1.1/dns-query",
-      "https+local://8.8.8.8/dns-query"
+      {
+        "address": "https://1.1.1.1/dns-query",
+        "tag": "dns-proxy"
+      },
+      {
+        "address": "https://8.8.8.8/dns-query",
+        "tag": "dns-proxy"
+      }
     ]
   },
   "probe": {

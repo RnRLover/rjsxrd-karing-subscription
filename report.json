@@ -3168,6 +3168,11 @@
     ],
     "dns_ad_filter": true,
     "dns_query_strategy": "UseIPv4",
+    "dns_transport": {
+      "ru_and_bootstrap": "direct",
+      "external": "doh-via-auto",
+      "external_direct_fallback": false
+    },
     "probe": {
       "destination": "https://www.gstatic.com/generate_204",
       "interval": "30s",

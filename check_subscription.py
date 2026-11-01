@@ -102,7 +102,8 @@ def check_profile(args):
         with socket.socket() as held:
             held.bind(('127.0.0.1', 0))
             inbound['port'] = held.getsockname()[1]
-    config['dns']['servers'] = [{'address': '127.0.0.1', 'port': dns.getsockname()[1]}]
+    config['dns']['servers'] = [{'address': '127.0.0.1', 'port': dns.getsockname()[1],
+                                 'tag': 'dns-direct'}]
     config['burstObservatory']['subjectSelector'] = ['unused-test-subject']
     config['log'] = {'loglevel': 'debug'}
     assert config['routing'] == original['routing']

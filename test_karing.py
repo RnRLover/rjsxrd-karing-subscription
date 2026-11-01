@@ -62,6 +62,24 @@ class KaringTests(unittest.TestCase):
         self.assertEqual(result['routing']['balancers'][0]['selector'], tags)
         self.assertEqual(result['burstObservatory']['subjectSelector'], tags)
 
+    def test_dns_split_has_no_direct_external_fallback_and_bootstraps_pool(self):
+        base = base_config()
+        base['outbounds'][0]['settings'] = {'vnext': [{'address': 'vpn.fixture-domain.com'}]}
+        config = subscription_variants(base)[0]
+        self.assertTrue(config['dns']['disableFallbackIfMatch'])
+        servers = config['dns']['servers']
+        for server in servers[:2]:
+            self.assertEqual(server['tag'], 'dns-direct')
+            self.assertTrue(server['skipFallback'])
+            self.assertIn('full:vpn.fixture-domain.com', server['domains'])
+        for server in servers[2:]:
+            self.assertEqual(server['tag'], 'dns-proxy')
+            self.assertTrue(server['address'].startswith('https://'))
+            self.assertNotIn('+local', server['address'])
+        self.assertEqual(config['routing']['rules'][1],
+                         {'type': 'field', 'inboundTag': ['dns-proxy'], 'balancerTag': 'auto'})
+        self.assertEqual(build(config, read_policy()), config)
+
     def test_empty_checked_pool_stops_publication(self):
         base = base_config()
         base['outbounds'] = [{'tag': 'direct', 'protocol': 'freedom'}]

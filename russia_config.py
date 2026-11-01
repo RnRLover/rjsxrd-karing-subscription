@@ -2,6 +2,7 @@
 import copy
 import hashlib
 import json
+import ipaddress
 import os
 import tempfile
 from pathlib import Path
@@ -28,6 +29,21 @@ def build(config, policy):
     result['log'] = {'loglevel': 'warning'}
     result['meta'] = {'serverDescription': 'RU/LAN напрямую · реклама заблокирована · автоматический пул'}
     result['dns'] = copy.deepcopy(policy['dns'])
+    # Bootstrap proxy hostnames without requiring a working proxy connection.
+    bootstrap = set()
+    for outbound in proxies:
+        settings = outbound.get('settings', {})
+        for server in settings.get('vnext', []) + settings.get('servers', []):
+            host = server.get('address', '')
+            if not host:
+                continue
+            try:
+                ipaddress.ip_address(host)
+            except ValueError:
+                bootstrap.add('full:' + host.lower().rstrip('.'))
+    for server in result['dns']['servers']:
+        if isinstance(server, dict) and server.get('tag') == 'dns-direct':
+            server['domains'] = list(dict.fromkeys(server['domains'] + sorted(bootstrap)))
     result['geodata'] = {
         'cron': '17 */12 * * *',
         'assets': [{'url': policy['geoip_url'], 'file': 'geoip.dat'},
@@ -44,14 +60,15 @@ def build(config, policy):
     for inbound in result['inbounds']:
         inbound['sniffing'] = {'enabled': True, 'destOverride': ['http', 'tls', 'quic'],
                                'routeOnly': True}
-    # DNS upstreams bypass interception and the balancer. DoHL also bypasses
-    # routing, so server-name resolution cannot depend on pool probe results.
+    # Route internal DNS before interception and country rules: external DoH
+    # stays in the checked proxy pool, RU/bootstrap DNS stays direct.
     result['routing'] = {
         'domainStrategy': 'IPIfNonMatch',
         'balancers': [{'tag': 'auto', 'selector': tags,
                       'fallbackTag': tags[0], 'strategy': {'type': 'leastPing'}}],
         'rules': [
             {'type': 'field', 'inboundTag': ['dns-direct'], 'outboundTag': 'direct'},
+            {'type': 'field', 'inboundTag': ['dns-proxy'], 'balancerTag': 'auto'},
             {'type': 'field', 'inboundTag': ['default-auto'], 'balancerTag': 'auto'},
             {'type': 'field', 'inboundTag': [i['tag'] for i in result['inbounds']],
              'port': '53', 'network': 'tcp,udp', 'outboundTag': 'dns-out'},
@@ -105,6 +122,8 @@ def main(xray):
         'block_domains': policy['block_domains'],
         'direct_domains': policy['direct_domains'], 'direct_ips': policy['direct_ips'],
         'dns_ad_filter': True, 'dns_query_strategy': policy['dns']['queryStrategy'],
+        'dns_transport': {'ru_and_bootstrap': 'direct', 'external': 'doh-via-auto',
+                          'external_direct_fallback': False},
         'probe': policy['probe'],
         'geodata_sha256': {name: hashlib.sha256(data).hexdigest() for name, data in assets.items()},
         'client_geodata_download_verified': False,
