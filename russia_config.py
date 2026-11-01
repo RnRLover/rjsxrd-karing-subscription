@@ -1,107 +1,114 @@
-"""Apply embedded RU/LAN/adblock rules and publish one common subscription."""
+"""One self-contained Xray policy for Happ and INCY; no native profiles."""
 import copy
+import hashlib
 import json
 import os
+import tempfile
 from pathlib import Path
-
-from generate import atomic_write, serialized_config, xray_validate
+from generate import atomic_write, xray_validate
 
 ROOT = Path(__file__).resolve().parent
+LABEL = 'Автовыбор'
 
 
-def build(config, profile):
+def read_policy():
+    return json.loads((ROOT / 'routing-policy.json').read_bytes())
+
+
+def build(config, policy):
     result = copy.deepcopy(config)
-    result.pop('fakedns', None)
-    result.pop('dns', None)
-    result['remarks'] = 'Russia'
-    result['geodata'] = {
-        'cron': '17 */12 * * *',
-        'assets': [
-            {'url': profile['Geoipurl'], 'file': 'geoip.dat'},
-            {'url': profile['Geositeurl'], 'file': 'geosite.dat'},
-        ],
-    }
-    # No subscription-owned DNS resolver, interception or routing profile.
-    # Unmatched traffic uses the default loopback only after both GeoIP passes.
-    result['outbounds'] = [o for o in result['outbounds']
-                           if o.get('protocol') not in ('dns', 'loopback')]
     proxies = [o for o in result['outbounds']
                if o.get('protocol') in ('vless', 'vmess', 'trojan', 'shadowsocks')]
-    result['outbounds'] = [{'tag': 'default-proxy', 'protocol': 'loopback',
-                            'settings': {'inboundTag': 'default-auto'}}] + proxies + [
-                                o for o in result['outbounds'] if o not in proxies]
-    for balancer in result['routing'].get('balancers', []):
-        balancer['fallbackTag'] = proxies[0]['tag'] if proxies else 'block'
+    if not proxies:
+        raise ValueError('A checked proxy pool is required')
+    tags = [o['tag'] for o in proxies]
+    result.pop('fakedns', None)
+    result.pop('observatory', None)
+    result['remarks'] = LABEL
+    result['log'] = {'loglevel': 'warning'}
+    result['meta'] = {'serverDescription': 'RU/LAN напрямую · реклама заблокирована · автоматический пул'}
+    result['dns'] = copy.deepcopy(policy['dns'])
+    result['geodata'] = {
+        'cron': '17 */12 * * *',
+        'assets': [{'url': policy['geoip_url'], 'file': 'geoip.dat'},
+                   {'url': policy['geosite_url'], 'file': 'geosite.dat'}],
+    }
+    result['outbounds'] = [
+        {'tag': 'default-proxy', 'protocol': 'loopback',
+         'settings': {'inboundTag': 'default-auto'}},
+        *proxies,
+        {'tag': 'direct', 'protocol': 'freedom'},
+        {'tag': 'block', 'protocol': 'blackhole'},
+        {'tag': 'dns-out', 'protocol': 'dns', 'settings': {'nonIPQuery': 'drop'}},
+    ]
     for inbound in result['inbounds']:
-        inbound['sniffing'] = {'enabled': True, 'destOverride': ['http', 'tls', 'quic'], 'routeOnly': True}
-    # Prefer the original destination IP. Resolve unmatched domains on a second
-    # pass; an unconditional catch-all would prevent that pass from happening.
-    result['routing']['domainStrategy'] = 'IPIfNonMatch'
-    rules = []
-    order = profile.get('RouteOrder', 'block-proxy-direct').split('-')
-    if len(order) != 3 or set(order) != {'block', 'direct', 'proxy'}:
-        raise ValueError('RouteOrder must contain block, direct and proxy exactly once')
-    groups = {'block': ('Block', 'block'), 'direct': ('Direct', 'direct'), 'proxy': ('Proxy', 'auto')}
-    for name in order:
-        prefix, target = groups[name]
-        action = {'balancerTag': target} if target == 'auto' else {'outboundTag': target}
-        for key, field in [('Sites', 'domain'), ('Ip', 'ip')]:
-            if profile[prefix + key]:
-                rules.append({'type': 'field', field: profile[prefix + key], **action})
-    # Preserve the DNS destination chosen by the client/system.
-    rules.insert(0, {'type': 'field', 'port': '53', 'network': 'tcp,udp', 'outboundTag': 'direct'})
-    # Loopback re-entry is scoped to a synthetic tag, not a catch-all. It
-    # reaches the automatic pool without repeating classification indefinitely.
-    rules.insert(0, {'type': 'field', 'inboundTag': ['default-auto'], 'balancerTag': 'auto'})
-    result['routing']['rules'] = rules
+        inbound['sniffing'] = {'enabled': True, 'destOverride': ['http', 'tls', 'quic'],
+                               'routeOnly': True}
+    # DNS upstreams bypass interception and the balancer. DoHL also bypasses
+    # routing, so server-name resolution cannot depend on pool probe results.
+    result['routing'] = {
+        'domainStrategy': 'IPIfNonMatch',
+        'balancers': [{'tag': 'auto', 'selector': tags,
+                      'fallbackTag': tags[0], 'strategy': {'type': 'leastPing'}}],
+        'rules': [
+            {'type': 'field', 'inboundTag': ['dns-direct'], 'outboundTag': 'direct'},
+            {'type': 'field', 'inboundTag': ['default-auto'], 'balancerTag': 'auto'},
+            {'type': 'field', 'inboundTag': [i['tag'] for i in result['inbounds']],
+             'port': '53', 'network': 'tcp,udp', 'outboundTag': 'dns-out'},
+            {'type': 'field', 'domain': copy.deepcopy(policy['block_domains']), 'outboundTag': 'block'},
+            {'type': 'field', 'ip': ['0.0.0.0/32', '::/128'], 'outboundTag': 'block'},
+            {'type': 'field', 'domain': copy.deepcopy(policy['direct_domains']), 'outboundTag': 'direct'},
+            {'type': 'field', 'ip': copy.deepcopy(policy['direct_ips']), 'outboundTag': 'direct'},
+        ],
+    }
+    # No unconditional catch-all: IPIfNonMatch must get its second GeoIP pass.
+    result['burstObservatory'] = {'subjectSelector': tags,
+                                  'pingConfig': copy.deepcopy(policy['probe'])}
+    result['stats'] = {}
     return result
 
 
 def variant(config):
     from karing import automatic_config
-    result = automatic_config(config, 'Основной')
-    return build(result, json.loads((ROOT / 'russia-routing.json').read_bytes()))
+    return build(automatic_config(config, LABEL), read_policy())
 
 
 def main(xray):
     from karing import download, fit_client_pool, common_subscription
-    profile = json.loads((ROOT / 'russia-routing.json').read_bytes())
-    # Fetch the exact databases declared by the profile, not Xray's bundled
-    # databases, whose domain categories may differ.
-    assets = {name: download(profile[key], 40_000_000) for name, key in
-              [('geosite.dat', 'Geositeurl'), ('geoip.dat', 'Geoipurl')]}
-    old = json.loads((ROOT / 'ru.json').read_bytes())
-    config = build(old, profile)
-    config, variants = fit_client_pool(config)
-    report = json.loads((ROOT / 'report.json').read_bytes())
-    report.pop('gemini_check', None)
-    import tempfile
+    policy = read_policy()
+    assets = {name: download(policy[key], 40_000_000) for name, key in
+              [('geosite.dat', 'geosite_url'), ('geoip.dat', 'geoip_url')]}
+    base = json.loads((ROOT / 'ru.json').read_bytes())
+    _, variants = fit_client_pool(build(base, policy))
     with tempfile.TemporaryDirectory() as temp:
-        for name, data in assets.items(): Path(temp, name).write_bytes(data)
-        prior = os.environ.get('XRAY_LOCATION_ASSET')
+        for name, data in assets.items():
+            Path(temp, name).write_bytes(data)
+        previous = os.environ.get('XRAY_LOCATION_ASSET')
         os.environ['XRAY_LOCATION_ASSET'] = temp
         try:
-            xray_validate(xray, config)
-            for v in variants: xray_validate(xray, v)
+            for config in variants:
+                xray_validate(xray, config)
         finally:
-            if prior is None: os.environ.pop('XRAY_LOCATION_ASSET', None)
-            else: os.environ['XRAY_LOCATION_ASSET'] = prior
-    body = common_subscription(variants)
-    from subscription_delivery import bundle, read_previous, incy_subscription, happ_subscription
-    delivery_path = ROOT / 'subscription-delivery.json'
-    delivery = bundle(variants, profile, assets, read_previous(delivery_path))
-    # Local validation assets; clients download their own copies via geodata.
+            if previous is None:
+                os.environ.pop('XRAY_LOCATION_ASSET', None)
+            else:
+                os.environ['XRAY_LOCATION_ASSET'] = previous
     runtime = ROOT / '.runtime'
     runtime.mkdir(exist_ok=True)
     for name, data in assets.items():
         (runtime / name).write_bytes(data)
-    atomic_write(ROOT / 'subscription.json', body + '\n')
-    atomic_write(ROOT / 'incy.txt', incy_subscription(variants))
-    atomic_write(ROOT / 'happ.txt', happ_subscription(variants, delivery['profile']))
-    atomic_write(delivery_path, json.dumps(delivery, ensure_ascii=False, separators=(',', ':')) + '\n')
-    # Restore the two filenames consumed by the existing deployed Worker.
-    # Its pure-JSON body and routing header work in both clients.
-    atomic_write(ROOT / 'ru-karing-happ.txt', body + '\n')
-    atomic_write(ROOT / 'russia-routing.json', json.dumps(delivery['profile'], ensure_ascii=False, indent=2) + '\n')
+    report = json.loads((ROOT / 'report.json').read_bytes())
+    report.pop('gemini_check', None)
+    report['subscription_policy'] = {
+        'clients': ['Happ', 'INCY'], 'format': 'full-xray-json-array',
+        'native_routing_profile': False,
+        'block_domains': policy['block_domains'],
+        'direct_domains': policy['direct_domains'], 'direct_ips': policy['direct_ips'],
+        'dns_ad_filter': True, 'dns_query_strategy': policy['dns']['queryStrategy'],
+        'probe': policy['probe'],
+        'geodata_sha256': {name: hashlib.sha256(data).hexdigest() for name, data in assets.items()},
+        'client_geodata_download_verified': False,
+    }
+    atomic_write(ROOT / 'subscription.json', common_subscription(variants))
     atomic_write(ROOT / 'report.json', json.dumps(report, ensure_ascii=False, indent=2) + '\n')
-    print('Published common subscription')
+    print('Published one common full-JSON subscription without native profiles')

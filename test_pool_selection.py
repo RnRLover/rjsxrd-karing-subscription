@@ -46,7 +46,7 @@ class PoolTests(unittest.TestCase):
         from russia_config import build
         root = Path(__file__).parent
         original = build(json.loads((root / 'ru.json').read_bytes()),
-                         json.loads((root / 'russia-routing.json').read_bytes()))
+                         json.loads((root / 'routing-policy.json').read_bytes()))
         proxies = [o for o in original['outbounds'] if o.get('tag', '').startswith('pool-')]
         self.assertTrue(proxies)
         original['outbounds'] = [o for o in original['outbounds'] if o not in proxies]
@@ -63,10 +63,10 @@ class PoolTests(unittest.TestCase):
             tags = {o['tag'] for o in v['outbounds'] if o['protocol'] in ('vless','vmess','trojan','shadowsocks')}
             self.assertEqual(set(v['routing']['balancers'][0]['selector']), tags)
             self.assertEqual(set(v['burstObservatory']['subjectSelector']), tags)
-        self.assertNotIn('dns', trimmed)
+        self.assertIn('dns', trimmed)
         for variant in variants:
-            self.assertNotIn('dns', variant)
-            self.assertFalse(any(o.get('protocol') == 'dns' for o in variant['outbounds']))
+            self.assertIn('dns', variant)
+            self.assertTrue(any(o.get('protocol') == 'dns' for o in variant['outbounds']))
 
 
 

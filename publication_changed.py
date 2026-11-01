@@ -6,15 +6,10 @@ from quality_checks import quality_signature
 from pathlib import Path
 import subprocess
 
-CLIENT_FILES = ('happ.txt', 'incy.txt', 'subscription.json', 'subscription-delivery.json', 'ru-karing-happ.txt', 'russia-routing.json', 'ru.json')
+CLIENT_FILES = ('subscription.json', 'routing-policy.json', 'ru.json')
 
 
 def canonical(name, data):
-    if name in ('incy.txt', 'happ.txt'):
-        lines = data.decode('utf-8-sig').splitlines()
-        # The first line is full JSON; following lines are native commands.
-        return (json.dumps(json.loads(lines[0]), sort_keys=True, ensure_ascii=False),
-                tuple(lines[1:]))
     return json.dumps(json.loads(data.decode('utf-8-sig')), sort_keys=True, ensure_ascii=False)
 
 
@@ -33,6 +28,8 @@ def changed(root):
     report = root / 'report.json'
     if report.exists():
         old = subprocess.run(['git', 'show', 'HEAD:report.json'], cwd=root, capture_output=True)
+        if not old.returncode and json.loads(old.stdout).get('subscription_policy') != json.loads(report.read_bytes()).get('subscription_policy'):
+            return True
         if old.returncode or reputation_signature(old.stdout) != reputation_signature(report.read_bytes()) or transport_signature(old.stdout) != transport_signature(report.read_bytes()) or latency_signature(old.stdout) != latency_signature(report.read_bytes()) or quality_signature(old.stdout) != quality_signature(report.read_bytes()):
             return True
         if set(json.loads(old.stdout)) - set(json.loads(report.read_bytes())):

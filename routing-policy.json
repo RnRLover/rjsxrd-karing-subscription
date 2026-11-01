@@ -1,0 +1,56 @@
+{
+  "geoip_url": "https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geoip.dat",
+  "geosite_url": "https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geosite.dat",
+  "block_domains": [
+    "geosite:category-ads-all"
+  ],
+  "direct_domains": [
+    "geosite:category-ru",
+    "geosite:private",
+    "domain:ru",
+    "domain:su",
+    "domain:xn--p1ai"
+  ],
+  "direct_ips": [
+    "geoip:ru",
+    "geoip:private"
+  ],
+  "dns": {
+    "queryStrategy": "UseIPv4",
+    "disableFallbackIfMatch": false,
+    "tag": "dns-direct",
+    "hosts": {
+      "geosite:category-ads-all": "0.0.0.0"
+    },
+    "servers": [
+      {
+        "address": "77.88.8.8",
+        "domains": [
+          "geosite:category-ru",
+          "domain:ru",
+          "domain:su",
+          "domain:xn--p1ai"
+        ],
+        "skipFallback": true
+      },
+      {
+        "address": "77.88.8.1",
+        "domains": [
+          "geosite:category-ru",
+          "domain:ru",
+          "domain:su",
+          "domain:xn--p1ai"
+        ],
+        "skipFallback": true
+      },
+      "https+local://1.1.1.1/dns-query",
+      "https+local://8.8.8.8/dns-query"
+    ]
+  },
+  "probe": {
+    "destination": "https://www.gstatic.com/generate_204",
+    "interval": "30s",
+    "sampling": 3,
+    "timeout": "5s"
+  }
+}

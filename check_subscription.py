@@ -3,6 +3,7 @@
 Production rules, sniffing and balancer selectors stay unchanged. Only outbound
 transports, inbound ports, probe subjects and the test DNS resolver are replaced.
 The fixture resolver and redirects are never written to the subscription.
+The production DNS hosts filter and all routing rules remain active.
 """
 import argparse
 import copy
@@ -54,15 +55,15 @@ def check_profile(args):
     original = json.loads((ROOT / args.config).read_bytes())
     if isinstance(original, list):
         original = original[args.profile_index]
-    assert 'dns' not in original and 'fakedns' not in original
+    assert 'dns' in original and 'fakedns' not in original
     assert original['routing']['domainStrategy'] == 'IPIfNonMatch'
-    assert not any(o['protocol'] == 'dns' for o in original['outbounds'])
+    assert any(o['protocol'] == 'dns' for o in original['outbounds'])
     assert original['outbounds'][0] == {
         'tag': 'default-proxy', 'protocol': 'loopback',
         'settings': {'inboundTag': 'default-auto'}}
     assert not any(r.get('network') == 'tcp,udp' and r.get('balancerTag') == 'auto'
                    and not r.get('inboundTag') for r in original['routing']['rules'])
-    assert any(r.get('port') == '53' and r.get('outboundTag') == 'direct'
+    assert any(r.get('port') == '53' and r.get('outboundTag') == 'dns-out'
                for r in original['routing']['rules'])
     config = copy.deepcopy(original)
     direct = tcp_fixture(b'DIRECT')
@@ -81,7 +82,7 @@ def check_profile(args):
                     pos += length + 1
                 name = '.'.join(parts)
                 dns_queries.append(name)
-                address = '77.88.8.8' if name == 'geoip-only.invalid' else '8.8.8.8'
+                address = '77.88.8.8' if name == 'geoip-only.fixture-domain.com' else '8.8.8.8'
                 answer = (request[:2] + b'\x81\x80\x00\x01\x00\x01\x00\x00\x00\x00'
                           + request[12:pos+5] + b'\xc0\x0c\x00\x01\x00\x01\x00\x00\x00\x3c\x00\x04'
                           + socket.inet_aton(address))
@@ -90,7 +91,7 @@ def check_profile(args):
                 return
     threading.Thread(target=dns_worker, daemon=True).start()
     for outbound in config['outbounds']:
-        if outbound['tag'] == 'block' or outbound['protocol'] == 'loopback':
+        if outbound['tag'] == 'block' or outbound['protocol'] in ('loopback', 'dns'):
             continue
         port = (direct if outbound['tag'] == 'direct' else proxy).getsockname()[1]
         tag = outbound['tag']
@@ -101,8 +102,7 @@ def check_profile(args):
         with socket.socket() as held:
             held.bind(('127.0.0.1', 0))
             inbound['port'] = held.getsockname()[1]
-    config['dns'] = {'queryStrategy': 'UseIPv4', 'servers': [
-        {'address': '127.0.0.1', 'port': dns.getsockname()[1]}]}
+    config['dns']['servers'] = [{'address': '127.0.0.1', 'port': dns.getsockname()[1]}]
     config['burstObservatory']['subjectSelector'] = ['unused-test-subject']
     config['log'] = {'loglevel': 'debug'}
     assert config['routing'] == original['routing']
@@ -152,11 +152,15 @@ def check_profile(args):
                     ('RF TLD with foreign DNS address', 'routing-fixture.xn--p1ai', 'DIRECT'),
                     ('RU service on .com', 'vk.com', 'DIRECT'),
                     ('RU IP', '77.88.8.8', 'DIRECT'),
-                    ('GeoIP-only domain', 'geoip-only.invalid', 'DIRECT'),
+                    ('GeoIP-only domain', 'geoip-only.fixture-domain.com', 'DIRECT'),
                     ('LAN IPv4', '192.168.1.1', 'DIRECT'),
                     ('LAN IPv6', 'fd00::1', 'DIRECT'),
+                    ('LAN link local IPv6', 'fe80::1', 'DIRECT'),
+                    ('Localhost', '127.0.0.1', 'DIRECT'),
+                    ('DNS ad sink IPv4', '0.0.0.0', 'BLOCK'),
+                    ('DNS ad sink IPv6', '::', 'BLOCK'),
                     ('Foreign IP', '8.8.8.8', 'PROXY'),
-                    ('Foreign domain', 'foreign.invalid', 'PROXY'),
+                    ('Foreign domain', 'foreign.fixture-domain.com', 'PROXY'),
                     ('Advertisement', 'doubleclick.net', 'BLOCK'),
                     ('RU advertisement before direct', 'ads.adfox.ru', 'BLOCK')]
                 results = []
@@ -171,25 +175,34 @@ def check_profile(args):
                 # has a different, foreign DNS answer in the core resolver.
                 results.append({'case': 'Original RU IP with foreign DNS answer',
                                 'expected': 'DIRECT',
-                                'actual': request('77.88.8.8', b'GET / HTTP/1.1\r\nHost: foreign.invalid\r\n\r\n')})
-                # Exercise original port-53 routing and UDP delivery to the local
-                # resolver fixture; production has no redirect or supplied DNS.
+                                'actual': request('77.88.8.8', b'GET / HTTP/1.1\r\nHost: foreign.fixture-domain.com\r\n\r\n')})
+                # Exercise real DNS interception and the production hosts ad
+                # filter; only its upstream address is replaced by the fixture.
                 with socket.create_connection(('127.0.0.1', port), timeout=5) as conn:
                     conn.sendall(b'\x05\x01\x00')
                     assert receive(conn, 2) == b'\x05\x00'
                     conn.sendall(b'\x05\x03\x00\x01' + b'\x00' * 6)
                     reply = receive(conn, 10)
                     relay = (socket.inet_ntoa(reply[4:8]), struct.unpack('!H', reply[8:])[0])
-                    query = (b'\x12\x34\x01\x00\x00\x01\x00\x00\x00\x00\x00\x00'
-                             b'\x07example\x03com\x00\x00\x01\x00\x01')
-                    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as udp:
-                        udp.settimeout(5)
+                    udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+                    udp.settimeout(5)
+                    for host, expected in [('example.com', '8.8.8.8'),
+                                           ('doubleclick.net', '0.0.0.0'),
+                                           ('ads.adfox.ru', '0.0.0.0')]:
+                        encoded = b''.join(bytes([len(label)]) + label.encode() for label in host.split('.'))
+                        query = (b'\x12\x34\x01\x00\x00\x01\x00\x00\x00\x00\x00\x00'
+                                 + encoded + b'\x00\x00\x01\x00\x01')
                         udp.sendto(b'\x00\x00\x00\x01' + socket.inet_aton('9.9.9.9')
                                    + struct.pack('!H', 53) + query, relay)
                         response = udp.recv(4096)
-                    assert response[-4:] == socket.inet_aton('8.8.8.8')
-                assert 'geoip-only.invalid' in dns_queries
-                print(json.dumps({'routing_rules_unchanged': True, 'UDP_DNS_direct': True,
+                        actual = socket.inet_ntoa(response[-4:])
+                        results.append({'case': 'Intercepted DNS: ' + host,
+                                        'expected': expected, 'actual': actual})
+                    udp.close()
+                    assert 'doubleclick.net' not in dns_queries
+                    assert 'ads.adfox.ru' not in dns_queries
+                assert 'geoip-only.fixture-domain.com' in dns_queries
+                print(json.dumps({'routing_rules_unchanged': True, 'DNS_interception_and_ad_filter': True,
                                   'results': results}, ensure_ascii=False))
                 assert all(r['actual'] == r['expected'] for r in results), 'Routing regression'
             except Exception:

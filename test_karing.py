@@ -1,84 +1,69 @@
+import copy
 import json
 import unittest
 from karing import common_subscription, automatic_config, subscription_variants
+from russia_config import build, read_policy
+
+
+def base_config():
+    return {'inbounds': [{'tag': 'socks-in', 'protocol': 'socks'}],
+            'outbounds': [{'tag': 'pool-01', 'protocol': 'vless'},
+                          {'tag': 'pool-02', 'protocol': 'trojan'},
+                          {'tag': 'direct', 'protocol': 'freedom'}],
+            'routing': {'rules': [], 'balancers': []}}
 
 
 class KaringTests(unittest.TestCase):
-
-    def test_common_config_has_no_dns_or_profile_and_routes_geoip_before_auto(self):
-        from russia_config import build
-        from pathlib import Path
-        profile = json.loads(Path(__file__).with_name('russia-routing.json').read_bytes())
-        base = {'inbounds': [{'tag': 'socks-in'}], 'outbounds': [{'tag': 'pool-01', 'protocol': 'vless'}, {'tag': 'direct', 'protocol': 'freedom'}, {'tag': 'block', 'protocol': 'blackhole'}], 'routing': {'rules': [], 'balancers': [{'tag': 'auto', 'selector': ['pool-']}]}, 'burstObservatory': {'subjectSelector': ['pool-']}}
+    def test_common_config_is_self_contained_and_idempotent(self):
+        policy = read_policy()
+        base = base_config()
+        original = copy.deepcopy(base)
         configs = subscription_variants(base)
+        self.assertEqual(base, original)
         self.assertEqual(len(configs), 1)
-        c = configs[0]
-        self.assertNotIn('dns', c)
-        self.assertNotIn('fakedns', c)
-        self.assertEqual(c['geodata'], {
-            'cron': '17 */12 * * *',
-            'assets': [
-                {'url': profile['Geoipurl'], 'file': 'geoip.dat'},
-                {'url': profile['Geositeurl'], 'file': 'geosite.dat'},
-            ],
-        })
-        self.assertFalse(any(o.get('protocol') == 'dns' for o in c['outbounds']))
-        self.assertEqual(c['outbounds'][0], {'tag': 'default-proxy', 'protocol': 'loopback', 'settings': {'inboundTag': 'default-auto'}})
-        self.assertTrue(all((i['sniffing']['routeOnly'] for i in c['inbounds'])))
-        self.assertEqual(c['routing']['domainStrategy'], 'IPIfNonMatch')
-        self.assertEqual(c['outbounds'][1]['tag'], 'Основной')
-        self.assertEqual(c['routing']['balancers'][0]['fallbackTag'], 'Основной')
-        self.assertEqual(c['routing']['rules'][1]['outboundTag'], 'direct')
-        self.assertEqual(c['routing']['rules'][1]['port'], '53')
-        self.assertEqual(c['routing']['rules'][2]['domain'], ['geosite:category-ads-all'])
-        self.assertEqual(c['routing']['rules'][3]['domain'], ['geosite:category-ru'])
-        self.assertIn('geoip:ru', c['routing']['rules'][-1]['ip'])
-        self.assertEqual(c['routing']['rules'][0], {'type': 'field', 'inboundTag': ['default-auto'], 'balancerTag': 'auto'})
-        self.assertFalse(any(r.get('network') == 'tcp,udp' and r.get('balancerTag') == 'auto' and not r.get('inboundTag') for r in c['routing']['rules']))
-        rebuilt = build(c, profile)
-        self.assertEqual(rebuilt, c)
-        self.assertEqual(json.loads(common_subscription(configs)), configs)
-        self.assertNotIn('DomesticDNS', profile)
-        self.assertNotIn('ExternalDNS', profile)
+        config = configs[0]
+        self.assertEqual(config['remarks'], 'Автовыбор')
+        self.assertEqual(build(config, policy), config)
+        self.assertEqual(config['dns'], policy['dns'])
+        self.assertNotIn('fakedns', config)
+        self.assertEqual(config['geodata']['assets'][0]['url'], policy['geoip_url'])
+        self.assertEqual(config['geodata']['assets'][1]['url'], policy['geosite_url'])
+        self.assertEqual(config['burstObservatory']['pingConfig']['sampling'], 3)
+        self.assertEqual(config['burstObservatory']['pingConfig']['interval'], '30s')
+        self.assertTrue(all(i['sniffing']['routeOnly'] for i in config['inbounds']))
+        body = common_subscription(configs)
+        self.assertEqual(json.loads(body), configs)
+        for forbidden in ('://routing/', '://autorouting/', 'profile-update-interval'):
+            self.assertNotIn(forbidden, body)
 
-    def test_russia_route_order_applies_to_embedded_rules(self):
-        from pathlib import Path
-        from russia_config import build
-        profile = json.loads(Path(__file__).with_name('russia-routing.json').read_bytes())
-        for prefix in ['Block', 'Direct', 'Proxy']:
-            profile[prefix + 'Sites'] = ['full:overlap.test']
-            profile[prefix + 'Ip'] = ['192.0.2.0/24']
-        base = {'inbounds': [], 'outbounds': [], 'routing': {}}
-        rules = build(base, profile)['routing']['rules']
-        self.assertEqual([r.get('outboundTag', r.get('balancerTag')) for r in rules[2:]], ['block', 'block', 'direct', 'direct', 'auto', 'auto'])
-        profile['RouteOrder'] = 'proxy-block-direct'
-        rules = build(base, profile)['routing']['rules']
-        self.assertEqual([r.get('outboundTag', r.get('balancerTag')) for r in rules[2:]], ['auto', 'auto', 'block', 'block', 'direct', 'direct'])
-        profile['RouteOrder'] = 'direct-direct-proxy'
+    def test_ad_block_precedes_ru_and_dns_cannot_loop(self):
+        config = subscription_variants(base_config())[0]
+        rules = config['routing']['rules']
+        ads = next(i for i, r in enumerate(rules) if r.get('domain') == ['geosite:category-ads-all'])
+        ru = next(i for i, r in enumerate(rules) if 'geosite:category-ru' in r.get('domain', []))
+        self.assertLess(ads, ru)
+        self.assertEqual(config['dns']['hosts']['geosite:category-ads-all'], '0.0.0.0')
+        self.assertEqual(rules[0], {'type': 'field', 'inboundTag': ['dns-direct'], 'outboundTag': 'direct'})
+        intercept = next(r for r in rules if r.get('port') == '53')
+        self.assertEqual(intercept['outboundTag'], 'dns-out')
+        self.assertEqual(intercept['inboundTag'], ['socks-in'])
+        self.assertEqual(config['routing']['domainStrategy'], 'IPIfNonMatch')
+        self.assertFalse(any(r.get('balancerTag') and not r.get('inboundTag') for r in rules))
+        self.assertEqual(config['routing']['balancers'][0]['fallbackTag'], 'Автовыбор')
+
+    def test_all_pool_protocols_are_preserved_and_selected(self):
+        config = base_config()
+        config['outbounds'].append({'tag': 'pool-03', 'protocol': 'shadowsocks'})
+        config['outbounds'].append({'tag': 'pool-04', 'protocol': 'vmess'})
+        result = subscription_variants(config)[0]
+        proxies = [o for o in result['outbounds'] if o['protocol'] in ('vless','trojan','shadowsocks','vmess')]
+        tags = [o['tag'] for o in proxies]
+        self.assertEqual([o['protocol'] for o in proxies], ['vless','trojan','shadowsocks','vmess'])
+        self.assertEqual(result['routing']['balancers'][0]['selector'], tags)
+        self.assertEqual(result['burstObservatory']['subjectSelector'], tags)
+
+    def test_empty_checked_pool_stops_publication(self):
+        base = base_config()
+        base['outbounds'] = [{'tag': 'direct', 'protocol': 'freedom'}]
         with self.assertRaises(ValueError):
-            build(base, profile)
-
-    def test_single_auto_pool_keeps_all_protocols_and_routing(self):
-        config = {'inbounds': [], 'outbounds': [{'tag': 'block', 'protocol': 'blackhole'}, {'tag': 'pool-01', 'protocol': 'vless'}, {'tag': 'pool-02', 'protocol': 'trojan'}, {'tag': 'pool-03', 'protocol': 'vless'}, {'tag': 'direct', 'protocol': 'freedom'}], 'routing': {'rules': [{'ip': ['geoip:ru'], 'outboundTag': 'direct'}, {'network': 'tcp,udp', 'balancerTag': 'auto'}], 'balancers': [{'tag': 'auto', 'selector': ['pool-'], 'fallbackTag': 'block', 'strategy': {'type': 'leastPing'}}]}, 'burstObservatory': {'subjectSelector': ['pool-'], 'pingConfig': {'interval': '30s'}}}
-        variant = automatic_config(config)
-        self.assertEqual(variant['routing']['rules'], config['routing']['rules'])
-        proxies = [o for o in variant['outbounds'] if o['protocol'] not in ('blackhole', 'freedom')]
-        self.assertEqual([o['protocol'] for o in proxies], ['vless', 'trojan', 'vless'])
-        self.assertEqual(variant['routing']['balancers'][0]['selector'], [o['tag'] for o in proxies])
-        self.assertEqual(variant['burstObservatory']['subjectSelector'], [o['tag'] for o in proxies])
-        self.assertEqual(config['outbounds'][1]['tag'], 'pool-01')
-        self.assertEqual(json.loads(common_subscription(variant)), [variant])
-
-    def test_common_subscription_is_pure_json_without_import_commands(self):
-        config = {'inbounds': [], 'outbounds': [], 'routing': {'rules': [], 'balancers': [{'tag': 'auto'}]}}
-        bodies = [common_subscription([config]), common_subscription(config)]
-        self.assertEqual(len(set(bodies)), 1)
-        for body in bodies:
-            self.assertEqual(json.loads(body), [config])
-            self.assertNotIn('://routing/', body)
-            self.assertNotIn('://autorouting/', body)
-            self.assertNotIn('profile-update-interval', body)
-
-
-if __name__ == '__main__':
-    unittest.main()
+            subscription_variants(base)
