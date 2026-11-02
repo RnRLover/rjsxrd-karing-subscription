@@ -16,7 +16,7 @@
     "geoip:private"
   ],
   "dns": {
-    "queryStrategy": "UseIPv4",
+    "queryStrategy": "UseIP",
     "disableFallbackIfMatch": true,
     "tag": "dns-proxy",
     "hosts": {

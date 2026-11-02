@@ -6,6 +6,7 @@ import argparse
 import copy
 from socketserver import BaseRequestHandler, ThreadingTCPServer
 import json
+import ipaddress
 import os
 from pathlib import Path
 import socket
@@ -31,9 +32,13 @@ def question(data):
 
 def answer(data, ip):
     _, end = question(data)
+    qtype = struct.unpack('!H', data[end-4:end-2])[0]
+    if qtype == 28:
+        ip = '2a02:6b8::1' if ip == '77.88.8.8' else '2001:4860:4860::8888'
+    packed = ipaddress.ip_address(ip).packed
     return (data[:2] + b'\x81\x80\x00\x01\x00\x01\x00\x00\x00\x00'
-            + data[12:end] + b'\xc0\x0c\x00\x01\x00\x01\x00\x00\x00\x3c\x00\x04'
-            + socket.inet_aton(ip))
+            + data[12:end] + b'\xc0\x0c' + struct.pack('!HHIH', qtype, 1, 60, len(packed))
+            + packed)
 
 
 def main(xray):
@@ -144,18 +149,19 @@ def main(xray):
                     relay = (socket.inet_ntoa(reply[4:8]), struct.unpack('!H', reply[8:])[0])
                     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as client:
                         client.settimeout(12)
-                        def query(host):
+                        def query(host, qtype=1):
                             encoded = b''.join(bytes([len(p)]) + p.encode() for p in host.split('.'))
-                            data = b'\x12\x34\x01\x00\x00\x01\x00\x00\x00\x00\x00\x00' + encoded + b'\x00\x00\x01\x00\x01'
+                            data = b'\x12\x34\x01\x00\x00\x01\x00\x00\x00\x00\x00\x00' + encoded + b'\x00' + struct.pack('!HH', qtype, 1)
                             client.sendto(b'\x00\x00\x00\x01' + socket.inet_aton('9.9.9.9') + struct.pack('!H', 53) + data, relay)
                             return client.recv(4096)[10:]
                         assert socket.inet_ntoa(query('transport-fixture.ru')[-4:]) == '77.88.8.8'
                         bootstrap = next(d[5:] for d in config['dns']['servers'][0]['domains'] if d.startswith('full:'))
                         assert socket.inet_ntoa(query(bootstrap)[-4:]) == '77.88.8.8'
                         assert socket.inet_ntoa(query('external.fixture-domain.com')[-4:]) == '9.9.9.9'
+                        assert socket.inet_ntop(socket.AF_INET6, query('ipv6.fixture-domain.com', 28)[-16:]) == '2001:4860:4860::8888'
                         assert socket.inet_ntoa(query('doubleclick.net')[-4:]) == '0.0.0.0'
                         assert state['direct'] == ['transport-fixture.ru', bootstrap], state
-                        assert state['external'] == ['external.fixture-domain.com'], state
+                        assert state['external'] == ['external.fixture-domain.com', 'ipv6.fixture-domain.com'], state
                         state['external_healthy'] = False
                         try:
                             failed = query('failed.fixture-domain.com')
@@ -165,7 +171,7 @@ def main(xray):
                         assert state['direct'] == ['transport-fixture.ru', bootstrap], 'External DNS leaked to direct resolver'
                         assert 'failed.fixture-domain.com' in state['external']
                 print(json.dumps({'ru_dns_direct': True, 'bootstrap_dns_direct': True, 'external_doh_via_proxy': True,
-                                  'tls_verified': True, 'ads_no_upstream': True,
+                                  'tls_verified': True, 'ads_no_upstream': True, 'AAAA_via_proxy': True,
                                   'external_failure_no_direct_fallback': True}))
             except Exception:
                 log.flush()

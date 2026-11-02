@@ -86,6 +86,10 @@ def check_profile(args):
                 answer = (request[:2] + b'\x81\x80\x00\x01\x00\x01\x00\x00\x00\x00'
                           + request[12:pos+5] + b'\xc0\x0c\x00\x01\x00\x01\x00\x00\x00\x3c\x00\x04'
                           + socket.inet_aton(address))
+                if struct.unpack('!H', request[pos+1:pos+3])[0] == 28:
+                    # No IPv6 address in this routing fixture; still return a
+                    # valid empty AAAA response when dual-stack DNS asks.
+                    answer = request[:2] + b'\x81\x80\x00\x01\x00\x00\x00\x00\x00\x00' + request[12:pos+5]
                 dns.sendto(answer, addr)
             except OSError:
                 return

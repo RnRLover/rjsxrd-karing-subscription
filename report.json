@@ -3140,7 +3140,7 @@
       "geoip:private"
     ],
     "dns_ad_filter": true,
-    "dns_query_strategy": "UseIPv4",
+    "dns_query_strategy": "UseIP",
     "dns_transport": {
       "ru_and_bootstrap": "direct",
       "external": "doh-via-auto",
