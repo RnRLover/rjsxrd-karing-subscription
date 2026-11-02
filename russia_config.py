@@ -27,7 +27,7 @@ def build(config, policy):
     result.pop('observatory', None)
     result['remarks'] = LABEL
     result['log'] = {'loglevel': 'warning'}
-    result['meta'] = {'serverDescription': 'RU/LAN напрямую · реклама заблокирована · автоматический пул'}
+    result['meta'] = {'serverDescription': 'IPv4 · IPv6 пока не поддерживается · RU/LAN напрямую · реклама заблокирована · автоматический пул'}
     result['dns'] = copy.deepcopy(policy['dns'])
     # Bootstrap proxy hostnames without requiring a working proxy connection.
     bootstrap = set()
@@ -122,6 +122,7 @@ def main(xray):
         'block_domains': policy['block_domains'],
         'direct_domains': policy['direct_domains'], 'direct_ips': policy['direct_ips'],
         'dns_ad_filter': True, 'dns_query_strategy': policy['dns']['queryStrategy'],
+        'ipv6_supported': False,
         'dns_transport': {'ru_and_bootstrap': 'direct', 'external': 'doh-via-auto',
                           'external_direct_fallback': False},
         'probe': policy['probe'],

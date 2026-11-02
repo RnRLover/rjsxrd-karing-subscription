@@ -158,10 +158,17 @@ def main(xray):
                         bootstrap = next(d[5:] for d in config['dns']['servers'][0]['domains'] if d.startswith('full:'))
                         assert socket.inet_ntoa(query(bootstrap)[-4:]) == '77.88.8.8'
                         assert socket.inet_ntoa(query('external.fixture-domain.com')[-4:]) == '9.9.9.9'
-                        assert socket.inet_ntop(socket.AF_INET6, query('ipv6.fixture-domain.com', 28)[-16:]) == '2001:4860:4860::8888'
+                        client.settimeout(2)
+                        try:
+                            ipv6 = query('ipv6.fixture-domain.com', 28)
+                            assert struct.unpack('!H', ipv6[6:8])[0] == 0, 'IPv6 answer in IPv4-only mode'
+                        except socket.timeout:
+                            pass  # An unsupported address family may be dropped.
+                        finally:
+                            client.settimeout(12)
                         assert socket.inet_ntoa(query('doubleclick.net')[-4:]) == '0.0.0.0'
                         assert state['direct'] == ['transport-fixture.ru', bootstrap], state
-                        assert state['external'] == ['external.fixture-domain.com', 'ipv6.fixture-domain.com'], state
+                        assert state['external'] == ['external.fixture-domain.com'], state
                         state['external_healthy'] = False
                         try:
                             failed = query('failed.fixture-domain.com')
@@ -171,7 +178,7 @@ def main(xray):
                         assert state['direct'] == ['transport-fixture.ru', bootstrap], 'External DNS leaked to direct resolver'
                         assert 'failed.fixture-domain.com' in state['external']
                 print(json.dumps({'ru_dns_direct': True, 'bootstrap_dns_direct': True, 'external_doh_via_proxy': True,
-                                  'tls_verified': True, 'ads_no_upstream': True, 'AAAA_via_proxy': True,
+                                  'tls_verified': True, 'ads_no_upstream': True, 'AAAA_suppressed_without_upstream': True,
                                   'external_failure_no_direct_fallback': True}))
             except Exception:
                 log.flush()

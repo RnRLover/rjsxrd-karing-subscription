@@ -3137,7 +3137,8 @@
       "geoip:private"
     ],
     "dns_ad_filter": true,
-    "dns_query_strategy": "UseIP",
+    "dns_query_strategy": "UseIPv4",
+    "ipv6_supported": false,
     "dns_transport": {
       "ru_and_bootstrap": "direct",
       "external": "doh-via-auto",
