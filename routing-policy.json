@@ -9,7 +9,16 @@
     "geosite:private",
     "domain:ru",
     "domain:su",
-    "domain:xn--p1ai"
+    "domain:xn--p1ai",
+    "domain:github.com",
+    "domain:githubusercontent.com",
+    "domain:githubassets.com",
+    "domain:github.io",
+    "domain:github.dev",
+    "domain:githubapp.com",
+    "domain:ghcr.io",
+    "full:github-cloud.s3.amazonaws.com",
+    "full:github-production-release-asset-2e65be.s3.amazonaws.com"
   ],
   "direct_ips": [
     "geoip:ru",
@@ -30,7 +39,16 @@
           "geosite:private",
           "domain:ru",
           "domain:su",
-          "domain:xn--p1ai"
+          "domain:xn--p1ai",
+          "domain:github.com",
+          "domain:githubusercontent.com",
+          "domain:githubassets.com",
+          "domain:github.io",
+          "domain:github.dev",
+          "domain:githubapp.com",
+          "domain:ghcr.io",
+          "full:github-cloud.s3.amazonaws.com",
+          "full:github-production-release-asset-2e65be.s3.amazonaws.com"
         ],
         "skipFallback": true,
         "tag": "dns-direct"
@@ -42,7 +60,16 @@
           "geosite:private",
           "domain:ru",
           "domain:su",
-          "domain:xn--p1ai"
+          "domain:xn--p1ai",
+          "domain:github.com",
+          "domain:githubusercontent.com",
+          "domain:githubassets.com",
+          "domain:github.io",
+          "domain:github.dev",
+          "domain:githubapp.com",
+          "domain:ghcr.io",
+          "full:github-cloud.s3.amazonaws.com",
+          "full:github-production-release-asset-2e65be.s3.amazonaws.com"
         ],
         "skipFallback": true,
         "tag": "dns-direct"

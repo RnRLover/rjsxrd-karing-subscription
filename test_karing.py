@@ -72,6 +72,7 @@ class KaringTests(unittest.TestCase):
             self.assertEqual(server['tag'], 'dns-direct')
             self.assertTrue(server['skipFallback'])
             self.assertIn('full:vpn.fixture-domain.com', server['domains'])
+            self.assertTrue(set(read_policy()['direct_domains']).issubset(server['domains']))
         for server in servers[2:]:
             self.assertEqual(server['tag'], 'dns-proxy')
             self.assertTrue(server['address'].startswith('https://'))

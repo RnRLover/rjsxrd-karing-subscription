@@ -17,6 +17,7 @@ import tempfile
 import threading
 import time
 from check_subscription import receive
+from russia_config import read_policy
 
 ROOT = Path(__file__).resolve().parent
 
@@ -155,8 +156,19 @@ def main(xray):
                             client.sendto(b'\x00\x00\x00\x01' + socket.inet_aton('9.9.9.9') + struct.pack('!H', 53) + data, relay)
                             return client.recv(4096)[10:]
                         assert socket.inet_ntoa(query('transport-fixture.ru')[-4:]) == '77.88.8.8'
-                        bootstrap = next(d[5:] for d in config['dns']['servers'][0]['domains'] if d.startswith('full:'))
+                        configured_direct = set(read_policy()['direct_domains'])
+                        bootstrap = next(d[5:] for d in config['dns']['servers'][0]['domains']
+                                         if d.startswith('full:') and d not in configured_direct)
                         assert socket.inet_ntoa(query(bootstrap)[-4:]) == '77.88.8.8'
+                        github_hosts = ['github.com', 'api.github.com', 'raw.githubusercontent.com',
+                                        'release-assets.githubusercontent.com', 'objects.githubusercontent.com',
+                                        'github.githubassets.com', 'subscription-fixture.github.io',
+                                        'vscode.github.dev', 'fixture.githubapp.com', 'ghcr.io',
+                                        'github-cloud.s3.amazonaws.com',
+                                        'github-production-release-asset-2e65be.s3.amazonaws.com']
+                        for host in github_hosts:
+                            assert socket.inet_ntoa(query(host)[-4:]) == '77.88.8.8', host
+                        direct_queries = ['transport-fixture.ru', bootstrap] + github_hosts
                         assert socket.inet_ntoa(query('external.fixture-domain.com')[-4:]) == '9.9.9.9'
                         client.settimeout(2)
                         try:
@@ -167,19 +179,24 @@ def main(xray):
                         finally:
                             client.settimeout(12)
                         assert socket.inet_ntoa(query('doubleclick.net')[-4:]) == '0.0.0.0'
-                        assert state['direct'] == ['transport-fixture.ru', bootstrap], state
+                        assert state['direct'] == direct_queries, state
                         assert state['external'] == ['external.fixture-domain.com'], state
                         state['external_healthy'] = False
+                        # An uncached GitHub hostname must still resolve when
+                        # both proxy DoH paths are failing.
+                        assert socket.inet_ntoa(query('codeload.github.com')[-4:]) == '77.88.8.8'
+                        direct_queries.append('codeload.github.com')
                         try:
                             failed = query('failed.fixture-domain.com')
                             assert failed[3] & 15, 'Expected DNS error after DoH failure'
                         except socket.timeout:
                             pass  # dns-out may drop failed queries instead of returning SERVFAIL.
-                        assert state['direct'] == ['transport-fixture.ru', bootstrap], 'External DNS leaked to direct resolver'
+                        assert state['direct'] == direct_queries, 'External DNS leaked to direct resolver'
                         assert 'failed.fixture-domain.com' in state['external']
                 print(json.dumps({'ru_dns_direct': True, 'bootstrap_dns_direct': True, 'external_doh_via_proxy': True,
                                   'tls_verified': True, 'ads_no_upstream': True, 'AAAA_suppressed_without_upstream': True,
-                                  'external_failure_no_direct_fallback': True}))
+                                  'external_failure_no_direct_fallback': True,
+                                  'github_dns_direct': True, 'github_resolves_without_proxy_doh': True}))
             except Exception:
                 log.flush()
                 print(log_path.read_text()[-14000:])

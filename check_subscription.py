@@ -156,6 +156,22 @@ def check_profile(args):
                     ('SU TLD with foreign DNS address', 'routing-fixture.su', 'DIRECT'),
                     ('RF TLD with foreign DNS address', 'routing-fixture.xn--p1ai', 'DIRECT'),
                     ('RU service on .com', 'vk.com', 'DIRECT'),
+                    ('GitHub', 'github.com', 'DIRECT'),
+                    ('GitHub API subdomain', 'api.github.com', 'DIRECT'),
+                    ('GitHub raw subscription', 'raw.githubusercontent.com', 'DIRECT'),
+                    ('GitHub release assets', 'release-assets.githubusercontent.com', 'DIRECT'),
+                    ('GitHub release objects', 'objects.githubusercontent.com', 'DIRECT'),
+                    ('GitHub static assets', 'github.githubassets.com', 'DIRECT'),
+                    ('GitHub Pages subscription', 'subscription-fixture.github.io', 'DIRECT'),
+                    ('GitHub web editor', 'vscode.github.dev', 'DIRECT'),
+                    ('GitHub app', 'fixture.githubapp.com', 'DIRECT'),
+                    ('GitHub container registry', 'ghcr.io', 'DIRECT'),
+                    ('GitHub legacy release host', 'github-production-release-asset-2e65be.s3.amazonaws.com', 'DIRECT'),
+                    ('GitHub legacy cloud host', 'github-cloud.s3.amazonaws.com', 'DIRECT'),
+                    ('Non-GitHub lookalike', 'notgithub.com', 'PROXY'),
+                    ('GitHub name inside foreign domain', 'github.com.fixture-domain.com', 'PROXY'),
+                    ('Raw host name inside foreign domain', 'githubusercontent.com.fixture-domain.com', 'PROXY'),
+                    ('Unrelated S3 bucket', 'unrelated-fixture.s3.amazonaws.com', 'PROXY'),
                     ('RU IP', '77.88.8.8', 'DIRECT'),
                     ('GeoIP-only domain', 'geoip-only.fixture-domain.com', 'DIRECT'),
                     ('LAN IPv4', '192.168.1.1', 'DIRECT'),
@@ -175,6 +191,9 @@ def check_profile(args):
                                     'expected': expected, 'actual': actual})
                 actual = request('8.8.8.8', b'GET / HTTP/1.1\r\nHost: routing-fixture.ru\r\n\r\n')
                 results.append({'case': 'Sniffed RU host at foreign IP',
+                                'expected': 'DIRECT', 'actual': actual})
+                actual = request('8.8.8.8', b'GET / HTTP/1.1\r\nHost: raw.githubusercontent.com\r\n\r\n')
+                results.append({'case': 'Sniffed GitHub host at foreign IP',
                                 'expected': 'DIRECT', 'actual': actual})
                 # Preserve a real RU destination even when a sniffed hostname
                 # has a different, foreign DNS answer in the core resolver.
