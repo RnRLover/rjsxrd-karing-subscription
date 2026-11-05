@@ -1,361 +1,257 @@
-"""rjsxrd -> full Xray proxy pool with embedded GeoSite/GeoIP; stdlib only."""
+"""Publish the upstream-ordered INCY pool; exclude only known listed IPs."""
 import argparse
+from collections import Counter
 import concurrent.futures
 import copy
 import hashlib
 import ipaddress
 import json
 import os
-import re
+from pathlib import Path
 import socket
 import subprocess
 import tempfile
 import time
 import urllib.parse
 import urllib.request
-from bisect import bisect_right
-from collections import Counter
-from pathlib import Path
 
+from incy import (ROOT, PROFILE_URL, PROXY_PROTOCOLS, atomic_write, build, read_profile,
+                  serialized_config, subscription, xray_validate)
+from ip_reputation import CACHE_KEY, load_feed, assess_nodes, rate_ip, reputation_report
 from rjsxrd_parser import parse_url
-from routing import domains, policy
-from pool_selection import select_pool
-from latency_checks import measure_latency, latency_report
-from ip_reputation import CACHE_KEY, load_feed, rank_nodes, reputation_report
-from quality_checks import probe_quality, probe_control, quality_report, quality_priority
-from certificate_checks import probe_transport, complete_transport, transport_report
+from rjsxrd_helpers import query_parameters
 
-ROOT = Path(__file__).resolve().parent
 
-def serialized_config(config):
-    text = json.dumps(config, ensure_ascii=False, separators=(",", ":")) + "\n"
-    # Conservative UTF-16 budget with room for INCY patching and IPC metadata.
-    # This is a publication guard, not a measurement of Android's actual Parcel.
-    if len(text.encode("utf-16-le")) > 250_000:
-        raise ValueError("config exceeds Android publication size budget")
-    return text
+def fetch(url, limit=8_000_000):
+    for attempt in range(3):
+        try:
+            request = urllib.request.Request(url, headers={'User-Agent': 'rjsxrd-incy-subscription/2'})
+            with urllib.request.urlopen(request, timeout=30) as response:
+                data = response.read(limit + 1)
+            if len(data) > limit:
+                raise ValueError('upstream payload exceeds download budget')
+            return data
+        except (OSError, TimeoutError):
+            if attempt == 2:
+                raise
+            time.sleep(.5 * (attempt + 1))
 
-def fetch(url):
-    req = urllib.request.Request(url, headers={"User-Agent": "rjsxrd-karing-subscription/1"})
-    with urllib.request.urlopen(req, timeout=30) as response:
-        data = response.read(8_000_001)
-    if len(data) > 8_000_000:
-        raise ValueError("upstream payload exceeds 8 MB")
-    return data.decode("utf-8-sig")
 
-class CountryRanges:
-    def __init__(self, cidrs):
-        self.ranges = {}
-        for version in (4, 6):
-            nets = [ipaddress.ip_network(c, strict=False) for c in cidrs]
-            intervals = sorted((int(n.network_address), int(n.broadcast_address)) for n in nets if n.version == version)
-            merged = []
-            for start, end in intervals:
-                if merged and start <= merged[-1][1] + 1:
-                    merged[-1] = (merged[-1][0], max(end, merged[-1][1]))
-                else:
-                    merged.append((start, end))
-            self.ranges[version] = ([a for a, b in merged], [b for a, b in merged])
+def parse_node(line):
+    config = parse_url(line)
+    if config is None or not config.host or not 1 <= config.port <= 65535:
+        return None
+    outbound = config.to_xray_outbound('candidate')
+    if not outbound or outbound.get('protocol') not in PROXY_PROTOCOLS:
+        return None
+    params = query_parameters(urllib.parse.urlsplit(line).query)
+    stream = outbound.get('streamSettings', {})
+    if stream.get('network') == 'raw':
+        stream['network'] = 'tcp'
+    for key in ('tlsSettings', 'realitySettings'):
+        settings = stream.get(key)
+        if settings is not None:
+            if params.get('alpn'):
+                settings['alpn'] = params['alpn'][0].split(',')
+            if params.get('spx') and key == 'realitySettings':
+                settings['spiderX'] = params['spx'][0]
+    if stream.get('network') == 'grpc':
+        if params.get('authority'):
+            stream['grpcSettings']['authority'] = params['authority'][0]
+        if params.get('mode', [''])[0] == 'multi':
+            stream['grpcSettings']['multiMode'] = True
+    return {'host': config.host, 'label': urllib.parse.unquote(config.remark), 'outbound': outbound}
 
-    def contains(self, address):
-        ip = ipaddress.ip_address(address)
-        starts, ends = self.ranges[ip.version]
-        i = bisect_right(starts, int(ip)) - 1
-        return i >= 0 and int(ip) <= ends[i]
 
-def russian_label(label):
-    label = urllib.parse.unquote(label).lower()
-    return "🇷🇺" in label or bool(re.search(r"(?<![a-zа-я])(ru|rus|russia|russian|россия|российский|москва)(?![a-zа-я])", label))
+def collect_nodes(text):
+    nodes, seen, counts = [], set(), Counter()
+    for raw in text.splitlines():
+        line = raw.strip()
+        if not line or line.startswith('#'):
+            continue
+        counts['source_nodes'] += 1
+        try:
+            node = parse_node(line)
+        except (ValueError, TypeError, KeyError, AttributeError):
+            node = None
+        if node is None:
+            counts['unsupported_or_malformed'] += 1
+            continue
+        key = json.dumps(node['outbound'], sort_keys=True, separators=(',', ':'))
+        if key in seen:
+            counts['duplicate'] += 1
+            continue
+        seen.add(key)
+        nodes.append(node)
+    return nodes, counts
 
-def endpoint_allowed(host, resolver=None):
-    resolver = resolver or resolve
-    addresses = resolver(host)
-    return bool(addresses) and all(ipaddress.ip_address(a).is_global for a in addresses)
 
-def egress_allowed(address, ranges):
-    try:
-        ip = ipaddress.ip_address(address)
-        return ip.is_global and not ranges.contains(ip)
-    except (ValueError, TypeError):
-        return False
+def compatible_nodes(nodes, xray, counts):
+    """Only test JSON/core compatibility. This does not connect to the nodes."""
+    def check(node):
+        try:
+            xray_validate(xray, {'outbounds': [node['outbound']]})
+            return node
+        except ValueError:
+            return None
+    with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
+        result = list(executor.map(check, nodes))
+    counts['core_incompatible'] += sum(node is None for node in result)
+    return [node for node in result if node is not None]
 
-def require_exit_checks(enabled, xray):
-    if not enabled or not xray:
-        raise ValueError('publication requires --verify-exits and --xray: entry country does not establish exit country')
 
-def resolve(host):
+def entry_ips(host):
     try:
         return [str(ipaddress.ip_address(host))]
     except ValueError:
-        pass
-    try:
-        return sorted({info[4][0] for info in socket.getaddrinfo(host, None, type=socket.SOCK_STREAM)})
-    except OSError:
+        try:
+            return sorted({info[4][0] for info in socket.getaddrinfo(host, None, type=socket.SOCK_STREAM)})
+        except OSError:
+            return []
+
+
+def exclude_listed(nodes):
+    """Preserve upstream order, all unknowns and all countries; no pool caps."""
+    return [node for node in nodes if node.get('reputation', {}).get('status') != 'listed'
+            and not any(record['status'] == 'listed' for record in node.get('entry_reputation', []))]
+
+
+def probe_exit(opener, timeout=4):
+    # This single small request discovers the public exit for the blacklist.
+    # Its latency and success are never membership or ranking criteria.
+    with opener.open('https://api64.ipify.org?format=json', timeout=timeout) as response:
+        ip = str(ipaddress.ip_address(json.loads(response.read(1000))['ip']))
+        if not ipaddress.ip_address(ip).is_global:
+            raise ValueError('non-public exit answer')
+        return ip
+
+
+def probe_exits(nodes, xray, workers=24, timeout=4):
+    if not nodes:
         return []
-
-def parse_node(line):
-    if not line.startswith(("vless://", "trojan://", "ss://", "vmess://")):
-        return None
-    cfg = parse_url(line)
-    if cfg is None or not cfg.host or not 1 <= cfg.port <= 65535:
-        return None
-    query = urllib.parse.parse_qs(urllib.parse.urlsplit(line).query)
-    val = lambda key: query.get(key, [""])[0]
-    if any(val(key).lower() in ("1", "true", "yes") for key in ("allowInsecure", "insecure")) or val("verify").lower() in ("0", "false"):
-        return None
-    if line.startswith(("vless://", "trojan://", "vmess://")) and not cfg.tls:
-        return None
-    transport = cfg.transport or "tcp"
-    if transport == "raw": cfg.transport = "tcp"
-    if transport not in ("", "raw", "tcp", "ws", "grpc"):
-        return None
-    # Do not silently reinterpret transports/extensions not handled by upstream.
-    if val("headerType") not in ("", "none") or val("packetEncoding") or val("plugin"):
-        return None
-    if val("ed") or val("eh"):
-        return None
-    if line.startswith("vless://") and (cfg.encryption != "none" or cfg.flow not in ("", "xtls-rprx-vision")):
-        return None
-    if line.startswith("vmess://") and (cfg.alter_id != 0 or not isinstance(cfg.security, str) or not cfg.security or cfg.security.lower() in ("none", "zero")):
-        return None
-    if line.startswith("ss://") and cfg.method not in ("aes-128-gcm", "aes-256-gcm", "chacha20-ietf-poly1305"):
-        return None
-    outbound = cfg.to_xray_outbound("candidate")
-    if outbound is None: return None
-    stream = outbound.get("streamSettings", {})
-    if stream.get("security") == "reality":
-        reality = stream["realitySettings"]
-        if not cfg.sni or not re.fullmatch(r"[A-Za-z0-9_-]{43}", cfg.public_key): return None
-        reality["fingerprint"] = val("fp") or "chrome"
-        if val("spx"): reality["spiderX"] = val("spx")
-    elif stream.get("security") == "tls":
-        tls = stream["tlsSettings"]
-        tls["fingerprint"] = val("fp") or "chrome"
-        if val("alpn"): tls["alpn"] = val("alpn").split(",")
-    if stream.get("network") == "grpc":
-        if val("authority"): stream["grpcSettings"]["authority"] = val("authority")
-        if val("mode") == "multi": stream["grpcSettings"]["multiMode"] = True
-    # Vendor may include an obsolete extra fingerprint outside security settings.
-    stream.pop("fingerprint", None)
-    return {"host": cfg.host, "label": urllib.parse.unquote(cfg.remark), "outbound": outbound, "uri": line}
-
-def build(nodes, routing, minimum=2):
-    if len(nodes) < minimum: raise ValueError(f"need at least {minimum} eligible exits")
-    proxies = []
-    for i, node in enumerate(nodes, 1):
-        ob = copy.deepcopy(node["outbound"])
-        ob["tag"] = f"pool-{i:02d}"
-        proxies.append(ob)
-    # Block fallback until probes complete or if the entire pool is down.
-    return {
-        "log": {"loglevel": "warning"},
-        "inbounds": [{"tag": "socks-in", "listen": "127.0.0.1", "port": 10808, "protocol": "socks", "settings": {"udp": True}, "sniffing": {"enabled": True, "destOverride": ["http", "tls", "quic"], "routeOnly": True}}, {"tag": "http-in", "listen": "127.0.0.1", "port": 10809, "protocol": "http"}],
-        "outbounds": [{"tag": "block", "protocol": "blackhole"}, *proxies, {"tag": "direct", "protocol": "freedom"}],
-        "routing": copy.deepcopy(routing),
-        "burstObservatory": {"subjectSelector": ["pool-"], "pingConfig": {"destination": "https://www.gstatic.com/generate_204", "interval": "3m", "sampling": 1, "timeout": "5s"}},
-        "stats": {},
-        "meta": {"serverDescription": "rjsxrd: RU/local direct; ads blocked; all other TCP/UDP via automatic proxy"}
-    }
-
-def xray_validate(xray, config):
-    with tempfile.TemporaryDirectory() as d:
-        path = Path(d) / "config.json"
-        path.write_text(json.dumps(config), encoding="utf-8")
-        result = subprocess.run([str(Path(xray).resolve()), "run", "-test", "-config", str(path)], capture_output=True, text=True, timeout=30)
-        if result.returncode: raise ValueError("Xray rejected config: " + result.stderr[-800:] + result.stdout[-800:])
-
-def atomic_write(path, content):
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8", dir=path.parent, delete=False) as f:
-        f.write(content)
-        temporary = Path(f.name)
-    os.replace(temporary, path)
-
-def verify_exits(nodes, ranges, xray, failures=None):
-    """Collect actual HTTPS egress IPs; country filtering is done by the caller."""
-    if not nodes: return []
-    failures = failures if failures is not None else Counter()
     held, ports = [], []
-    for node in nodes:
+    for _ in nodes:
         sock = socket.socket()
-        sock.bind(("127.0.0.1", 0))
+        sock.bind(('127.0.0.1', 0))
         held.append(sock)
         ports.append(sock.getsockname()[1])
-    cfg = {"log": {"loglevel": "none"}, "inbounds": [], "outbounds": [], "routing": {"rules": []}}
-    for i, (node, port) in enumerate(zip(nodes, ports)):
-        tag = f"test-{i}"
-        cfg["inbounds"].append({"tag": tag, "protocol": "http", "listen": "127.0.0.1", "port": port})
-        ob = copy.deepcopy(node["outbound"])
-        ob["tag"] = tag
-        cfg["outbounds"].append(ob)
-        cfg["routing"]["rules"].append({"type": "field", "inboundTag": [tag], "outboundTag": tag})
-    with tempfile.TemporaryDirectory() as d:
-        path = Path(d) / "probe.json"
-        path.write_text(json.dumps(cfg), encoding="utf-8")
-        xray_validate(xray, cfg)
-        for sock in held: sock.close()
-        process = subprocess.Popen([str(Path(xray).resolve()), "run", "-config", str(path)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    config = {'log': {'loglevel': 'none'}, 'inbounds': [], 'outbounds': [], 'routing': {'rules': []}}
+    for index, (node, port) in enumerate(zip(nodes, ports)):
+        tag = f'probe-{index}'
+        config['inbounds'].append({'tag': tag, 'listen': '127.0.0.1', 'port': port, 'protocol': 'http'})
+        outbound = copy.deepcopy(node['outbound'])
+        outbound['tag'] = tag
+        config['outbounds'].append(outbound)
+        config['routing']['rules'].append({'type': 'field', 'inboundTag': [tag], 'outboundTag': tag})
+    with tempfile.TemporaryDirectory() as directory:
+        path = Path(directory, 'probe.json')
+        path.write_text(json.dumps(config))
+        xray_validate(xray, config)
+        for sock in held:
+            sock.close()
+        process = subprocess.Popen([str(Path(xray).resolve()), 'run', '-c', str(path)],
+                                   stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         try:
             deadline = time.monotonic() + 5
-            while time.monotonic() < deadline:
-                if process.poll() is not None: raise ValueError("Xray probe process stopped")
+            while True:
                 try:
-                    with socket.create_connection(("127.0.0.1", ports[0]), timeout=0.2): break
-                except OSError: time.sleep(0.1)
+                    with socket.create_connection(('127.0.0.1', ports[0]), timeout=.1):
+                        break
+                except OSError:
+                    if process.poll() is not None or time.monotonic() > deadline:
+                        raise RuntimeError('exit reputation probe core did not start')
+                    time.sleep(.05)
             def check(pair):
                 node, port = pair
-                opener = urllib.request.build_opener(urllib.request.ProxyHandler({"https": f"http://127.0.0.1:{port}"}))
-                stage = 'transport'
+                result = copy.deepcopy(node)
+                opener = urllib.request.build_opener(urllib.request.ProxyHandler({
+                    'https': f'http://127.0.0.1:{port}'}))
                 try:
-                    evidence = probe_transport(node)
-                    stage = 'xray_https'
-                    with opener.open("https://api.ipify.org?format=json", timeout=12) as response:
-                        if response.getcode() != 200: raise ValueError('exit_status')
-                        ip = json.loads(response.read(1000))["ip"]
-                    if not egress_allowed(ip, ranges):
-                        return {**node, 'exit_ip': str(ipaddress.ip_address(ip)),
-                                'transport_check': complete_transport(evidence)}
-                    stage = 'quality'
-                    quality = probe_quality(opener)
-                    return {**node, 'exit_ip': str(ipaddress.ip_address(ip)),
-                            'transport_check': complete_transport(evidence),
-                            'latency_check': measure_latency(opener), 'quality_check': quality}
+                    result['exit_ip'] = probe_exit(opener, timeout)
                 except Exception as error:
-                    return {'probe_failure': stage + ':' + type(error).__name__}
-            with concurrent.futures.ThreadPoolExecutor(max_workers=12) as executor:
-                futures = [executor.submit(check, pair) for pair in zip(nodes, ports)]
-                results = []
-                for future in concurrent.futures.as_completed(futures):
-                    results.append(future.result())
-                    if len(results) % 50 == 0 or len(results) == len(nodes):
-                        print(json.dumps({'probed': len(results), 'total': len(nodes)}), flush=True)
-                failures.update(n['probe_failure'] for n in results if 'probe_failure' in n)
-                return [n for n in results if 'probe_failure' not in n]
+                    result['exit_ip'] = None
+                    result['exit_discovery_error'] = type(error).__name__
+                return result
+            # executor.map preserves the source order despite completion order.
+            with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as executor:
+                return list(executor.map(check, zip(nodes, ports)))
         finally:
             process.terminate()
-            try: process.wait(timeout=5)
+            try:
+                process.wait(timeout=5)
             except subprocess.TimeoutExpired:
                 process.kill()
                 process.wait(timeout=5)
 
+
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--output", type=Path, default=ROOT)
-    parser.add_argument("--cache", type=Path, help="use saved upstream data instead of downloading")
-    parser.add_argument("--xray", help="Xray binary: required for publication")
-    parser.add_argument("--verify-exits", action="store_true", help="check actual HTTPS egress; requires --xray")
+    parser.add_argument('--xray', required=True)
     args = parser.parse_args()
-    require_exit_checks(args.verify_exits, args.xray)
-    settings = json.loads((ROOT / "settings.json").read_text(encoding="utf-8"))
-    source_url = settings['subscription_url']
-    def read(path, url):
-        return (args.cache / path).read_text(encoding="utf-8-sig") if args.cache else fetch(url)
-    original = read('rjsxrd.txt', source_url)
-    raw = read("geo/geoip/ru.json", settings["ru_cidrs_url"])
-    obj = json.loads(raw)
-    cidrs = [c for r in obj["rules"] for c in r.get("ip_cidr", [])]
-    if not cidrs: raise ValueError("RU address table required")
-    ranges = CountryRanges(cidrs)
-    country_data = {"url": settings["ru_cidrs_url"], "sha256": hashlib.sha256(raw.encode()).hexdigest(), "use": "server exclusion; client routing uses INCY geoip:ru"}
-    geo_sources = []
-    categories = {}
-    for name, url in settings["geosite_urls"].items():
-        data = read("geo/geosite/" + name + ".json", url)
-        categories[name] = domains(json.loads(data))
-        geo_sources.append({"category": name, "url": url, "sha256": hashlib.sha256(data.encode()).hexdigest(), "entries": len(categories[name])})
-    routing = policy(categories["category-ru"], cidrs)
-    # The shared clients use standard geodata; do not waste the pool budget
-    # on expanded domains that the published policy replaces with this tag.
-    routing["rules"][1]["domain"] = ["geosite:category-ru"]
-    candidates, seen, counters = [], set(), Counter()
-    for line in original.splitlines():
-        line = line.strip()
-        if not line or line.startswith("#"): continue
-        counters["source_nodes"] += 1
-        try: node = parse_node(line)
-        except (ValueError, TypeError, KeyError): node = None
-        if node is None:
-            counters["unsupported_or_invalid"] += 1
-            continue
-        if russian_label(node["label"]):
-            counters["russian_label_candidates"] += 1
-        key = json.dumps(node["outbound"], sort_keys=True)
-        if key in seen:
-            counters["duplicate"] += 1
-            continue
-        seen.add(key)
-        candidates.append(node)
-    hosts = sorted({n["host"] for n in candidates})
-    with concurrent.futures.ThreadPoolExecutor(max_workers=12) as executor:
-        allowed = dict(zip(hosts, executor.map(endpoint_allowed, hosts)))
-    eligible = [n for n in candidates if allowed[n["host"]]]
-    counters["nonpublic_or_unresolved_endpoint"] = len(candidates) - len(eligible)
-    # Every candidate is measured in this run. Only the external IPsum dataset
-    # is cached; no node measurements, failure cooldowns or history are loaded.
+    settings = json.loads((ROOT / 'settings.json').read_bytes())
+    profile = read_profile()
+    original = fetch(settings['subscription_url']).decode('utf-8-sig')
+    nodes, counts = collect_nodes(original)
+    nodes = compatible_nodes(nodes, args.xray, counts)
     cache_path = ROOT / '.runtime' / 'reputation-cache.json'
-    reputation_cache = json.loads(cache_path.read_text()) if cache_path.exists() else {}
-    now = int(time.time())
-    feed, reputation_source = load_feed(reputation_cache, fetch, now)
-    cache_path.parent.mkdir(exist_ok=True)
-    atomic_write(cache_path, json.dumps({CACHE_KEY: feed}, sort_keys=True) + '\n')
-    transport_failures = Counter()
-    control = probe_control(urllib.request.build_opener(urllib.request.ProxyHandler({})))
-    print(json.dumps({'quality_control': control}), flush=True)
-    if not control['passed']:
-        raise RuntimeError('Quality test destinations unavailable from runner after retries; keep published pool: '
-                           + json.dumps(control))
-    measured = verify_exits(eligible, ranges, args.xray, transport_failures)
-    checked = [n for n in measured if egress_allowed(n['exit_ip'], ranges)]
-    print(json.dumps({'transport_failure_counts': dict(transport_failures),
-                      'quality_tested': len(checked),
-                      'quality_passed': sum(n.get('quality_check', {}).get('passed') is True for n in checked),
-                      'quality_errors': dict(Counter(e for n in checked for e in n.get('quality_check', {}).get('errors', [])))}),
-          flush=True)
-    checked = rank_nodes(checked, feed)
-    selected = select_pool(checked, min(settings['max_nodes'], 40), require_quality=True)
-    # Preserve the quality/diversity order if the Android budget trims a tail.
-    while True:
-        config = build(selected, routing)
-        try:
-            config_text = serialized_config(config)
-            if len(config_text.encode('utf-16-le')) > 220_000:
-                raise ValueError('config exceeds Android publication size budget')
-            break
-        except ValueError as error:
-            if 'publication size budget' not in str(error) or len(selected) <= 2:
-                raise
-            selected.pop()
-    # Current performance determines startup order; device-side leastPing is unchanged.
-    from latency_checks import latency_value
-    selected = sorted(selected, key=lambda n: (quality_priority(n), latency_value(n)))
-    reputation = reputation_report(checked, selected, feed, reputation_source)
-    print(json.dumps({'ip_reputation': reputation}, ensure_ascii=False))
-    config = build(selected, routing)
-    config_text = serialized_config(config)
-    if args.xray: xray_validate(args.xray, config)
-    report = {"generated_at_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "pool": "whitelist", "source": source_url, "source_sha256": hashlib.sha256(original.encode()).hexdigest(), "counts": dict(counters), "eligible": len(eligible), "selected": len(selected), "xray_validated": bool(args.xray), "actual_egress_checked": args.verify_exits, "service_acl": False, "country_data": country_data, "excluded_country": "RU", "exclusion_basis": "mandatory actual HTTPS egress IP against RU CIDRs; public Russian entry IPs and RU labels permitted", "selected_protocols": dict(Counter(n["outbound"]["protocol"] for n in selected))}
-    report["service_acl"] = False
-    report["routing_policy"] = "local direct; RU direct; everything else proxy"
-    report['ru_reachability_required'] = False
-    report['pool_selection'] = 'fresh checks only; two-site HTTPS HEAD health and latency; current performance bands; strict infrastructure caps; up to 40 nodes; client leastPing'
-    report['quality_control'] = control
-    report['quality_selection'] = quality_report(checked, selected)
-    report['ip_reputation'] = reputation
-    report['transport_checks'] = transport_report(selected, transport_failures)
-    report['latency_selection'] = latency_report(checked, selected)
-    report['latency_selection']['policy'] = 'current quality bands first, exact median HTTPS latency within band; client leastPing unchanged'
-    report['latency_selection']['failed_probe_policy'] = 'current two-site HTTPS health required independently of extra HEAD measurements'
-    report['reputation_excluded'] = sum(n['reputation']['status'] == 'listed' for n in checked)
-    report['foreign_exit_candidates'] = len(checked)
-    report["geosite_sources"] = geo_sources
-    report["client_geoip"] = "geoip:ru from client installed geoip.dat; update client geodata"
-    report["config_utf16_bytes"] = len(config_text.encode("utf-16-le"))
-    report["config_utf8_bytes"] = len(config_text.encode("utf-8"))
-    # Files change only after all inputs and Xray validation succeeded.
-    config_name, report_name = ('ru.json', 'report.json')
-    atomic_write(args.output / config_name, config_text)
-    atomic_write(args.output / report_name, json.dumps(report, ensure_ascii=False, indent=2) + "\n")
-    print(json.dumps({"counts": counters, "eligible": len(eligible), "selected": len(selected), "xray_validated": bool(args.xray)}))
+    cache = json.loads(cache_path.read_bytes()) if cache_path.exists() else {}
+    feed, feed_source = load_feed(cache, lambda url: fetch(url).decode('utf-8-sig'), int(time.time()))
+    atomic_write(cache_path, json.dumps({CACHE_KEY: feed}) + '\n')
+    with concurrent.futures.ThreadPoolExecutor(max_workers=24) as executor:
+        addresses = list(executor.map(entry_ips, [node['host'] for node in nodes]))
+    for node, ips in zip(nodes, addresses):
+        node['entry_reputation'] = [dict(ip=ip, **rate_ip(ip, feed)) for ip in ips]
+    retained = exclude_listed(nodes)
+    counts['listed_entry'] = len(nodes) - len(retained)
+    print(json.dumps({'source': dict(counts), 'exit_reputation_candidates': len(retained)}), flush=True)
+    measured = probe_exits(retained, args.xray, settings['reputation_workers'],
+                           settings['reputation_timeout_seconds'])
+    rated = assess_nodes(measured, feed)
+    selected = exclude_listed(rated)
+    counts['listed_exit'] = len(rated) - len(selected)
+    if not selected:
+        raise ValueError('no non-listed candidates; keep published subscription')
+    config = build(selected, profile, settings['probe'])
+    runtime = ROOT / '.runtime'
+    runtime.mkdir(exist_ok=True)
+    hashes = {}
+    for name, key in [('geoip.dat', 'Geoipurl'), ('geosite.dat', 'Geositeurl')]:
+        data = fetch(profile[key], 40_000_000)
+        (runtime / name).write_bytes(data)
+        hashes[name] = hashlib.sha256(data).hexdigest()
+    os.environ['XRAY_LOCATION_ASSET'] = str(runtime)
+    xray_validate(args.xray, config)
+    report = {
+        'generated_at_utc': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
+        'source': settings['subscription_url'], 'source_sha256': hashlib.sha256(original.encode()).hexdigest(),
+        'counts': dict(counts), 'selected': len(selected), 'xray_validated': True,
+        'selected_protocols': dict(Counter(node['outbound']['protocol'] for node in selected)),
+        'pool_selection': 'upstream order; exact duplicates removed; known listed entry/exit IPs excluded',
+        'history_used': False, 'github_latency_ranking': False, 'country_filter': False,
+        'tcp_udp_quality_gate': False, 'file_transfer_check': False, 'pool_limit': None,
+        'unknown_exit_retained': sum(node.get('exit_ip') is None for node in selected),
+        'exit_discovery_errors': dict(Counter(node['exit_discovery_error'] for node in selected
+                                              if node.get('exit_discovery_error'))),
+        'ip_reputation': reputation_report(rated, selected, feed, feed_source),
+        'subscription_policy': {
+            'clients': ['INCY'], 'format': 'full-xray-json-array-with-body-metadata',
+            'native_routing_profile': True, 'routing_profile_url': PROFILE_URL,
+            'dns_query_strategy': 'UseIP', 'ipv6_supported': True,
+            'dns_transport': {'domestic_and_bootstrap': 'direct', 'external': 'doh-via-auto',
+                              'external_direct_fallback': False, 'lan_names': 'system'},
+            'direct_domains': profile['DirectSites'], 'direct_ips': profile['DirectIp'],
+            'block_domains': profile['BlockSites'], 'probe': settings['probe'],
+            'geodata_sha256': hashes, 'client_geodata_download_verified': False,
+        },
+        'config_utf8_bytes': len(serialized_config(config).encode()),
+        'config_utf16_bytes': len(serialized_config(config).encode('utf-16-le')),
+    }
+    atomic_write(ROOT / 'subscription.json', subscription(config))
+    atomic_write(ROOT / 'report.json', json.dumps(report, ensure_ascii=False, indent=2) + '\n')
+    print(json.dumps({'selected': len(selected), 'protocols': report['selected_protocols'],
+                      'unknown_exit_retained': report['unknown_exit_retained'],
+                      'upstream_order_preserved': True}), flush=True)
 
-if __name__ == "__main__": main()
 
+if __name__ == '__main__':
+    main()

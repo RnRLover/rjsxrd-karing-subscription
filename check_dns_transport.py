@@ -17,7 +17,7 @@ import tempfile
 import threading
 import time
 from check_subscription import receive
-from russia_config import read_policy
+from incy import load_configs
 
 ROOT = Path(__file__).resolve().parent
 
@@ -43,7 +43,16 @@ def answer(data, ip):
 
 
 def main(xray):
-    config = copy.deepcopy(json.loads((ROOT / 'subscription.json').read_bytes())[0])
+    config = copy.deepcopy(load_configs(ROOT / 'subscription.json')[0])
+    # Emulate the documented INCY patch, before every provider rule. Hostname
+    # DoH must still follow dns-proxy instead of this direct IP exception.
+    config['routing']['rules'].insert(0, {'type': 'field',
+        'ip': ['1.1.1.1', '8.8.8.8', '77.88.8.8'], 'outboundTag': 'direct'})
+    # Keep this fixture independent of whether the upstream happens to publish
+    # any hostname endpoints in this particular run.
+    bootstrap = 'bootstrap.fixture-domain.com'
+    domestic = next(s for s in config['dns']['servers'] if s.get('tag') == 'dns-direct')
+    domestic['domains'].append('full:' + bootstrap)
     state = {'external': [], 'direct': [], 'external_healthy': True}
     udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     udp.bind(('127.0.0.1', 0))
@@ -62,7 +71,7 @@ def main(xray):
         subprocess.run(['openssl', 'req', '-x509', '-newkey', 'rsa:2048', '-nodes',
                         '-keyout', str(key), '-out', str(cert), '-days', '1',
                         '-subj', '/CN=DNS transport fixture',
-                        '-addext', 'subjectAltName=IP:1.1.1.1,IP:8.8.8.8',
+                        '-addext', 'subjectAltName=DNS:cloudflare-dns.com,DNS:dns.google,IP:1.1.1.1,IP:8.8.8.8',
                         '-addext', 'basicConstraints=critical,CA:TRUE'],
                        check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         class Handler(BaseRequestHandler):
@@ -111,7 +120,7 @@ def main(xray):
             if outbound['protocol'] in ('loopback', 'blackhole', 'dns'):
                 continue
             tag = outbound['tag']
-            dest_port = udp.getsockname()[1] if tag == 'direct' else https.server_address[1]
+            dest_port = udp.getsockname()[1] if tag in ('direct', 'lan') else https.server_address[1]
             outbound.clear()
             outbound.update(tag=tag, protocol='freedom',
                             settings={'redirect': f'127.0.0.1:{dest_port}'})
@@ -156,9 +165,6 @@ def main(xray):
                             client.sendto(b'\x00\x00\x00\x01' + socket.inet_aton('9.9.9.9') + struct.pack('!H', 53) + data, relay)
                             return client.recv(4096)[10:]
                         assert socket.inet_ntoa(query('transport-fixture.ru')[-4:]) == '77.88.8.8'
-                        configured_direct = set(read_policy()['direct_domains'])
-                        bootstrap = next(d[5:] for d in config['dns']['servers'][0]['domains']
-                                         if d.startswith('full:') and d not in configured_direct)
                         assert socket.inet_ntoa(query(bootstrap)[-4:]) == '77.88.8.8'
                         github_hosts = ['github.com', 'api.github.com', 'raw.githubusercontent.com',
                                         'release-assets.githubusercontent.com', 'objects.githubusercontent.com',
@@ -170,17 +176,14 @@ def main(xray):
                             assert socket.inet_ntoa(query(host)[-4:]) == '77.88.8.8', host
                         direct_queries = ['transport-fixture.ru', bootstrap] + github_hosts
                         assert socket.inet_ntoa(query('external.fixture-domain.com')[-4:]) == '9.9.9.9'
-                        client.settimeout(2)
-                        try:
-                            ipv6 = query('ipv6.fixture-domain.com', 28)
-                            assert struct.unpack('!H', ipv6[6:8])[0] == 0, 'IPv6 answer in IPv4-only mode'
-                        except socket.timeout:
-                            pass  # An unsupported address family may be dropped.
-                        finally:
-                            client.settimeout(12)
+                        ipv6 = query('ipv6.fixture-domain.com', 28)
+                        assert str(ipaddress.IPv6Address(ipv6[-16:])) == '2001:4860:4860::8888'
+                        for qtype in (16, 65):
+                            reply = query('records.fixture-domain.com', qtype)
+                            assert reply[3] & 15 == 0 and reply[6:8] == b'\x00\x00'
                         assert socket.inet_ntoa(query('doubleclick.net')[-4:]) == '0.0.0.0'
                         assert state['direct'] == direct_queries, state
-                        assert state['external'] == ['external.fixture-domain.com'], state
+                        assert state['external'] == ['external.fixture-domain.com', 'ipv6.fixture-domain.com'], state
                         state['external_healthy'] = False
                         # An uncached GitHub hostname must still resolve when
                         # both proxy DoH paths are failing.
@@ -194,7 +197,8 @@ def main(xray):
                         assert state['direct'] == direct_queries, 'External DNS leaked to direct resolver'
                         assert 'failed.fixture-domain.com' in state['external']
                 print(json.dumps({'ru_dns_direct': True, 'bootstrap_dns_direct': True, 'external_doh_via_proxy': True,
-                                  'tls_verified': True, 'ads_no_upstream': True, 'AAAA_suppressed_without_upstream': True,
+                                  'tls_verified': True, 'ads_no_upstream': True, 'AAAA_via_proxy': True,
+                                  'non_ip_queries_return_without_timeout': True, 'INCY_DNS_IP_patch_survived': True,
                                   'external_failure_no_direct_fallback': True,
                                   'github_dns_direct': True, 'github_resolves_without_proxy_doh': True}))
             except Exception:

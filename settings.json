@@ -1,9 +1,12 @@
 {
   "subscription_url": "https://raw.githubusercontent.com/whoahaow/rjsxrd/main/githubmirror/bypass/bypass-all.txt",
-  "ru_cidrs_url": "https://raw.githubusercontent.com/KaringX/karing-ruleset/sing/geo/geoip/ru.json",
-  "geosite_urls": {
-    "category-ru": "https://raw.githubusercontent.com/KaringX/karing-ruleset/sing/geo/geosite/category-ru.json"
-  },
-  "max_nodes": 40,
-  "excluded_country": "ru"
+  "reputation_workers": 24,
+  "reputation_timeout_seconds": 4,
+  "probe": {
+    "destination": "https://www.gstatic.com/generate_204",
+    "interval": "1m",
+    "sampling": 1,
+    "timeout": "4s",
+    "httpMethod": "HEAD"
+  }
 }

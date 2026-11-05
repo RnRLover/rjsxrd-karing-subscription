@@ -10,7 +10,7 @@ import tempfile
 import threading
 import time
 from check_subscription import receive
-from generate import xray_validate
+from incy import xray_validate, load_configs, PROXY_PROTOCOLS
 
 ROOT = Path(__file__).resolve().parent
 
@@ -41,14 +41,14 @@ def fixture(label, delay):
 
 
 def main(xray):
-    original = json.loads((ROOT / 'subscription.json').read_bytes())[0]
+    original = load_configs(ROOT / 'subscription.json')[0]
     config = copy.deepcopy(original)
-    proxies = [o for o in config['outbounds'] if o['protocol'] in ('vless','vmess','trojan','shadowsocks')][:2]
+    proxies = [o for o in config['outbounds'] if o['protocol'] in PROXY_PROTOCOLS][:2]
     assert len(proxies) == 2
     fast, first = fixture(b'FAST', .01)
     backup, second = fixture(b'BACKUP', .15)
     selected = [o['tag'] for o in proxies]
-    config['outbounds'] = [o for o in config['outbounds'] if o['protocol'] not in ('vless','vmess','trojan','shadowsocks')]
+    config['outbounds'] = [o for o in config['outbounds'] if o['protocol'] not in PROXY_PROTOCOLS]
     for node, server in zip(proxies, (fast, backup)):
         config['outbounds'].append({'tag': node['tag'], 'protocol': 'freedom',
                                    'settings': {'redirect': f'127.0.0.1:{server.getsockname()[1]}'}})
@@ -99,7 +99,8 @@ def main(xray):
                 wait_for(b'BACKUP', 25)
                 print(json.dumps({'leastPing_selected_fast': True, 'failed_fast_switched_to_backup': True,
                                   'probe_counts': [first['probes'], second['probes']],
-                                  'fixture_probe_interval': '10s', 'production_probe_interval': '30s'}, ensure_ascii=False))
+                                  'fixture_probe_interval': '10s',
+                                  'production_probe_interval': original['burstObservatory']['pingConfig']['interval']}, ensure_ascii=False))
             except Exception:
                 log.flush()
                 print(log_path.read_text()[-6000:])

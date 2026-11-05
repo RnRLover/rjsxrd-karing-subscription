@@ -78,7 +78,7 @@ def rate_ip(address, feed):
             'score': max(0, 100 - 20 * count), 'blacklist_count': count}
 
 
-def rank_nodes(nodes, feed):
+def assess_nodes(nodes, feed):
     return [{**node, 'reputation': rate_ip(node.get('exit_ip'), feed)} for node in nodes]
 
 
@@ -90,10 +90,12 @@ def reputation_report(nodes, selected, feed, source):
         'sha256': feed['sha256'], 'feed_entries': len(feed['counts']),
         'evidence_source': source, 'unlisted_coverage': 'IPv4 only',
         'score_formula': 'max(0, 100 - 20 * IPsum blacklist occurrence count)',
-        'selection_priority': 'exclude listed exits; retain unlisted and unknown coverage; maximize count and infrastructure diversity',
+        'selection_priority': 'exclude listed addresses; retain unknown coverage; preserve upstream order without caps or ranking',
         'meaning': 'No listing in this feed is not a positive whitelist or proof of Gemini access.',
         'candidates': dict(Counter(n['reputation']['status'] for n in nodes)),
         'selected': dict(Counter(n['reputation']['status'] for n in selected)),
-        'servers': [{'tag': f'pool-{i:02d}', 'exit_ip': n['exit_ip'], **n['reputation']}
+        'servers': [{'tag': 'Автовыбор' if i == 1 else f'pool-{i:03d}',
+                     'exit_ip': n.get('exit_ip'), **n['reputation'],
+                     'entry_reputation': n.get('entry_reputation', [])}
                     for i, n in enumerate(selected, 1)],
     }

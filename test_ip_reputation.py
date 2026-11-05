@@ -4,9 +4,9 @@ import unittest
 from email.utils import formatdate
 
 from ip_reputation import (CACHE_KEY, FEED_URL, MAX_AGE_SECONDS, parse_feed,
-                           load_feed, rate_ip, rank_nodes, reputation_report)
-from pool_selection import node_key, select_pool
-from publication_changed import reputation_signature
+                           load_feed, rate_ip, assess_nodes, reputation_report)
+from generate import exclude_listed
+from publish_subscription import report_signature
 
 
 NOW = 1800000000
@@ -73,44 +73,41 @@ class ReputationTests(unittest.TestCase):
             load_feed(cache, fail, NOW+MAX_AGE_SECONDS+1)
 
     def test_entry_ip_does_not_substitute_for_actual_exit(self):
-        a, b = rank_nodes([node('1.1.1.1', '9.9.9.9'),
+        a, b = assess_nodes([node('1.1.1.1', '9.9.9.9'),
                            node('9.9.9.9', '1.1.1.1')], self.feed)
         self.assertEqual(a['reputation']['score'], 100)
         self.assertEqual(b['reputation']['score'], 80)
         self.assertNotIn('reputation', a['outbound'])
 
-    def test_unlisted_exits_beat_diversity(self):
-        a, b, marked = rank_nodes([node('a', '9.9.9.9'), node('b', '9.9.9.10'),
-                                  node('c', '1.1.1.1')], self.feed)
-        chosen = select_pool([marked, b, a], 2, network_lookup=lambda host: 'other' if host == 'c' else 'same')
-        self.assertEqual({n['host'] for n in chosen}, {'a', 'b'})
-        self.assertEqual(chosen, select_pool([a, b, marked, a], 2, network_lookup=lambda host: 'other' if host == 'c' else 'same'))
+    def test_filter_preserves_source_order_without_diversity_ranking(self):
+        a, b, marked = assess_nodes([node('a', '9.9.9.9'), node('b', '9.9.9.10'),
+                                    node('c', '1.1.1.1')], self.feed)
+        self.assertEqual(exclude_listed([marked, b, a]), [b, a])
 
     def test_listed_exits_are_excluded_even_when_pool_has_space(self):
-        nodes = rank_nodes([node('three', '8.8.8.8'), node('one', '1.1.1.1'),
+        nodes = assess_nodes([node('three', '8.8.8.8'), node('one', '1.1.1.1'),
                             node('unknown', '2606:4700:4700::1111'),
                             node('unlisted', '9.9.9.9')], self.feed)
-        chosen = select_pool(nodes, 4, network_lookup=lambda host: host)
+        chosen = exclude_listed(nodes)
         self.assertEqual({n['host'] for n in chosen}, {'unlisted', 'unknown'})
 
-    def test_distinct_actual_exits_precede_different_entry_networks(self):
-        nodes = rank_nodes([node('a', '9.9.9.9'), node('b', '9.9.9.9'),
-                            node('c', '9.9.9.10')], self.feed)
-        chosen = select_pool(nodes, 2, network_lookup=lambda host: host)
-        self.assertEqual(len({n['exit_ip'] for n in chosen}), 2)
+    def test_duplicate_exit_and_russian_country_are_not_rejection_reasons(self):
+        nodes = assess_nodes([node('a', '9.9.9.9'), node('b', '9.9.9.9'),
+                              node('c', '77.88.8.8'), node('d', None)], self.feed)
+        self.assertEqual(exclude_listed(nodes), nodes)
 
     def test_report_and_publication_capture_score_changes_without_timestamp_churn(self):
-        nodes = rank_nodes([node('a', '9.9.9.9')], self.feed)
+        nodes = assess_nodes([node('a', '9.9.9.9')], self.feed)
         report = {'ip_reputation': reputation_report(nodes, nodes, self.feed, 'download')}
         other = copy.deepcopy(report)
         other['ip_reputation']['fetched_at'] += 86400
         other['ip_reputation']['evidence_source'] = 'cache'
-        self.assertEqual(reputation_signature(json.dumps(report)), reputation_signature(json.dumps(other)))
+        self.assertEqual(report_signature(json.dumps(report)), report_signature(json.dumps(other)))
         other['ip_reputation']['servers'][0].update(status='listed', score=80, blacklist_count=1)
-        self.assertNotEqual(reputation_signature(json.dumps(report)), reputation_signature(json.dumps(other)))
-        self.assertNotEqual(reputation_signature('{}'), reputation_signature(json.dumps(report)))
+        self.assertNotEqual(report_signature(json.dumps(report)), report_signature(json.dumps(other)))
+        self.assertNotEqual(report_signature('{}'), report_signature(json.dumps(report)))
         self.assertEqual(report['ip_reputation']['selected'], {'not_listed': 1})
-        self.assertEqual(report['ip_reputation']['servers'][0]['tag'], 'pool-01')
+        self.assertEqual(report['ip_reputation']['servers'][0]['tag'], 'Автовыбор')
 
 
 if __name__ == '__main__':

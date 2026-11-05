@@ -22,9 +22,9 @@ class PublishTests(unittest.TestCase):
         git(root, 'clone', str(self.remote), str(self.work))
         git(self.work, 'config', 'user.email', 'test@example.com')
         git(self.work, 'config', 'user.name', 'Test')
-        for name in ('subscription.json', 'routing-policy.json', 'ru.json', 'report.json'):
+        for name in ('subscription.json', 'report.json'):
             (self.work / name).write_text('{}\n')
-        (self.work / 'quality-probe.bin').write_bytes(b'obsolete fixture')
+        (self.work / 'ru.json').write_text('{"obsolete": true}\n')
         git(self.work, 'add', '.')
         git(self.work, 'commit', '-m', 'base')
         git(self.work, 'push', 'origin', 'main')
@@ -39,7 +39,7 @@ class PublishTests(unittest.TestCase):
         self.assertTrue(self.publish_quietly())
         remote = git(self.remote, 'show', 'main:subscription.json')
         self.assertEqual(json.loads(remote), [{'remarks': 'new'}])
-        self.assertEqual(git(self.remote, 'ls-tree', '--name-only', 'main', '--', 'quality-probe.bin'), '')
+        self.assertEqual(git(self.remote, 'ls-tree', '--name-only', 'main', '--', 'ru.json'), '')
         self.assertFalse(self.publish_quietly())
 
     def test_newer_source_is_preserved_without_merge_or_force_push(self):
