@@ -1,4 +1,6 @@
 import json
+import io
+from contextlib import redirect_stdout
 from pathlib import Path
 import subprocess
 import tempfile
@@ -27,13 +29,18 @@ class PublishTests(unittest.TestCase):
         git(self.work, 'commit', '-m', 'base')
         git(self.work, 'push', 'origin', 'main')
 
+    def publish_quietly(self):
+        # Expected fixture notices must not become real Actions annotations.
+        with redirect_stdout(io.StringIO()):
+            return publish(self.work)
+
     def test_validated_outputs_are_published(self):
         (self.work / 'subscription.json').write_text('[{"remarks":"new"}]\n')
-        self.assertTrue(publish(self.work))
+        self.assertTrue(self.publish_quietly())
         remote = git(self.remote, 'show', 'main:subscription.json')
         self.assertEqual(json.loads(remote), [{'remarks': 'new'}])
         self.assertEqual(git(self.remote, 'ls-tree', '--name-only', 'main', '--', 'quality-probe.bin'), '')
-        self.assertFalse(publish(self.work))
+        self.assertFalse(self.publish_quietly())
 
     def test_newer_source_is_preserved_without_merge_or_force_push(self):
         other = Path(self.temp.name) / 'other'
@@ -46,6 +53,6 @@ class PublishTests(unittest.TestCase):
         git(other, 'push', 'origin', 'main')
         latest = git(other, 'rev-parse', 'HEAD')
         (self.work / 'subscription.json').write_text('[{"remarks":"stale build"}]\n')
-        self.assertFalse(publish(self.work))
+        self.assertFalse(self.publish_quietly())
         self.assertEqual(git(self.remote, 'rev-parse', 'main'), latest)
         self.assertEqual(json.loads(git(self.remote, 'show', 'main:subscription.json')), {})
