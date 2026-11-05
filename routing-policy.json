@@ -60,8 +60,7 @@
   "probe": {
     "destination": "https://www.gstatic.com/generate_204",
     "interval": "30s",
-    "sampling": 1,
-    "timeout": "5s",
-    "httpMethod": "HEAD"
+    "sampling": 3,
+    "timeout": "5s"
   }
 }

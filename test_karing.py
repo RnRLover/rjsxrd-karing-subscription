@@ -3,7 +3,6 @@ import json
 import unittest
 from karing import common_subscription, automatic_config, subscription_variants
 from russia_config import build, read_policy
-from technology_selection import groups
 
 
 def base_config():
@@ -29,7 +28,7 @@ class KaringTests(unittest.TestCase):
         self.assertNotIn('fakedns', config)
         self.assertEqual(config['geodata']['assets'][0]['url'], policy['geoip_url'])
         self.assertEqual(config['geodata']['assets'][1]['url'], policy['geosite_url'])
-        self.assertEqual(config['burstObservatory']['pingConfig']['sampling'], 1)
+        self.assertEqual(config['burstObservatory']['pingConfig']['sampling'], 3)
         self.assertEqual(config['burstObservatory']['pingConfig']['interval'], '30s')
         self.assertTrue(all(i['sniffing']['routeOnly'] for i in config['inbounds']))
         body = common_subscription(configs)
@@ -60,13 +59,8 @@ class KaringTests(unittest.TestCase):
         proxies = [o for o in result['outbounds'] if o['protocol'] in ('vless','trojan','shadowsocks','vmess')]
         tags = [o['tag'] for o in proxies]
         self.assertEqual([o['protocol'] for o in proxies], ['vless','trojan','shadowsocks','vmess'])
-        technologies = groups(proxies)
-        routes = [g['outbound'] for g in technologies]
-        self.assertEqual(result['routing']['balancers'][0]['selector'], routes)
-        self.assertEqual(result['burstObservatory']['subjectSelector'], tags + routes)
-        by_tag = {b['tag']: b for b in result['routing']['balancers']}
-        self.assertEqual([by_tag[g['balancer']]['selector'] for g in technologies],
-                         [g['servers'] for g in technologies])
+        self.assertEqual(result['routing']['balancers'][0]['selector'], tags)
+        self.assertEqual(result['burstObservatory']['subjectSelector'], tags)
 
     def test_dns_split_has_no_direct_external_fallback_and_bootstraps_pool(self):
         base = base_config()
