@@ -1,16 +1,16 @@
 {
-  "generated_at_utc": "2026-11-05T15:02:16Z",
+  "generated_at_utc": "2026-11-05T18:00:09Z",
   "pool": "whitelist",
   "source": "https://raw.githubusercontent.com/whoahaow/rjsxrd/main/githubmirror/bypass/bypass-all.txt",
-  "source_sha256": "c1768ff64d3f6c06e846bb78d48676a92e14b6813dc6ce6b0711e67e61d9e6a5",
+  "source_sha256": "ad0d6f1f95edf2c44a4648864b92943ce4e19acf5bf09e844a1255d5a9b56ac0",
   "counts": {
-    "source_nodes": 270,
-    "russian_label_candidates": 22,
-    "unsupported_or_invalid": 43,
-    "duplicate": 25,
+    "source_nodes": 284,
+    "unsupported_or_invalid": 57,
+    "russian_label_candidates": 29,
+    "duplicate": 21,
     "nonpublic_or_unresolved_endpoint": 0
   },
-  "eligible": 202,
+  "eligible": 206,
   "selected": 40,
   "xray_validated": true,
   "actual_egress_checked": true,
@@ -23,17 +23,17 @@
   "excluded_country": "RU",
   "exclusion_basis": "mandatory actual HTTPS egress IP against RU CIDRs; public Russian entry IPs and RU labels permitted",
   "selected_protocols": {
-    "trojan": 4,
-    "shadowsocks": 9,
-    "vless": 26,
-    "vmess": 1
+    "vless": 24,
+    "shadowsocks": 8,
+    "trojan": 6,
+    "vmess": 2
   },
   "routing_policy": "local direct; RU direct; everything else proxy",
   "ru_reachability_required": false,
   "pool_selection": "fresh checks only; two-site HTTPS HEAD health and latency; current performance bands; strict infrastructure caps; up to 40 nodes; client leastPing",
   "quality_control": {
     "version": 3,
-    "checked_at": 1793890796,
+    "checked_at": 1793901451,
     "passed": true,
     "method": "HEAD",
     "sites": [
@@ -49,14 +49,14 @@
       }
     ],
     "samples_ms": [
-      21.8,
-      19.0,
-      24.8,
-      23.8
+      52.3,
+      21.6,
+      36.9,
+      15.6
     ],
-    "median_ms": 22.8,
-    "spread_ms": 5.8,
-    "worst_ms": 24.8,
+    "median_ms": 29.2,
+    "spread_ms": 36.7,
+    "worst_ms": 52.3,
     "errors": [],
     "control_attempts": 1
   },
@@ -72,8 +72,8 @@
     "measurement_cache": false,
     "selection_basis": "current_run_only",
     "warning": "HTTPS latency checks do not measure sustained transfer speed or device/operator reachability.",
-    "candidates": 157,
-    "admitted": 137,
+    "candidates": 158,
+    "admitted": 141,
     "selected": 40,
     "caps": {
       "nodes": 40,
@@ -86,7 +86,7 @@
         "tag": "pool-01",
         "check": {
           "version": 3,
-          "checked_at": 1793890817,
+          "checked_at": 1793901499,
           "passed": true,
           "method": "HEAD",
           "sites": [
@@ -102,14 +102,14 @@
             }
           ],
           "samples_ms": [
-            42.4,
-            52.2,
-            54.1,
-            29.2
+            38.5,
+            43.8,
+            32.8,
+            38.0
           ],
-          "median_ms": 47.3,
-          "spread_ms": 24.9,
-          "worst_ms": 54.1,
+          "median_ms": 38.2,
+          "spread_ms": 11.0,
+          "worst_ms": 43.8,
           "errors": []
         },
         "priority": 0
@@ -118,7 +118,7 @@
         "tag": "pool-02",
         "check": {
           "version": 3,
-          "checked_at": 1793890818,
+          "checked_at": 1793901568,
           "passed": true,
           "method": "HEAD",
           "sites": [
@@ -134,14 +134,14 @@
             }
           ],
           "samples_ms": [
-            34.1,
-            38.4,
-            40.1,
-            47.5
+            69.8,
+            78.1,
+            69.5,
+            62.1
           ],
-          "median_ms": 39.2,
-          "spread_ms": 13.4,
-          "worst_ms": 47.5,
+          "median_ms": 69.7,
+          "spread_ms": 16.0,
+          "worst_ms": 78.1,
           "errors": []
         },
         "priority": 0
@@ -150,7 +150,7 @@
         "tag": "pool-03",
         "check": {
           "version": 3,
-          "checked_at": 1793890811,
+          "checked_at": 1793901501,
           "passed": true,
           "method": "HEAD",
           "sites": [
@@ -166,14 +166,14 @@
             }
           ],
           "samples_ms": [
-            79.1,
-            83.4,
-            81.5,
-            76.9
+            60.2,
+            61.0,
+            59.8,
+            60.9
           ],
-          "median_ms": 80.3,
-          "spread_ms": 6.5,
-          "worst_ms": 83.4,
+          "median_ms": 60.5,
+          "spread_ms": 1.2,
+          "worst_ms": 61.0,
           "errors": []
         },
         "priority": 0
@@ -182,7 +182,7 @@
         "tag": "pool-04",
         "check": {
           "version": 3,
-          "checked_at": 1793890811,
+          "checked_at": 1793901470,
           "passed": true,
           "method": "HEAD",
           "sites": [
@@ -198,14 +198,14 @@
             }
           ],
           "samples_ms": [
-            76.2,
-            85.8,
-            91.1,
-            88.5
+            92.7,
+            111.2,
+            87.2,
+            79.5
           ],
-          "median_ms": 87.2,
-          "spread_ms": 14.9,
-          "worst_ms": 91.1,
+          "median_ms": 90.0,
+          "spread_ms": 31.7,
+          "worst_ms": 111.2,
           "errors": []
         },
         "priority": 0
@@ -214,7 +214,7 @@
         "tag": "pool-05",
         "check": {
           "version": 3,
-          "checked_at": 1793890821,
+          "checked_at": 1793901465,
           "passed": true,
           "method": "HEAD",
           "sites": [
@@ -230,14 +230,14 @@
             }
           ],
           "samples_ms": [
-            92.5,
-            91.3,
-            105.3,
-            105.8
+            137.9,
+            135.4,
+            137.8,
+            137.4
           ],
-          "median_ms": 98.9,
-          "spread_ms": 14.5,
-          "worst_ms": 105.8,
+          "median_ms": 137.6,
+          "spread_ms": 2.5,
+          "worst_ms": 137.9,
           "errors": []
         },
         "priority": 0
@@ -246,7 +246,7 @@
         "tag": "pool-06",
         "check": {
           "version": 3,
-          "checked_at": 1793890823,
+          "checked_at": 1793901507,
           "passed": true,
           "method": "HEAD",
           "sites": [
@@ -262,14 +262,14 @@
             }
           ],
           "samples_ms": [
-            111.3,
-            78.0,
-            97.0,
-            29.3
+            126.0,
+            128.0,
+            144.4,
+            141.9
           ],
-          "median_ms": 87.5,
-          "spread_ms": 82.0,
-          "worst_ms": 111.3,
+          "median_ms": 134.9,
+          "spread_ms": 18.4,
+          "worst_ms": 144.4,
           "errors": []
         },
         "priority": 0
@@ -278,7 +278,7 @@
         "tag": "pool-07",
         "check": {
           "version": 3,
-          "checked_at": 1793890827,
+          "checked_at": 1793901486,
           "passed": true,
           "method": "HEAD",
           "sites": [
@@ -294,14 +294,14 @@
             }
           ],
           "samples_ms": [
-            99.3,
-            93.7,
-            173.2,
-            104.8
+            206.4,
+            208.1,
+            247.8,
+            238.5
           ],
-          "median_ms": 102.0,
-          "spread_ms": 79.5,
-          "worst_ms": 173.2,
+          "median_ms": 223.3,
+          "spread_ms": 41.4,
+          "worst_ms": 247.8,
           "errors": []
         },
         "priority": 0
@@ -310,7 +310,7 @@
         "tag": "pool-08",
         "check": {
           "version": 3,
-          "checked_at": 1793890809,
+          "checked_at": 1793901572,
           "passed": true,
           "method": "HEAD",
           "sites": [
@@ -326,14 +326,14 @@
             }
           ],
           "samples_ms": [
-            75.3,
-            85.2,
-            88.1,
-            76.9
+            222.5,
+            236.2,
+            224.8,
+            241.0
           ],
-          "median_ms": 81.1,
-          "spread_ms": 12.8,
-          "worst_ms": 88.1,
+          "median_ms": 230.5,
+          "spread_ms": 18.5,
+          "worst_ms": 241.0,
           "errors": []
         },
         "priority": 0
@@ -342,7 +342,7 @@
         "tag": "pool-09",
         "check": {
           "version": 3,
-          "checked_at": 1793890800,
+          "checked_at": 1793901461,
           "passed": true,
           "method": "HEAD",
           "sites": [
@@ -358,14 +358,14 @@
             }
           ],
           "samples_ms": [
-            75.9,
-            72.9,
-            88.8,
-            79.7
+            199.3,
+            206.6,
+            193.4,
+            207.2
           ],
-          "median_ms": 77.8,
-          "spread_ms": 15.9,
-          "worst_ms": 88.8,
+          "median_ms": 202.9,
+          "spread_ms": 13.8,
+          "worst_ms": 207.2,
           "errors": []
         },
         "priority": 0
@@ -374,7 +374,7 @@
         "tag": "pool-10",
         "check": {
           "version": 3,
-          "checked_at": 1793890822,
+          "checked_at": 1793901475,
           "passed": true,
           "method": "HEAD",
           "sites": [
@@ -390,23 +390,23 @@
             }
           ],
           "samples_ms": [
-            133.2,
-            126.5,
-            147.4,
-            157.1
+            714.4,
+            212.6,
+            260.8,
+            215.8
           ],
-          "median_ms": 140.3,
-          "spread_ms": 30.6,
-          "worst_ms": 157.1,
+          "median_ms": 238.3,
+          "spread_ms": 501.8,
+          "worst_ms": 714.4,
           "errors": []
         },
-        "priority": 0
+        "priority": 1
       },
       {
         "tag": "pool-11",
         "check": {
           "version": 3,
-          "checked_at": 1793890875,
+          "checked_at": 1793901520,
           "passed": true,
           "method": "HEAD",
           "sites": [
@@ -422,23 +422,23 @@
             }
           ],
           "samples_ms": [
-            140.3,
-            144.2,
-            162.0,
-            150.3
+            215.1,
+            222.0,
+            220.7,
+            422.7
           ],
-          "median_ms": 147.2,
-          "spread_ms": 21.7,
-          "worst_ms": 162.0,
+          "median_ms": 221.3,
+          "spread_ms": 207.6,
+          "worst_ms": 422.7,
           "errors": []
         },
-        "priority": 0
+        "priority": 1
       },
       {
         "tag": "pool-12",
         "check": {
           "version": 3,
-          "checked_at": 1793890817,
+          "checked_at": 1793901491,
           "passed": true,
           "method": "HEAD",
           "sites": [
@@ -454,23 +454,23 @@
             }
           ],
           "samples_ms": [
-            147.8,
-            147.0,
-            135.4,
-            135.8
+            271.6,
+            279.3,
+            273.3,
+            290.5
           ],
-          "median_ms": 141.4,
-          "spread_ms": 12.4,
-          "worst_ms": 147.8,
+          "median_ms": 276.3,
+          "spread_ms": 18.9,
+          "worst_ms": 290.5,
           "errors": []
         },
-        "priority": 0
+        "priority": 1
       },
       {
         "tag": "pool-13",
         "check": {
           "version": 3,
-          "checked_at": 1793890818,
+          "checked_at": 1793901563,
           "passed": true,
           "method": "HEAD",
           "sites": [
@@ -486,23 +486,23 @@
             }
           ],
           "samples_ms": [
-            140.3,
-            151.4,
-            136.3,
-            136.2
+            272.2,
+            274.5,
+            276.1,
+            305.5
           ],
-          "median_ms": 138.3,
-          "spread_ms": 15.2,
-          "worst_ms": 151.4,
+          "median_ms": 275.3,
+          "spread_ms": 33.3,
+          "worst_ms": 305.5,
           "errors": []
         },
-        "priority": 0
+        "priority": 1
       },
       {
         "tag": "pool-14",
         "check": {
           "version": 3,
-          "checked_at": 1793890826,
+          "checked_at": 1793901509,
           "passed": true,
           "method": "HEAD",
           "sites": [
@@ -518,23 +518,23 @@
             }
           ],
           "samples_ms": [
-            164.7,
-            144.1,
-            131.8,
-            134.7
+            274.3,
+            235.5,
+            212.5,
+            209.0
           ],
-          "median_ms": 139.4,
-          "spread_ms": 32.9,
-          "worst_ms": 164.7,
+          "median_ms": 224.0,
+          "spread_ms": 65.3,
+          "worst_ms": 274.3,
           "errors": []
         },
-        "priority": 0
+        "priority": 1
       },
       {
         "tag": "pool-15",
         "check": {
           "version": 3,
-          "checked_at": 1793890895,
+          "checked_at": 1793901510,
           "passed": true,
           "method": "HEAD",
           "sites": [
@@ -550,23 +550,23 @@
             }
           ],
           "samples_ms": [
-            156.3,
-            129.5,
-            147.4,
-            138.1
+            274.9,
+            309.8,
+            326.4,
+            317.0
           ],
-          "median_ms": 142.8,
-          "spread_ms": 26.8,
-          "worst_ms": 156.3,
+          "median_ms": 313.4,
+          "spread_ms": 51.5,
+          "worst_ms": 326.4,
           "errors": []
         },
-        "priority": 0
+        "priority": 1
       },
       {
         "tag": "pool-16",
         "check": {
           "version": 3,
-          "checked_at": 1793890871,
+          "checked_at": 1793901474,
           "passed": true,
           "method": "HEAD",
           "sites": [
@@ -582,23 +582,23 @@
             }
           ],
           "samples_ms": [
-            238.5,
-            131.2,
-            243.0,
-            144.7
+            281.2,
+            283.5,
+            315.1,
+            326.0
           ],
-          "median_ms": 191.6,
-          "spread_ms": 111.8,
-          "worst_ms": 243.0,
+          "median_ms": 299.3,
+          "spread_ms": 44.8,
+          "worst_ms": 326.0,
           "errors": []
         },
-        "priority": 0
+        "priority": 1
       },
       {
         "tag": "pool-17",
         "check": {
           "version": 3,
-          "checked_at": 1793890823,
+          "checked_at": 1793901537,
           "passed": true,
           "method": "HEAD",
           "sites": [
@@ -614,23 +614,23 @@
             }
           ],
           "samples_ms": [
-            207.7,
-            172.3,
-            178.1,
-            163.8
+            279.9,
+            281.7,
+            354.4,
+            370.0
           ],
-          "median_ms": 175.2,
-          "spread_ms": 43.9,
-          "worst_ms": 207.7,
+          "median_ms": 318.0,
+          "spread_ms": 90.1,
+          "worst_ms": 370.0,
           "errors": []
         },
-        "priority": 0
+        "priority": 1
       },
       {
         "tag": "pool-18",
         "check": {
           "version": 3,
-          "checked_at": 1793890870,
+          "checked_at": 1793901486,
           "passed": true,
           "method": "HEAD",
           "sites": [
@@ -646,23 +646,23 @@
             }
           ],
           "samples_ms": [
-            239.5,
-            238.6,
-            183.8,
-            204.2
+            299.1,
+            300.5,
+            297.7,
+            301.9
           ],
-          "median_ms": 221.4,
-          "spread_ms": 55.7,
-          "worst_ms": 239.5,
+          "median_ms": 299.8,
+          "spread_ms": 4.2,
+          "worst_ms": 301.9,
           "errors": []
         },
-        "priority": 0
+        "priority": 1
       },
       {
         "tag": "pool-19",
         "check": {
           "version": 3,
-          "checked_at": 1793890825,
+          "checked_at": 1793901477,
           "passed": true,
           "method": "HEAD",
           "sites": [
@@ -678,23 +678,23 @@
             }
           ],
           "samples_ms": [
-            212.4,
-            221.3,
-            211.4,
-            231.4
+            307.0,
+            372.0,
+            311.3,
+            381.5
           ],
-          "median_ms": 216.9,
-          "spread_ms": 20.0,
-          "worst_ms": 231.4,
+          "median_ms": 341.6,
+          "spread_ms": 74.5,
+          "worst_ms": 381.5,
           "errors": []
         },
-        "priority": 0
+        "priority": 1
       },
       {
         "tag": "pool-20",
         "check": {
           "version": 3,
-          "checked_at": 1793890869,
+          "checked_at": 1793901531,
           "passed": true,
           "method": "HEAD",
           "sites": [
@@ -710,23 +710,23 @@
             }
           ],
           "samples_ms": [
-            211.8,
-            218.5,
-            214.2,
-            211.7
+            303.1,
+            309.9,
+            362.1,
+            370.1
           ],
-          "median_ms": 213.0,
-          "spread_ms": 6.8,
-          "worst_ms": 218.5,
+          "median_ms": 336.0,
+          "spread_ms": 67.0,
+          "worst_ms": 370.1,
           "errors": []
         },
-        "priority": 0
+        "priority": 1
       },
       {
         "tag": "pool-21",
         "check": {
           "version": 3,
-          "checked_at": 1793890832,
+          "checked_at": 1793901477,
           "passed": true,
           "method": "HEAD",
           "sites": [
@@ -742,23 +742,23 @@
             }
           ],
           "samples_ms": [
-            224.4,
-            229.9,
-            232.5,
-            223.3
+            310.4,
+            356.0,
+            382.9,
+            382.5
           ],
-          "median_ms": 227.2,
-          "spread_ms": 9.2,
-          "worst_ms": 232.5,
+          "median_ms": 369.2,
+          "spread_ms": 72.5,
+          "worst_ms": 382.9,
           "errors": []
         },
-        "priority": 0
+        "priority": 1
       },
       {
         "tag": "pool-22",
         "check": {
           "version": 3,
-          "checked_at": 1793890826,
+          "checked_at": 1793901499,
           "passed": true,
           "method": "HEAD",
           "sites": [
@@ -774,23 +774,23 @@
             }
           ],
           "samples_ms": [
-            246.7,
-            141.5,
-            130.9,
-            185.5
+            465.0,
+            411.8,
+            462.7,
+            397.8
           ],
-          "median_ms": 163.5,
-          "spread_ms": 115.8,
-          "worst_ms": 246.7,
+          "median_ms": 437.2,
+          "spread_ms": 67.2,
+          "worst_ms": 465.0,
           "errors": []
         },
-        "priority": 0
+        "priority": 1
       },
       {
         "tag": "pool-23",
         "check": {
           "version": 3,
-          "checked_at": 1793890868,
+          "checked_at": 1793901477,
           "passed": true,
           "method": "HEAD",
           "sites": [
@@ -806,23 +806,23 @@
             }
           ],
           "samples_ms": [
-            111.1,
-            109.5,
-            63.4,
-            83.5
+            366.4,
+            314.9,
+            305.9,
+            370.1
           ],
-          "median_ms": 96.5,
-          "spread_ms": 47.7,
-          "worst_ms": 111.1,
+          "median_ms": 340.6,
+          "spread_ms": 64.2,
+          "worst_ms": 370.1,
           "errors": []
         },
-        "priority": 0
+        "priority": 1
       },
       {
         "tag": "pool-24",
         "check": {
           "version": 3,
-          "checked_at": 1793890822,
+          "checked_at": 1793901553,
           "passed": true,
           "method": "HEAD",
           "sites": [
@@ -838,14 +838,14 @@
             }
           ],
           "samples_ms": [
-            383.5,
-            143.5,
-            92.8,
-            87.1
+            436.9,
+            437.7,
+            407.6,
+            422.8
           ],
-          "median_ms": 118.2,
-          "spread_ms": 296.4,
-          "worst_ms": 383.5,
+          "median_ms": 429.9,
+          "spread_ms": 30.1,
+          "worst_ms": 437.7,
           "errors": []
         },
         "priority": 1
@@ -854,7 +854,7 @@
         "tag": "pool-25",
         "check": {
           "version": 3,
-          "checked_at": 1793890828,
+          "checked_at": 1793901514,
           "passed": true,
           "method": "HEAD",
           "sites": [
@@ -870,14 +870,14 @@
             }
           ],
           "samples_ms": [
-            213.8,
-            471.4,
-            211.3,
-            201.6
+            326.9,
+            320.3,
+            357.5,
+            325.8
           ],
-          "median_ms": 212.6,
-          "spread_ms": 269.8,
-          "worst_ms": 471.4,
+          "median_ms": 326.4,
+          "spread_ms": 37.2,
+          "worst_ms": 357.5,
           "errors": []
         },
         "priority": 1
@@ -886,7 +886,7 @@
         "tag": "pool-26",
         "check": {
           "version": 3,
-          "checked_at": 1793890834,
+          "checked_at": 1793901514,
           "passed": true,
           "method": "HEAD",
           "sites": [
@@ -902,14 +902,14 @@
             }
           ],
           "samples_ms": [
-            240.0,
-            250.5,
-            275.1,
-            288.9
+            175.0,
+            174.8,
+            368.9,
+            152.3
           ],
-          "median_ms": 262.8,
-          "spread_ms": 48.9,
-          "worst_ms": 288.9,
+          "median_ms": 174.9,
+          "spread_ms": 216.6,
+          "worst_ms": 368.9,
           "errors": []
         },
         "priority": 1
@@ -918,7 +918,7 @@
         "tag": "pool-27",
         "check": {
           "version": 3,
-          "checked_at": 1793890830,
+          "checked_at": 1793901454,
           "passed": true,
           "method": "HEAD",
           "sites": [
@@ -934,23 +934,375 @@
             }
           ],
           "samples_ms": [
-            428.8,
-            277.0,
-            279.0,
-            272.7
+            538.0,
+            535.6,
+            537.5,
+            555.8
           ],
-          "median_ms": 278.0,
-          "spread_ms": 156.1,
-          "worst_ms": 428.8,
+          "median_ms": 537.8,
+          "spread_ms": 20.2,
+          "worst_ms": 555.8,
           "errors": []
         },
-        "priority": 1
+        "priority": 2
       },
       {
         "tag": "pool-28",
         "check": {
           "version": 3,
-          "checked_at": 1793890826,
+          "checked_at": 1793901461,
+          "passed": true,
+          "method": "HEAD",
+          "sites": [
+            {
+              "url": "https://www.gstatic.com/generate_204",
+              "passed": 2,
+              "attempts": 2
+            },
+            {
+              "url": "https://cp.cloudflare.com/generate_204",
+              "passed": 2,
+              "attempts": 2
+            }
+          ],
+          "samples_ms": [
+            601.5,
+            597.9,
+            594.9,
+            597.2
+          ],
+          "median_ms": 597.5,
+          "spread_ms": 6.6,
+          "worst_ms": 601.5,
+          "errors": []
+        },
+        "priority": 2
+      },
+      {
+        "tag": "pool-29",
+        "check": {
+          "version": 3,
+          "checked_at": 1793901505,
+          "passed": true,
+          "method": "HEAD",
+          "sites": [
+            {
+              "url": "https://www.gstatic.com/generate_204",
+              "passed": 2,
+              "attempts": 2
+            },
+            {
+              "url": "https://cp.cloudflare.com/generate_204",
+              "passed": 2,
+              "attempts": 2
+            }
+          ],
+          "samples_ms": [
+            606.6,
+            605.3,
+            607.2,
+            608.6
+          ],
+          "median_ms": 606.9,
+          "spread_ms": 3.3,
+          "worst_ms": 608.6,
+          "errors": []
+        },
+        "priority": 2
+      },
+      {
+        "tag": "pool-30",
+        "check": {
+          "version": 3,
+          "checked_at": 1793901471,
+          "passed": true,
+          "method": "HEAD",
+          "sites": [
+            {
+              "url": "https://www.gstatic.com/generate_204",
+              "passed": 2,
+              "attempts": 2
+            },
+            {
+              "url": "https://cp.cloudflare.com/generate_204",
+              "passed": 2,
+              "attempts": 2
+            }
+          ],
+          "samples_ms": [
+            615.2,
+            607.4,
+            642.0,
+            604.1
+          ],
+          "median_ms": 611.3,
+          "spread_ms": 37.9,
+          "worst_ms": 642.0,
+          "errors": []
+        },
+        "priority": 2
+      },
+      {
+        "tag": "pool-31",
+        "check": {
+          "version": 3,
+          "checked_at": 1793901500,
+          "passed": true,
+          "method": "HEAD",
+          "sites": [
+            {
+              "url": "https://www.gstatic.com/generate_204",
+              "passed": 2,
+              "attempts": 2
+            },
+            {
+              "url": "https://cp.cloudflare.com/generate_204",
+              "passed": 2,
+              "attempts": 2
+            }
+          ],
+          "samples_ms": [
+            591.9,
+            577.7,
+            608.5,
+            614.0
+          ],
+          "median_ms": 600.2,
+          "spread_ms": 36.3,
+          "worst_ms": 614.0,
+          "errors": []
+        },
+        "priority": 2
+      },
+      {
+        "tag": "pool-32",
+        "check": {
+          "version": 3,
+          "checked_at": 1793901459,
+          "passed": true,
+          "method": "HEAD",
+          "sites": [
+            {
+              "url": "https://www.gstatic.com/generate_204",
+              "passed": 2,
+              "attempts": 2
+            },
+            {
+              "url": "https://cp.cloudflare.com/generate_204",
+              "passed": 2,
+              "attempts": 2
+            }
+          ],
+          "samples_ms": [
+            644.7,
+            627.7,
+            605.3,
+            614.6
+          ],
+          "median_ms": 621.2,
+          "spread_ms": 39.4,
+          "worst_ms": 644.7,
+          "errors": []
+        },
+        "priority": 2
+      },
+      {
+        "tag": "pool-33",
+        "check": {
+          "version": 3,
+          "checked_at": 1793901499,
+          "passed": true,
+          "method": "HEAD",
+          "sites": [
+            {
+              "url": "https://www.gstatic.com/generate_204",
+              "passed": 2,
+              "attempts": 2
+            },
+            {
+              "url": "https://cp.cloudflare.com/generate_204",
+              "passed": 2,
+              "attempts": 2
+            }
+          ],
+          "samples_ms": [
+            635.3,
+            654.1,
+            652.8,
+            647.7
+          ],
+          "median_ms": 650.2,
+          "spread_ms": 18.8,
+          "worst_ms": 654.1,
+          "errors": []
+        },
+        "priority": 2
+      },
+      {
+        "tag": "pool-34",
+        "check": {
+          "version": 3,
+          "checked_at": 1793901462,
+          "passed": true,
+          "method": "HEAD",
+          "sites": [
+            {
+              "url": "https://www.gstatic.com/generate_204",
+              "passed": 2,
+              "attempts": 2
+            },
+            {
+              "url": "https://cp.cloudflare.com/generate_204",
+              "passed": 2,
+              "attempts": 2
+            }
+          ],
+          "samples_ms": [
+            659.7,
+            651.6,
+            638.5,
+            638.1
+          ],
+          "median_ms": 645.0,
+          "spread_ms": 21.6,
+          "worst_ms": 659.7,
+          "errors": []
+        },
+        "priority": 2
+      },
+      {
+        "tag": "pool-35",
+        "check": {
+          "version": 3,
+          "checked_at": 1793901494,
+          "passed": true,
+          "method": "HEAD",
+          "sites": [
+            {
+              "url": "https://www.gstatic.com/generate_204",
+              "passed": 2,
+              "attempts": 2
+            },
+            {
+              "url": "https://cp.cloudflare.com/generate_204",
+              "passed": 2,
+              "attempts": 2
+            }
+          ],
+          "samples_ms": [
+            655.8,
+            654.1,
+            665.2,
+            632.1
+          ],
+          "median_ms": 655.0,
+          "spread_ms": 33.1,
+          "worst_ms": 665.2,
+          "errors": []
+        },
+        "priority": 2
+      },
+      {
+        "tag": "pool-36",
+        "check": {
+          "version": 3,
+          "checked_at": 1793901469,
+          "passed": true,
+          "method": "HEAD",
+          "sites": [
+            {
+              "url": "https://www.gstatic.com/generate_204",
+              "passed": 2,
+              "attempts": 2
+            },
+            {
+              "url": "https://cp.cloudflare.com/generate_204",
+              "passed": 2,
+              "attempts": 2
+            }
+          ],
+          "samples_ms": [
+            660.1,
+            656.1,
+            635.8,
+            648.7
+          ],
+          "median_ms": 652.4,
+          "spread_ms": 24.3,
+          "worst_ms": 660.1,
+          "errors": []
+        },
+        "priority": 2
+      },
+      {
+        "tag": "pool-37",
+        "check": {
+          "version": 3,
+          "checked_at": 1793901513,
+          "passed": true,
+          "method": "HEAD",
+          "sites": [
+            {
+              "url": "https://www.gstatic.com/generate_204",
+              "passed": 2,
+              "attempts": 2
+            },
+            {
+              "url": "https://cp.cloudflare.com/generate_204",
+              "passed": 2,
+              "attempts": 2
+            }
+          ],
+          "samples_ms": [
+            664.9,
+            666.7,
+            566.0,
+            566.1
+          ],
+          "median_ms": 615.5,
+          "spread_ms": 100.7,
+          "worst_ms": 666.7,
+          "errors": []
+        },
+        "priority": 2
+      },
+      {
+        "tag": "pool-38",
+        "check": {
+          "version": 3,
+          "checked_at": 1793901515,
+          "passed": true,
+          "method": "HEAD",
+          "sites": [
+            {
+              "url": "https://www.gstatic.com/generate_204",
+              "passed": 2,
+              "attempts": 2
+            },
+            {
+              "url": "https://cp.cloudflare.com/generate_204",
+              "passed": 2,
+              "attempts": 2
+            }
+          ],
+          "samples_ms": [
+            718.8,
+            692.3,
+            682.1,
+            718.4
+          ],
+          "median_ms": 705.3,
+          "spread_ms": 36.7,
+          "worst_ms": 718.8,
+          "errors": []
+        },
+        "priority": 2
+      },
+      {
+        "tag": "pool-39",
+        "check": {
+          "version": 3,
+          "checked_at": 1793901518,
           "passed": true,
           "method": "HEAD",
           "sites": [
@@ -967,374 +1319,22 @@
           ],
           "samples_ms": [
             344.1,
-            353.5,
-            295.5,
-            291.3
+            314.4,
+            253.6,
+            605.6
           ],
-          "median_ms": 319.8,
-          "spread_ms": 62.2,
-          "worst_ms": 353.5,
+          "median_ms": 329.2,
+          "spread_ms": 352.0,
+          "worst_ms": 605.6,
           "errors": []
         },
-        "priority": 1
-      },
-      {
-        "tag": "pool-29",
-        "check": {
-          "version": 3,
-          "checked_at": 1793890799,
-          "passed": true,
-          "method": "HEAD",
-          "sites": [
-            {
-              "url": "https://www.gstatic.com/generate_204",
-              "passed": 2,
-              "attempts": 2
-            },
-            {
-              "url": "https://cp.cloudflare.com/generate_204",
-              "passed": 2,
-              "attempts": 2
-            }
-          ],
-          "samples_ms": [
-            346.2,
-            462.5,
-            371.0,
-            343.7
-          ],
-          "median_ms": 358.6,
-          "spread_ms": 118.8,
-          "worst_ms": 462.5,
-          "errors": []
-        },
-        "priority": 1
-      },
-      {
-        "tag": "pool-30",
-        "check": {
-          "version": 3,
-          "checked_at": 1793890882,
-          "passed": true,
-          "method": "HEAD",
-          "sites": [
-            {
-              "url": "https://www.gstatic.com/generate_204",
-              "passed": 2,
-              "attempts": 2
-            },
-            {
-              "url": "https://cp.cloudflare.com/generate_204",
-              "passed": 2,
-              "attempts": 2
-            }
-          ],
-          "samples_ms": [
-            424.3,
-            400.4,
-            373.3,
-            365.2
-          ],
-          "median_ms": 386.9,
-          "spread_ms": 59.1,
-          "worst_ms": 424.3,
-          "errors": []
-        },
-        "priority": 1
-      },
-      {
-        "tag": "pool-31",
-        "check": {
-          "version": 3,
-          "checked_at": 1793890833,
-          "passed": true,
-          "method": "HEAD",
-          "sites": [
-            {
-              "url": "https://www.gstatic.com/generate_204",
-              "passed": 2,
-              "attempts": 2
-            },
-            {
-              "url": "https://cp.cloudflare.com/generate_204",
-              "passed": 2,
-              "attempts": 2
-            }
-          ],
-          "samples_ms": [
-            396.3,
-            409.8,
-            403.4,
-            406.1
-          ],
-          "median_ms": 404.8,
-          "spread_ms": 13.5,
-          "worst_ms": 409.8,
-          "errors": []
-        },
-        "priority": 1
-      },
-      {
-        "tag": "pool-32",
-        "check": {
-          "version": 3,
-          "checked_at": 1793890805,
-          "passed": true,
-          "method": "HEAD",
-          "sites": [
-            {
-              "url": "https://www.gstatic.com/generate_204",
-              "passed": 2,
-              "attempts": 2
-            },
-            {
-              "url": "https://cp.cloudflare.com/generate_204",
-              "passed": 2,
-              "attempts": 2
-            }
-          ],
-          "samples_ms": [
-            392.4,
-            443.3,
-            418.5,
-            492.1
-          ],
-          "median_ms": 430.9,
-          "spread_ms": 99.7,
-          "worst_ms": 492.1,
-          "errors": []
-        },
-        "priority": 1
-      },
-      {
-        "tag": "pool-33",
-        "check": {
-          "version": 3,
-          "checked_at": 1793890799,
-          "passed": true,
-          "method": "HEAD",
-          "sites": [
-            {
-              "url": "https://www.gstatic.com/generate_204",
-              "passed": 2,
-              "attempts": 2
-            },
-            {
-              "url": "https://cp.cloudflare.com/generate_204",
-              "passed": 2,
-              "attempts": 2
-            }
-          ],
-          "samples_ms": [
-            388.2,
-            388.7,
-            352.6,
-            350.2
-          ],
-          "median_ms": 370.4,
-          "spread_ms": 38.5,
-          "worst_ms": 388.7,
-          "errors": []
-        },
-        "priority": 1
-      },
-      {
-        "tag": "pool-34",
-        "check": {
-          "version": 3,
-          "checked_at": 1793890826,
-          "passed": true,
-          "method": "HEAD",
-          "sites": [
-            {
-              "url": "https://www.gstatic.com/generate_204",
-              "passed": 2,
-              "attempts": 2
-            },
-            {
-              "url": "https://cp.cloudflare.com/generate_204",
-              "passed": 2,
-              "attempts": 2
-            }
-          ],
-          "samples_ms": [
-            463.2,
-            444.8,
-            424.3,
-            443.1
-          ],
-          "median_ms": 444.0,
-          "spread_ms": 38.9,
-          "worst_ms": 463.2,
-          "errors": []
-        },
-        "priority": 1
-      },
-      {
-        "tag": "pool-35",
-        "check": {
-          "version": 3,
-          "checked_at": 1793890802,
-          "passed": true,
-          "method": "HEAD",
-          "sites": [
-            {
-              "url": "https://www.gstatic.com/generate_204",
-              "passed": 2,
-              "attempts": 2
-            },
-            {
-              "url": "https://cp.cloudflare.com/generate_204",
-              "passed": 2,
-              "attempts": 2
-            }
-          ],
-          "samples_ms": [
-            444.5,
-            450.9,
-            467.9,
-            443.0
-          ],
-          "median_ms": 447.7,
-          "spread_ms": 24.9,
-          "worst_ms": 467.9,
-          "errors": []
-        },
-        "priority": 1
-      },
-      {
-        "tag": "pool-36",
-        "check": {
-          "version": 3,
-          "checked_at": 1793890821,
-          "passed": true,
-          "method": "HEAD",
-          "sites": [
-            {
-              "url": "https://www.gstatic.com/generate_204",
-              "passed": 2,
-              "attempts": 2
-            },
-            {
-              "url": "https://cp.cloudflare.com/generate_204",
-              "passed": 2,
-              "attempts": 2
-            }
-          ],
-          "samples_ms": [
-            434.4,
-            438.5,
-            467.5,
-            441.7
-          ],
-          "median_ms": 440.1,
-          "spread_ms": 33.1,
-          "worst_ms": 467.5,
-          "errors": []
-        },
-        "priority": 1
-      },
-      {
-        "tag": "pool-37",
-        "check": {
-          "version": 3,
-          "checked_at": 1793890802,
-          "passed": true,
-          "method": "HEAD",
-          "sites": [
-            {
-              "url": "https://www.gstatic.com/generate_204",
-              "passed": 2,
-              "attempts": 2
-            },
-            {
-              "url": "https://cp.cloudflare.com/generate_204",
-              "passed": 2,
-              "attempts": 2
-            }
-          ],
-          "samples_ms": [
-            446.9,
-            449.5,
-            458.0,
-            454.4
-          ],
-          "median_ms": 451.9,
-          "spread_ms": 11.1,
-          "worst_ms": 458.0,
-          "errors": []
-        },
-        "priority": 1
-      },
-      {
-        "tag": "pool-38",
-        "check": {
-          "version": 3,
-          "checked_at": 1793890808,
-          "passed": true,
-          "method": "HEAD",
-          "sites": [
-            {
-              "url": "https://www.gstatic.com/generate_204",
-              "passed": 2,
-              "attempts": 2
-            },
-            {
-              "url": "https://cp.cloudflare.com/generate_204",
-              "passed": 2,
-              "attempts": 2
-            }
-          ],
-          "samples_ms": [
-            445.5,
-            446.9,
-            467.0,
-            461.0
-          ],
-          "median_ms": 453.9,
-          "spread_ms": 21.5,
-          "worst_ms": 467.0,
-          "errors": []
-        },
-        "priority": 1
-      },
-      {
-        "tag": "pool-39",
-        "check": {
-          "version": 3,
-          "checked_at": 1793890864,
-          "passed": true,
-          "method": "HEAD",
-          "sites": [
-            {
-              "url": "https://www.gstatic.com/generate_204",
-              "passed": 2,
-              "attempts": 2
-            },
-            {
-              "url": "https://cp.cloudflare.com/generate_204",
-              "passed": 2,
-              "attempts": 2
-            }
-          ],
-          "samples_ms": [
-            471.5,
-            466.9,
-            481.4,
-            465.7
-          ],
-          "median_ms": 469.2,
-          "spread_ms": 15.7,
-          "worst_ms": 481.4,
-          "errors": []
-        },
-        "priority": 1
+        "priority": 2
       },
       {
         "tag": "pool-40",
         "check": {
           "version": 3,
-          "checked_at": 1793890802,
+          "checked_at": 1793901463,
           "passed": true,
           "method": "HEAD",
           "sites": [
@@ -1350,17 +1350,17 @@
             }
           ],
           "samples_ms": [
-            464.9,
-            470.0,
-            503.2,
-            491.2
+            507.5,
+            522.9,
+            520.0,
+            496.0
           ],
-          "median_ms": 480.6,
-          "spread_ms": 38.3,
-          "worst_ms": 503.2,
+          "median_ms": 513.8,
+          "spread_ms": 26.9,
+          "worst_ms": 522.9,
           "errors": []
         },
-        "priority": 1
+        "priority": 2
       }
     ]
   },
@@ -1371,14 +1371,14 @@
     "fetched_at": 1793890795,
     "sha256": "b73faa1e78548530b6ce74b3ce262e50bebec9cb0edb0ae1f8db6172e70440d4",
     "feed_entries": 136536,
-    "evidence_source": "download",
+    "evidence_source": "cache",
     "unlisted_coverage": "IPv4 only",
     "score_formula": "max(0, 100 - 20 * IPsum blacklist occurrence count)",
     "selection_priority": "exclude listed exits; retain unlisted and unknown coverage; maximize count and infrastructure diversity",
     "meaning": "No listing in this feed is not a positive whitelist or proof of Gemini access.",
     "candidates": {
-      "not_listed": 149,
-      "listed": 8
+      "listed": 9,
+      "not_listed": 149
     },
     "selected": {
       "not_listed": 40
@@ -1386,280 +1386,280 @@
     "servers": [
       {
         "tag": "pool-01",
-        "exit_ip": "216.152.155.158",
+        "exit_ip": "198.2.251.107",
         "status": "not_listed",
         "score": 100,
         "blacklist_count": 0
       },
       {
         "tag": "pool-02",
-        "exit_ip": "216.152.155.50",
-        "status": "not_listed",
-        "score": 100,
-        "blacklist_count": 0
-      },
-      {
-        "tag": "pool-03",
-        "exit_ip": "156.146.38.170",
-        "status": "not_listed",
-        "score": 100,
-        "blacklist_count": 0
-      },
-      {
-        "tag": "pool-04",
-        "exit_ip": "156.146.38.169",
-        "status": "not_listed",
-        "score": 100,
-        "blacklist_count": 0
-      },
-      {
-        "tag": "pool-05",
-        "exit_ip": "47.253.226.114",
-        "status": "not_listed",
-        "score": 100,
-        "blacklist_count": 0
-      },
-      {
-        "tag": "pool-06",
-        "exit_ip": "67.220.73.204",
-        "status": "not_listed",
-        "score": 100,
-        "blacklist_count": 0
-      },
-      {
-        "tag": "pool-07",
-        "exit_ip": "47.253.226.114",
-        "status": "not_listed",
-        "score": 100,
-        "blacklist_count": 0
-      },
-      {
-        "tag": "pool-08",
-        "exit_ip": "37.19.198.160",
-        "status": "not_listed",
-        "score": 100,
-        "blacklist_count": 0
-      },
-      {
-        "tag": "pool-09",
-        "exit_ip": "37.19.198.243",
-        "status": "not_listed",
-        "score": 100,
-        "blacklist_count": 0
-      },
-      {
-        "tag": "pool-10",
-        "exit_ip": "66.163.113.238",
-        "status": "not_listed",
-        "score": 100,
-        "blacklist_count": 0
-      },
-      {
-        "tag": "pool-11",
-        "exit_ip": "167.17.69.171",
-        "status": "not_listed",
-        "score": 100,
-        "blacklist_count": 0
-      },
-      {
-        "tag": "pool-12",
-        "exit_ip": "167.17.69.171",
-        "status": "not_listed",
-        "score": 100,
-        "blacklist_count": 0
-      },
-      {
-        "tag": "pool-13",
-        "exit_ip": "78.17.93.30",
-        "status": "not_listed",
-        "score": 100,
-        "blacklist_count": 0
-      },
-      {
-        "tag": "pool-14",
-        "exit_ip": "172.111.38.246",
-        "status": "not_listed",
-        "score": 100,
-        "blacklist_count": 0
-      },
-      {
-        "tag": "pool-15",
-        "exit_ip": "66.163.113.238",
-        "status": "not_listed",
-        "score": 100,
-        "blacklist_count": 0
-      },
-      {
-        "tag": "pool-16",
-        "exit_ip": "162.120.69.84",
-        "status": "not_listed",
-        "score": 100,
-        "blacklist_count": 0
-      },
-      {
-        "tag": "pool-17",
-        "exit_ip": "162.120.69.88",
-        "status": "not_listed",
-        "score": 100,
-        "blacklist_count": 0
-      },
-      {
-        "tag": "pool-18",
-        "exit_ip": "185.195.57.174",
-        "status": "not_listed",
-        "score": 100,
-        "blacklist_count": 0
-      },
-      {
-        "tag": "pool-19",
-        "exit_ip": "107.173.237.146",
-        "status": "not_listed",
-        "score": 100,
-        "blacklist_count": 0
-      },
-      {
-        "tag": "pool-20",
-        "exit_ip": "107.173.237.146",
-        "status": "not_listed",
-        "score": 100,
-        "blacklist_count": 0
-      },
-      {
-        "tag": "pool-21",
         "exit_ip": "154.29.159.211",
         "status": "not_listed",
         "score": 100,
         "blacklist_count": 0
       },
       {
+        "tag": "pool-03",
+        "exit_ip": "107.173.237.146",
+        "status": "not_listed",
+        "score": 100,
+        "blacklist_count": 0
+      },
+      {
+        "tag": "pool-04",
+        "exit_ip": "149.22.95.183",
+        "status": "not_listed",
+        "score": 100,
+        "blacklist_count": 0
+      },
+      {
+        "tag": "pool-05",
+        "exit_ip": "156.146.38.167",
+        "status": "not_listed",
+        "score": 100,
+        "blacklist_count": 0
+      },
+      {
+        "tag": "pool-06",
+        "exit_ip": "156.146.38.168",
+        "status": "not_listed",
+        "score": 100,
+        "blacklist_count": 0
+      },
+      {
+        "tag": "pool-07",
+        "exit_ip": "193.151.163.139",
+        "status": "not_listed",
+        "score": 100,
+        "blacklist_count": 0
+      },
+      {
+        "tag": "pool-08",
+        "exit_ip": "216.152.155.176",
+        "status": "not_listed",
+        "score": 100,
+        "blacklist_count": 0
+      },
+      {
+        "tag": "pool-09",
+        "exit_ip": "45.32.162.151",
+        "status": "not_listed",
+        "score": 100,
+        "blacklist_count": 0
+      },
+      {
+        "tag": "pool-10",
+        "exit_ip": "216.152.155.63",
+        "status": "not_listed",
+        "score": 100,
+        "blacklist_count": 0
+      },
+      {
+        "tag": "pool-11",
+        "exit_ip": "216.152.155.158",
+        "status": "not_listed",
+        "score": 100,
+        "blacklist_count": 0
+      },
+      {
+        "tag": "pool-12",
+        "exit_ip": "47.253.226.114",
+        "status": "not_listed",
+        "score": 100,
+        "blacklist_count": 0
+      },
+      {
+        "tag": "pool-13",
+        "exit_ip": "47.253.226.114",
+        "status": "not_listed",
+        "score": 100,
+        "blacklist_count": 0
+      },
+      {
+        "tag": "pool-14",
+        "exit_ip": "172.111.38.72",
+        "status": "not_listed",
+        "score": 100,
+        "blacklist_count": 0
+      },
+      {
+        "tag": "pool-15",
+        "exit_ip": "172.111.36.126",
+        "status": "not_listed",
+        "score": 100,
+        "blacklist_count": 0
+      },
+      {
+        "tag": "pool-16",
+        "exit_ip": "185.95.231.156",
+        "status": "not_listed",
+        "score": 100,
+        "blacklist_count": 0
+      },
+      {
+        "tag": "pool-17",
+        "exit_ip": "185.95.231.156",
+        "status": "not_listed",
+        "score": 100,
+        "blacklist_count": 0
+      },
+      {
+        "tag": "pool-18",
+        "exit_ip": "167.17.69.171",
+        "status": "not_listed",
+        "score": 100,
+        "blacklist_count": 0
+      },
+      {
+        "tag": "pool-19",
+        "exit_ip": "45.144.112.54",
+        "status": "not_listed",
+        "score": 100,
+        "blacklist_count": 0
+      },
+      {
+        "tag": "pool-20",
+        "exit_ip": "162.120.69.84",
+        "status": "not_listed",
+        "score": 100,
+        "blacklist_count": 0
+      },
+      {
+        "tag": "pool-21",
+        "exit_ip": "185.195.57.174",
+        "status": "not_listed",
+        "score": 100,
+        "blacklist_count": 0
+      },
+      {
         "tag": "pool-22",
-        "exit_ip": "45.144.112.55",
-        "status": "not_listed",
-        "score": 100,
-        "blacklist_count": 0
-      },
-      {
-        "tag": "pool-23",
-        "exit_ip": "170.101.101.67",
-        "status": "not_listed",
-        "score": 100,
-        "blacklist_count": 0
-      },
-      {
-        "tag": "pool-24",
-        "exit_ip": "81.19.140.181",
-        "status": "not_listed",
-        "score": 100,
-        "blacklist_count": 0
-      },
-      {
-        "tag": "pool-25",
         "exit_ip": "23.95.115.116",
         "status": "not_listed",
         "score": 100,
         "blacklist_count": 0
       },
       {
+        "tag": "pool-23",
+        "exit_ip": "45.144.112.55",
+        "status": "not_listed",
+        "score": 100,
+        "blacklist_count": 0
+      },
+      {
+        "tag": "pool-24",
+        "exit_ip": "23.95.115.116",
+        "status": "not_listed",
+        "score": 100,
+        "blacklist_count": 0
+      },
+      {
+        "tag": "pool-25",
+        "exit_ip": "84.32.101.112",
+        "status": "not_listed",
+        "score": 100,
+        "blacklist_count": 0
+      },
+      {
         "tag": "pool-26",
-        "exit_ip": "104.160.44.254",
+        "exit_ip": "38.244.5.231",
         "status": "not_listed",
         "score": 100,
         "blacklist_count": 0
       },
       {
         "tag": "pool-27",
-        "exit_ip": "191.101.44.113",
-        "status": "not_listed",
-        "score": 100,
-        "blacklist_count": 0
-      },
-      {
-        "tag": "pool-28",
-        "exit_ip": "62.133.63.45",
-        "status": "not_listed",
-        "score": 100,
-        "blacklist_count": 0
-      },
-      {
-        "tag": "pool-29",
-        "exit_ip": "193.29.139.237",
-        "status": "not_listed",
-        "score": 100,
-        "blacklist_count": 0
-      },
-      {
-        "tag": "pool-30",
-        "exit_ip": "51.241.209.4",
-        "status": "not_listed",
-        "score": 100,
-        "blacklist_count": 0
-      },
-      {
-        "tag": "pool-31",
         "exit_ip": "152.53.1.57",
         "status": "not_listed",
         "score": 100,
         "blacklist_count": 0
       },
       {
-        "tag": "pool-32",
-        "exit_ip": "50.7.193.149",
+        "tag": "pool-28",
+        "exit_ip": "193.108.119.15",
         "status": "not_listed",
         "score": 100,
         "blacklist_count": 0
       },
       {
-        "tag": "pool-33",
-        "exit_ip": "80.174.118.60",
+        "tag": "pool-29",
+        "exit_ip": "185.177.229.95",
         "status": "not_listed",
         "score": 100,
         "blacklist_count": 0
       },
       {
-        "tag": "pool-34",
-        "exit_ip": "86.54.28.75",
-        "status": "not_listed",
-        "score": 100,
-        "blacklist_count": 0
-      },
-      {
-        "tag": "pool-35",
-        "exit_ip": "193.108.119.81",
-        "status": "not_listed",
-        "score": 100,
-        "blacklist_count": 0
-      },
-      {
-        "tag": "pool-36",
-        "exit_ip": "149.22.87.204",
-        "status": "not_listed",
-        "score": 100,
-        "blacklist_count": 0
-      },
-      {
-        "tag": "pool-37",
+        "tag": "pool-30",
         "exit_ip": "143.246.182.103",
         "status": "not_listed",
         "score": 100,
         "blacklist_count": 0
       },
       {
-        "tag": "pool-38",
+        "tag": "pool-31",
+        "exit_ip": "50.7.95.172",
+        "status": "not_listed",
+        "score": 100,
+        "blacklist_count": 0
+      },
+      {
+        "tag": "pool-32",
         "exit_ip": "143.246.182.199",
         "status": "not_listed",
         "score": 100,
         "blacklist_count": 0
       },
       {
+        "tag": "pool-33",
+        "exit_ip": "167.233.56.197",
+        "status": "not_listed",
+        "score": 100,
+        "blacklist_count": 0
+      },
+      {
+        "tag": "pool-34",
+        "exit_ip": "188.245.7.216",
+        "status": "not_listed",
+        "score": 100,
+        "blacklist_count": 0
+      },
+      {
+        "tag": "pool-35",
+        "exit_ip": "78.46.163.229",
+        "status": "not_listed",
+        "score": 100,
+        "blacklist_count": 0
+      },
+      {
+        "tag": "pool-36",
+        "exit_ip": "168.119.97.162",
+        "status": "not_listed",
+        "score": 100,
+        "blacklist_count": 0
+      },
+      {
+        "tag": "pool-37",
+        "exit_ip": "45.63.30.142",
+        "status": "not_listed",
+        "score": 100,
+        "blacklist_count": 0
+      },
+      {
+        "tag": "pool-38",
+        "exit_ip": "95.214.55.151",
+        "status": "not_listed",
+        "score": 100,
+        "blacklist_count": 0
+      },
+      {
         "tag": "pool-39",
-        "exit_ip": "200.96.106.2",
+        "exit_ip": "170.101.101.67",
         "status": "not_listed",
         "score": 100,
         "blacklist_count": 0
       },
       {
         "tag": "pool-40",
-        "exit_ip": "177.202.74.77",
+        "exit_ip": "80.174.118.30",
         "status": "not_listed",
         "score": 100,
         "blacklist_count": 0
@@ -1671,12 +1671,95 @@
     "cache_seconds": 0,
     "expiry_warning_days": 7,
     "failure_counts": {
-      "xray_https:URLError": 29,
+      "xray_https:URLError": 37,
+      "transport:TimeoutError": 2,
       "transport:SSLEOFError": 3
     },
     "servers": [
       {
         "tag": "pool-01",
+        "kind": "reality",
+        "status": "passed",
+        "checked_at": 1793901499,
+        "next_check_at": 1793905099
+      },
+      {
+        "tag": "pool-02",
+        "kind": "reality",
+        "status": "passed",
+        "checked_at": 1793901568,
+        "next_check_at": 1793905168
+      },
+      {
+        "tag": "pool-03",
+        "kind": "reality",
+        "status": "passed",
+        "checked_at": 1793901501,
+        "next_check_at": 1793905101
+      },
+      {
+        "tag": "pool-04",
+        "kind": "none",
+        "status": "not_applicable",
+        "checked_at": 1793901470,
+        "next_check_at": 1793905070
+      },
+      {
+        "tag": "pool-05",
+        "kind": "none",
+        "status": "not_applicable",
+        "checked_at": 1793901465,
+        "next_check_at": 1793905065
+      },
+      {
+        "tag": "pool-06",
+        "kind": "none",
+        "status": "not_applicable",
+        "checked_at": 1793901507,
+        "next_check_at": 1793905107
+      },
+      {
+        "tag": "pool-07",
+        "kind": "none",
+        "status": "not_applicable",
+        "checked_at": 1793901486,
+        "next_check_at": 1793905086
+      },
+      {
+        "tag": "pool-08",
+        "kind": "tls",
+        "status": "passed",
+        "server_name": "blog.nextjobopportunityandclaimyouridealrole.com",
+        "not_after": 1798802140,
+        "expires_soon": false,
+        "sha256": "c7e923a23ba4edd9559ed02f2cdb7362c025be2cd611d8d5e0b3001ab954ea90",
+        "tls_version": "TLSv1.3",
+        "trust_store": "Python system CA",
+        "checked_at": 1793901572,
+        "next_check_at": 1793905172
+      },
+      {
+        "tag": "pool-09",
+        "kind": "none",
+        "status": "not_applicable",
+        "checked_at": 1793901461,
+        "next_check_at": 1793905061
+      },
+      {
+        "tag": "pool-10",
+        "kind": "tls",
+        "status": "passed",
+        "server_name": "resources.nextjobopportunityandclaimyouridealrole.com",
+        "not_after": 1798802140,
+        "expires_soon": false,
+        "sha256": "c7e923a23ba4edd9559ed02f2cdb7362c025be2cd611d8d5e0b3001ab954ea90",
+        "tls_version": "TLSv1.3",
+        "trust_store": "Python system CA",
+        "checked_at": 1793901475,
+        "next_check_at": 1793905075
+      },
+      {
+        "tag": "pool-11",
         "kind": "tls",
         "status": "passed",
         "server_name": "www.nextjobopportunityandclaimyouridealrole.com",
@@ -1685,101 +1768,32 @@
         "sha256": "c7e923a23ba4edd9559ed02f2cdb7362c025be2cd611d8d5e0b3001ab954ea90",
         "tls_version": "TLSv1.3",
         "trust_store": "Python system CA",
-        "checked_at": 1793890817,
-        "next_check_at": 1793894417
-      },
-      {
-        "tag": "pool-02",
-        "kind": "tls",
-        "status": "passed",
-        "server_name": "learn.nextjobopportunityandclaimyouridealrole.com",
-        "not_after": 1798802140,
-        "expires_soon": false,
-        "sha256": "c7e923a23ba4edd9559ed02f2cdb7362c025be2cd611d8d5e0b3001ab954ea90",
-        "tls_version": "TLSv1.3",
-        "trust_store": "Python system CA",
-        "checked_at": 1793890818,
-        "next_check_at": 1793894418
-      },
-      {
-        "tag": "pool-03",
-        "kind": "none",
-        "status": "not_applicable",
-        "checked_at": 1793890811,
-        "next_check_at": 1793894411
-      },
-      {
-        "tag": "pool-04",
-        "kind": "none",
-        "status": "not_applicable",
-        "checked_at": 1793890811,
-        "next_check_at": 1793894411
-      },
-      {
-        "tag": "pool-05",
-        "kind": "reality",
-        "status": "passed",
-        "checked_at": 1793890821,
-        "next_check_at": 1793894421
-      },
-      {
-        "tag": "pool-06",
-        "kind": "reality",
-        "status": "passed",
-        "checked_at": 1793890823,
-        "next_check_at": 1793894423
-      },
-      {
-        "tag": "pool-07",
-        "kind": "reality",
-        "status": "passed",
-        "checked_at": 1793890827,
-        "next_check_at": 1793894427
-      },
-      {
-        "tag": "pool-08",
-        "kind": "none",
-        "status": "not_applicable",
-        "checked_at": 1793890809,
-        "next_check_at": 1793894409
-      },
-      {
-        "tag": "pool-09",
-        "kind": "none",
-        "status": "not_applicable",
-        "checked_at": 1793890800,
-        "next_check_at": 1793894400
-      },
-      {
-        "tag": "pool-10",
-        "kind": "reality",
-        "status": "passed",
-        "checked_at": 1793890822,
-        "next_check_at": 1793894422
-      },
-      {
-        "tag": "pool-11",
-        "kind": "reality",
-        "status": "passed",
-        "checked_at": 1793890875,
-        "next_check_at": 1793894475
+        "checked_at": 1793901520,
+        "next_check_at": 1793905120
       },
       {
         "tag": "pool-12",
         "kind": "reality",
         "status": "passed",
-        "checked_at": 1793890817,
-        "next_check_at": 1793894417
+        "checked_at": 1793901491,
+        "next_check_at": 1793905091
       },
       {
         "tag": "pool-13",
         "kind": "reality",
         "status": "passed",
-        "checked_at": 1793890818,
-        "next_check_at": 1793894418
+        "checked_at": 1793901563,
+        "next_check_at": 1793905163
       },
       {
         "tag": "pool-14",
+        "kind": "none",
+        "status": "not_applicable",
+        "checked_at": 1793901509,
+        "next_check_at": 1793905109
+      },
+      {
+        "tag": "pool-15",
         "kind": "tls",
         "status": "passed",
         "server_name": "xmfhlpy.com",
@@ -1788,67 +1802,214 @@
         "sha256": "2be733faccf6e890d20c4056443d8aaff85c2d446b501f941d79da8390eba32c",
         "tls_version": "TLSv1.3",
         "trust_store": "Python system CA",
-        "checked_at": 1793890826,
-        "next_check_at": 1793894426
-      },
-      {
-        "tag": "pool-15",
-        "kind": "reality",
-        "status": "passed",
-        "checked_at": 1793890895,
-        "next_check_at": 1793894495
+        "checked_at": 1793901510,
+        "next_check_at": 1793905110
       },
       {
         "tag": "pool-16",
         "kind": "reality",
         "status": "passed",
-        "checked_at": 1793890871,
-        "next_check_at": 1793894471
+        "checked_at": 1793901474,
+        "next_check_at": 1793905074
       },
       {
         "tag": "pool-17",
         "kind": "reality",
         "status": "passed",
-        "checked_at": 1793890823,
-        "next_check_at": 1793894423
+        "checked_at": 1793901537,
+        "next_check_at": 1793905137
       },
       {
         "tag": "pool-18",
         "kind": "reality",
         "status": "passed",
-        "checked_at": 1793890870,
-        "next_check_at": 1793894470
+        "checked_at": 1793901486,
+        "next_check_at": 1793905086
       },
       {
         "tag": "pool-19",
         "kind": "reality",
         "status": "passed",
-        "checked_at": 1793890825,
-        "next_check_at": 1793894425
+        "checked_at": 1793901477,
+        "next_check_at": 1793905077
       },
       {
         "tag": "pool-20",
         "kind": "reality",
         "status": "passed",
-        "checked_at": 1793890869,
-        "next_check_at": 1793894469
+        "checked_at": 1793901531,
+        "next_check_at": 1793905131
       },
       {
         "tag": "pool-21",
         "kind": "reality",
         "status": "passed",
-        "checked_at": 1793890832,
-        "next_check_at": 1793894432
+        "checked_at": 1793901477,
+        "next_check_at": 1793905077
       },
       {
         "tag": "pool-22",
         "kind": "reality",
         "status": "passed",
-        "checked_at": 1793890826,
-        "next_check_at": 1793894426
+        "checked_at": 1793901499,
+        "next_check_at": 1793905099
       },
       {
         "tag": "pool-23",
+        "kind": "reality",
+        "status": "passed",
+        "checked_at": 1793901477,
+        "next_check_at": 1793905077
+      },
+      {
+        "tag": "pool-24",
+        "kind": "reality",
+        "status": "passed",
+        "checked_at": 1793901553,
+        "next_check_at": 1793905153
+      },
+      {
+        "tag": "pool-25",
+        "kind": "reality",
+        "status": "passed",
+        "checked_at": 1793901514,
+        "next_check_at": 1793905114
+      },
+      {
+        "tag": "pool-26",
+        "kind": "reality",
+        "status": "passed",
+        "checked_at": 1793901514,
+        "next_check_at": 1793905114
+      },
+      {
+        "tag": "pool-27",
+        "kind": "none",
+        "status": "not_applicable",
+        "checked_at": 1793901454,
+        "next_check_at": 1793905054
+      },
+      {
+        "tag": "pool-28",
+        "kind": "tls",
+        "status": "passed",
+        "server_name": "www.iloverussia2026.com",
+        "not_after": 1798715565,
+        "expires_soon": false,
+        "sha256": "6cb73a93fb58c37f870564a3a30708082d5b0ab11ddf09a0d3d7ff6060a7846e",
+        "tls_version": "TLSv1.3",
+        "trust_store": "Python system CA",
+        "checked_at": 1793901461,
+        "next_check_at": 1793905061
+      },
+      {
+        "tag": "pool-29",
+        "kind": "tls",
+        "status": "passed",
+        "server_name": "xmfhlpy.com",
+        "not_after": 1797206399,
+        "expires_soon": false,
+        "sha256": "2be733faccf6e890d20c4056443d8aaff85c2d446b501f941d79da8390eba32c",
+        "tls_version": "TLSv1.3",
+        "trust_store": "Python system CA",
+        "checked_at": 1793901505,
+        "next_check_at": 1793905105
+      },
+      {
+        "tag": "pool-30",
+        "kind": "reality",
+        "status": "passed",
+        "checked_at": 1793901471,
+        "next_check_at": 1793905071
+      },
+      {
+        "tag": "pool-31",
+        "kind": "reality",
+        "status": "passed",
+        "checked_at": 1793901500,
+        "next_check_at": 1793905100
+      },
+      {
+        "tag": "pool-32",
+        "kind": "reality",
+        "status": "passed",
+        "checked_at": 1793901459,
+        "next_check_at": 1793905059
+      },
+      {
+        "tag": "pool-33",
+        "kind": "tls",
+        "status": "passed",
+        "server_name": "static.165.37.47.78.clients.your-server.de",
+        "not_after": 1801270933,
+        "expires_soon": false,
+        "sha256": "e1efac092b6e363b245d22a52210ab45819e0f99d114fb2e0e2daa3f8bf1e101",
+        "tls_version": "TLSv1.3",
+        "trust_store": "Python system CA",
+        "checked_at": 1793901499,
+        "next_check_at": 1793905099
+      },
+      {
+        "tag": "pool-34",
+        "kind": "tls",
+        "status": "passed",
+        "server_name": "static.216.7.245.188.clients.your-server.de",
+        "not_after": 1801270933,
+        "expires_soon": false,
+        "sha256": "e1efac092b6e363b245d22a52210ab45819e0f99d114fb2e0e2daa3f8bf1e101",
+        "tls_version": "TLSv1.3",
+        "trust_store": "Python system CA",
+        "checked_at": 1793901462,
+        "next_check_at": 1793905062
+      },
+      {
+        "tag": "pool-35",
+        "kind": "tls",
+        "status": "passed",
+        "server_name": "static.229.163.46.78.clients.your-server.de",
+        "not_after": 1801270933,
+        "expires_soon": false,
+        "sha256": "e1efac092b6e363b245d22a52210ab45819e0f99d114fb2e0e2daa3f8bf1e101",
+        "tls_version": "TLSv1.3",
+        "trust_store": "Python system CA",
+        "checked_at": 1793901494,
+        "next_check_at": 1793905094
+      },
+      {
+        "tag": "pool-36",
+        "kind": "tls",
+        "status": "passed",
+        "server_name": "static.167.125.29.2.clients.your-server.de",
+        "not_after": 1801270933,
+        "expires_soon": false,
+        "sha256": "e1efac092b6e363b245d22a52210ab45819e0f99d114fb2e0e2daa3f8bf1e101",
+        "tls_version": "TLSv1.3",
+        "trust_store": "Python system CA",
+        "checked_at": 1793901469,
+        "next_check_at": 1793905069
+      },
+      {
+        "tag": "pool-37",
+        "kind": "tls",
+        "status": "passed",
+        "server_name": "connectwithemployerstohireyouridealteam.com",
+        "not_after": 1801566784,
+        "expires_soon": false,
+        "sha256": "f4d933fe4c4423aa3de8112ffea4eca7e2f5c6c8ac155a04cdb646f01206e870",
+        "tls_version": "TLSv1.3",
+        "trust_store": "Python system CA",
+        "checked_at": 1793901513,
+        "next_check_at": 1793905113
+      },
+      {
+        "tag": "pool-38",
+        "kind": "reality",
+        "status": "passed",
+        "checked_at": 1793901515,
+        "next_check_at": 1793905115
+      },
+      {
+        "tag": "pool-39",
         "kind": "tls",
         "status": "passed",
         "server_name": "www.explorecreativejobsandenhanceyourcareerportfolio.com",
@@ -1857,133 +2018,15 @@
         "sha256": "a9434eb3765893f1d7915d446f7cdb12261fe87560f7f9bf699f732e07d8d11b",
         "tls_version": "TLSv1.3",
         "trust_store": "Python system CA",
-        "checked_at": 1793890868,
-        "next_check_at": 1793894468
-      },
-      {
-        "tag": "pool-24",
-        "kind": "reality",
-        "status": "passed",
-        "checked_at": 1793890822,
-        "next_check_at": 1793894422
-      },
-      {
-        "tag": "pool-25",
-        "kind": "reality",
-        "status": "passed",
-        "checked_at": 1793890828,
-        "next_check_at": 1793894428
-      },
-      {
-        "tag": "pool-26",
-        "kind": "reality",
-        "status": "passed",
-        "checked_at": 1793890834,
-        "next_check_at": 1793894434
-      },
-      {
-        "tag": "pool-27",
-        "kind": "reality",
-        "status": "passed",
-        "checked_at": 1793890830,
-        "next_check_at": 1793894430
-      },
-      {
-        "tag": "pool-28",
-        "kind": "reality",
-        "status": "passed",
-        "checked_at": 1793890826,
-        "next_check_at": 1793894426
-      },
-      {
-        "tag": "pool-29",
-        "kind": "none",
-        "status": "not_applicable",
-        "checked_at": 1793890799,
-        "next_check_at": 1793894399
-      },
-      {
-        "tag": "pool-30",
-        "kind": "none",
-        "status": "not_applicable",
-        "checked_at": 1793890882,
-        "next_check_at": 1793894482
-      },
-      {
-        "tag": "pool-31",
-        "kind": "none",
-        "status": "not_applicable",
-        "checked_at": 1793890833,
-        "next_check_at": 1793894433
-      },
-      {
-        "tag": "pool-32",
-        "kind": "reality",
-        "status": "passed",
-        "checked_at": 1793890805,
-        "next_check_at": 1793894405
-      },
-      {
-        "tag": "pool-33",
-        "kind": "none",
-        "status": "not_applicable",
-        "checked_at": 1793890799,
-        "next_check_at": 1793894399
-      },
-      {
-        "tag": "pool-34",
-        "kind": "reality",
-        "status": "passed",
-        "checked_at": 1793890826,
-        "next_check_at": 1793894426
-      },
-      {
-        "tag": "pool-35",
-        "kind": "tls",
-        "status": "passed",
-        "server_name": "courses.iloverussia2026.com",
-        "not_after": 1798715565,
-        "expires_soon": false,
-        "sha256": "6cb73a93fb58c37f870564a3a30708082d5b0ab11ddf09a0d3d7ff6060a7846e",
-        "tls_version": "TLSv1.3",
-        "trust_store": "Python system CA",
-        "checked_at": 1793890802,
-        "next_check_at": 1793894402
-      },
-      {
-        "tag": "pool-36",
-        "kind": "none",
-        "status": "not_applicable",
-        "checked_at": 1793890821,
-        "next_check_at": 1793894421
-      },
-      {
-        "tag": "pool-37",
-        "kind": "reality",
-        "status": "passed",
-        "checked_at": 1793890802,
-        "next_check_at": 1793894402
-      },
-      {
-        "tag": "pool-38",
-        "kind": "reality",
-        "status": "passed",
-        "checked_at": 1793890808,
-        "next_check_at": 1793894408
-      },
-      {
-        "tag": "pool-39",
-        "kind": "reality",
-        "status": "passed",
-        "checked_at": 1793890864,
-        "next_check_at": 1793894464
+        "checked_at": 1793901518,
+        "next_check_at": 1793905118
       },
       {
         "tag": "pool-40",
-        "kind": "reality",
-        "status": "passed",
-        "checked_at": 1793890802,
-        "next_check_at": 1793894402
+        "kind": "none",
+        "status": "not_applicable",
+        "checked_at": 1793901463,
+        "next_check_at": 1793905063
       }
     ]
   },
@@ -1996,22 +2039,22 @@
     "vantage": "GitHub Actions runner",
     "policy": "current quality bands first, exact median HTTPS latency within band; client leastPing unchanged",
     "failed_probe_policy": "current two-site HTTPS health required independently of extra HEAD measurements",
-    "candidates": 157,
-    "candidates_measured": 146,
+    "candidates": 158,
+    "candidates_measured": 149,
     "servers": [
       {
         "tag": "pool-01",
         "latency": {
           "url": "https://www.gstatic.com/generate_204",
           "method": "HEAD",
-          "checked_at": 1793890817,
+          "checked_at": 1793901499,
           "samples_ms": [
-            27.4,
-            40.0
+            37.9,
+            38.5
           ],
           "attempts": 2,
           "failed": 0,
-          "median_ms": 33.7,
+          "median_ms": 38.2,
           "errors": {}
         }
       },
@@ -2020,14 +2063,14 @@
         "latency": {
           "url": "https://www.gstatic.com/generate_204",
           "method": "HEAD",
-          "checked_at": 1793890818,
+          "checked_at": 1793901568,
           "samples_ms": [
-            52.2,
-            39.1
+            65.0,
+            59.4
           ],
           "attempts": 2,
           "failed": 0,
-          "median_ms": 45.7,
+          "median_ms": 62.2,
           "errors": {}
         }
       },
@@ -2036,14 +2079,14 @@
         "latency": {
           "url": "https://www.gstatic.com/generate_204",
           "method": "HEAD",
-          "checked_at": 1793890811,
+          "checked_at": 1793901502,
           "samples_ms": [
-            84.5,
-            84.4
+            86.2,
+            90.3
           ],
           "attempts": 2,
           "failed": 0,
-          "median_ms": 84.5,
+          "median_ms": 88.2,
           "errors": {}
         }
       },
@@ -2052,74 +2095,10 @@
         "latency": {
           "url": "https://www.gstatic.com/generate_204",
           "method": "HEAD",
-          "checked_at": 1793890811,
+          "checked_at": 1793901470,
           "samples_ms": [
-            85.1,
-            85.4
-          ],
-          "attempts": 2,
-          "failed": 0,
-          "median_ms": 85.2,
-          "errors": {}
-        }
-      },
-      {
-        "tag": "pool-05",
-        "latency": {
-          "url": "https://www.gstatic.com/generate_204",
-          "method": "HEAD",
-          "checked_at": 1793890821,
-          "samples_ms": [
-            92.2,
-            99.6
-          ],
-          "attempts": 2,
-          "failed": 0,
-          "median_ms": 95.9,
-          "errors": {}
-        }
-      },
-      {
-        "tag": "pool-06",
-        "latency": {
-          "url": "https://www.gstatic.com/generate_204",
-          "method": "HEAD",
-          "checked_at": 1793890823,
-          "samples_ms": [
-            77.5,
-            115.7
-          ],
-          "attempts": 2,
-          "failed": 0,
-          "median_ms": 96.6,
-          "errors": {}
-        }
-      },
-      {
-        "tag": "pool-07",
-        "latency": {
-          "url": "https://www.gstatic.com/generate_204",
-          "method": "HEAD",
-          "checked_at": 1793890827,
-          "samples_ms": [
-            92.6,
-            107.0
-          ],
-          "attempts": 2,
-          "failed": 0,
-          "median_ms": 99.8,
-          "errors": {}
-        }
-      },
-      {
-        "tag": "pool-08",
-        "latency": {
-          "url": "https://www.gstatic.com/generate_204",
-          "method": "HEAD",
-          "checked_at": 1793890809,
-          "samples_ms": [
-            79.1,
-            146.6
+            109.6,
+            115.9
           ],
           "attempts": 2,
           "failed": 0,
@@ -2128,18 +2107,82 @@
         }
       },
       {
+        "tag": "pool-05",
+        "latency": {
+          "url": "https://www.gstatic.com/generate_204",
+          "method": "HEAD",
+          "checked_at": 1793901465,
+          "samples_ms": [
+            126.6,
+            125.7
+          ],
+          "attempts": 2,
+          "failed": 0,
+          "median_ms": 126.2,
+          "errors": {}
+        }
+      },
+      {
+        "tag": "pool-06",
+        "latency": {
+          "url": "https://www.gstatic.com/generate_204",
+          "method": "HEAD",
+          "checked_at": 1793901507,
+          "samples_ms": [
+            136.9,
+            126.9
+          ],
+          "attempts": 2,
+          "failed": 0,
+          "median_ms": 131.9,
+          "errors": {}
+        }
+      },
+      {
+        "tag": "pool-07",
+        "latency": {
+          "url": "https://www.gstatic.com/generate_204",
+          "method": "HEAD",
+          "checked_at": 1793901487,
+          "samples_ms": [
+            210.8,
+            200.3
+          ],
+          "attempts": 2,
+          "failed": 0,
+          "median_ms": 205.6,
+          "errors": {}
+        }
+      },
+      {
+        "tag": "pool-08",
+        "latency": {
+          "url": "https://www.gstatic.com/generate_204",
+          "method": "HEAD",
+          "checked_at": 1793901573,
+          "samples_ms": [
+            216.6,
+            230.1
+          ],
+          "attempts": 2,
+          "failed": 0,
+          "median_ms": 223.3,
+          "errors": {}
+        }
+      },
+      {
         "tag": "pool-09",
         "latency": {
           "url": "https://www.gstatic.com/generate_204",
           "method": "HEAD",
-          "checked_at": 1793890800,
+          "checked_at": 1793901461,
           "samples_ms": [
-            142.8,
-            83.4
+            319.6,
+            200.8
           ],
           "attempts": 2,
           "failed": 0,
-          "median_ms": 113.1,
+          "median_ms": 260.2,
           "errors": {}
         }
       },
@@ -2148,14 +2191,14 @@
         "latency": {
           "url": "https://www.gstatic.com/generate_204",
           "method": "HEAD",
-          "checked_at": 1793890822,
+          "checked_at": 1793901475,
           "samples_ms": [
-            132.9,
-            133.7
+            208.4,
+            203.4
           ],
           "attempts": 2,
           "failed": 0,
-          "median_ms": 133.3,
+          "median_ms": 205.9,
           "errors": {}
         }
       },
@@ -2164,14 +2207,14 @@
         "latency": {
           "url": "https://www.gstatic.com/generate_204",
           "method": "HEAD",
-          "checked_at": 1793890876,
+          "checked_at": 1793901520,
           "samples_ms": [
-            142.0,
-            141.7
+            210.3,
+            213.5
           ],
           "attempts": 2,
           "failed": 0,
-          "median_ms": 141.8,
+          "median_ms": 211.9,
           "errors": {}
         }
       },
@@ -2180,14 +2223,14 @@
         "latency": {
           "url": "https://www.gstatic.com/generate_204",
           "method": "HEAD",
-          "checked_at": 1793890817,
+          "checked_at": 1793901492,
           "samples_ms": [
-            146.8,
-            140.2
+            272.5,
+            266.0
           ],
           "attempts": 2,
           "failed": 0,
-          "median_ms": 143.5,
+          "median_ms": 269.2,
           "errors": {}
         }
       },
@@ -2196,14 +2239,14 @@
         "latency": {
           "url": "https://www.gstatic.com/generate_204",
           "method": "HEAD",
-          "checked_at": 1793890819,
+          "checked_at": 1793901563,
           "samples_ms": [
-            141.6,
-            153.0
+            270.2,
+            271.0
           ],
           "attempts": 2,
           "failed": 0,
-          "median_ms": 147.3,
+          "median_ms": 270.6,
           "errors": {}
         }
       },
@@ -2212,14 +2255,14 @@
         "latency": {
           "url": "https://www.gstatic.com/generate_204",
           "method": "HEAD",
-          "checked_at": 1793890826,
+          "checked_at": 1793901510,
           "samples_ms": [
-            150.7,
-            148.0
+            236.5,
+            311.3
           ],
           "attempts": 2,
           "failed": 0,
-          "median_ms": 149.3,
+          "median_ms": 273.9,
           "errors": {}
         }
       },
@@ -2228,14 +2271,14 @@
         "latency": {
           "url": "https://www.gstatic.com/generate_204",
           "method": "HEAD",
-          "checked_at": 1793890895,
+          "checked_at": 1793901511,
           "samples_ms": [
-            142.6,
-            156.0
+            281.4,
+            283.8
           ],
           "attempts": 2,
           "failed": 0,
-          "median_ms": 149.3,
+          "median_ms": 282.6,
           "errors": {}
         }
       },
@@ -2244,14 +2287,14 @@
         "latency": {
           "url": "https://www.gstatic.com/generate_204",
           "method": "HEAD",
-          "checked_at": 1793890871,
+          "checked_at": 1793901475,
           "samples_ms": [
-            163.3,
-            167.7
+            288.3,
+            279.3
           ],
           "attempts": 2,
           "failed": 0,
-          "median_ms": 165.5,
+          "median_ms": 283.8,
           "errors": {}
         }
       },
@@ -2260,14 +2303,14 @@
         "latency": {
           "url": "https://www.gstatic.com/generate_204",
           "method": "HEAD",
-          "checked_at": 1793890823,
+          "checked_at": 1793901537,
           "samples_ms": [
-            174.2,
-            173.8
+            284.8,
+            293.3
           ],
           "attempts": 2,
           "failed": 0,
-          "median_ms": 174.0,
+          "median_ms": 289.1,
           "errors": {}
         }
       },
@@ -2276,14 +2319,14 @@
         "latency": {
           "url": "https://www.gstatic.com/generate_204",
           "method": "HEAD",
-          "checked_at": 1793890870,
+          "checked_at": 1793901487,
           "samples_ms": [
-            170.4,
-            239.7
+            297.4,
+            303.4
           ],
           "attempts": 2,
           "failed": 0,
-          "median_ms": 205.1,
+          "median_ms": 300.4,
           "errors": {}
         }
       },
@@ -2292,14 +2335,14 @@
         "latency": {
           "url": "https://www.gstatic.com/generate_204",
           "method": "HEAD",
-          "checked_at": 1793890825,
+          "checked_at": 1793901478,
           "samples_ms": [
-            214.8,
-            209.8
+            308.0,
+            371.4
           ],
           "attempts": 2,
           "failed": 0,
-          "median_ms": 212.3,
+          "median_ms": 339.7,
           "errors": {}
         }
       },
@@ -2308,14 +2351,14 @@
         "latency": {
           "url": "https://www.gstatic.com/generate_204",
           "method": "HEAD",
-          "checked_at": 1793890870,
+          "checked_at": 1793901531,
           "samples_ms": [
-            219.5,
-            214.0
+            418.5,
+            323.1
           ],
           "attempts": 2,
           "failed": 0,
-          "median_ms": 216.8,
+          "median_ms": 370.8,
           "errors": {}
         }
       },
@@ -2324,14 +2367,14 @@
         "latency": {
           "url": "https://www.gstatic.com/generate_204",
           "method": "HEAD",
-          "checked_at": 1793890832,
+          "checked_at": 1793901478,
           "samples_ms": [
-            226.3,
-            222.1
+            300.0,
+            500.0
           ],
           "attempts": 2,
           "failed": 0,
-          "median_ms": 224.2,
+          "median_ms": 400.0,
           "errors": {}
         }
       },
@@ -2340,14 +2383,14 @@
         "latency": {
           "url": "https://www.gstatic.com/generate_204",
           "method": "HEAD",
-          "checked_at": 1793890826,
+          "checked_at": 1793901500,
           "samples_ms": [
-            230.0,
-            257.6
+            408.8,
+            395.1
           ],
           "attempts": 2,
           "failed": 0,
-          "median_ms": 243.8,
+          "median_ms": 402.0,
           "errors": {}
         }
       },
@@ -2356,14 +2399,14 @@
         "latency": {
           "url": "https://www.gstatic.com/generate_204",
           "method": "HEAD",
-          "checked_at": 1793890869,
+          "checked_at": 1793901478,
           "samples_ms": [
-            292.7,
-            292.3
+            366.0,
+            452.8
           ],
           "attempts": 2,
           "failed": 0,
-          "median_ms": 292.5,
+          "median_ms": 409.4,
           "errors": {}
         }
       },
@@ -2372,14 +2415,14 @@
         "latency": {
           "url": "https://www.gstatic.com/generate_204",
           "method": "HEAD",
-          "checked_at": 1793890822,
+          "checked_at": 1793901554,
           "samples_ms": [
-            187.8,
-            128.7
+            432.1,
+            445.9
           ],
           "attempts": 2,
           "failed": 0,
-          "median_ms": 158.2,
+          "median_ms": 439.0,
           "errors": {}
         }
       },
@@ -2388,14 +2431,14 @@
         "latency": {
           "url": "https://www.gstatic.com/generate_204",
           "method": "HEAD",
-          "checked_at": 1793890828,
+          "checked_at": 1793901515,
           "samples_ms": [
-            254.4,
-            205.4
+            323.2,
+            665.1
           ],
           "attempts": 2,
           "failed": 0,
-          "median_ms": 229.9,
+          "median_ms": 494.1,
           "errors": {}
         }
       },
@@ -2404,14 +2447,14 @@
         "latency": {
           "url": "https://www.gstatic.com/generate_204",
           "method": "HEAD",
-          "checked_at": 1793890834,
+          "checked_at": 1793901515,
           "samples_ms": [
-            257.9,
-            239.7
+            1163.0,
+            166.2
           ],
           "attempts": 2,
           "failed": 0,
-          "median_ms": 248.8,
+          "median_ms": 664.6,
           "errors": {}
         }
       },
@@ -2420,14 +2463,14 @@
         "latency": {
           "url": "https://www.gstatic.com/generate_204",
           "method": "HEAD",
-          "checked_at": 1793890830,
+          "checked_at": 1793901455,
           "samples_ms": [
-            254.7,
-            259.7
+            533.2,
+            551.4
           ],
           "attempts": 2,
           "failed": 0,
-          "median_ms": 257.2,
+          "median_ms": 542.3,
           "errors": {}
         }
       },
@@ -2436,14 +2479,14 @@
         "latency": {
           "url": "https://www.gstatic.com/generate_204",
           "method": "HEAD",
-          "checked_at": 1793890826,
+          "checked_at": 1793901462,
           "samples_ms": [
-            339.6,
-            342.0
+            594.6,
+            596.3
           ],
           "attempts": 2,
           "failed": 0,
-          "median_ms": 340.8,
+          "median_ms": 595.5,
           "errors": {}
         }
       },
@@ -2452,14 +2495,14 @@
         "latency": {
           "url": "https://www.gstatic.com/generate_204",
           "method": "HEAD",
-          "checked_at": 1793890799,
+          "checked_at": 1793901506,
           "samples_ms": [
-            355.2,
-            424.2
+            610.3,
+            605.4
           ],
           "attempts": 2,
           "failed": 0,
-          "median_ms": 389.7,
+          "median_ms": 607.8,
           "errors": {}
         }
       },
@@ -2468,14 +2511,14 @@
         "latency": {
           "url": "https://www.gstatic.com/generate_204",
           "method": "HEAD",
-          "checked_at": 1793890883,
+          "checked_at": 1793901473,
           "samples_ms": [
-            393.0,
-            399.7
+            594.2,
+            628.2
           ],
           "attempts": 2,
           "failed": 0,
-          "median_ms": 396.4,
+          "median_ms": 611.2,
           "errors": {}
         }
       },
@@ -2484,14 +2527,14 @@
         "latency": {
           "url": "https://www.gstatic.com/generate_204",
           "method": "HEAD",
-          "checked_at": 1793890834,
+          "checked_at": 1793901501,
           "samples_ms": [
-            406.4,
-            403.2
+            602.9,
+            639.0
           ],
           "attempts": 2,
           "failed": 0,
-          "median_ms": 404.8,
+          "median_ms": 621.0,
           "errors": {}
         }
       },
@@ -2500,14 +2543,14 @@
         "latency": {
           "url": "https://www.gstatic.com/generate_204",
           "method": "HEAD",
-          "checked_at": 1793890806,
+          "checked_at": 1793901460,
           "samples_ms": [
-            401.0,
-            416.5
+            630.2,
+            628.6
           ],
           "attempts": 2,
           "failed": 0,
-          "median_ms": 408.8,
+          "median_ms": 629.4,
           "errors": {}
         }
       },
@@ -2516,14 +2559,14 @@
         "latency": {
           "url": "https://www.gstatic.com/generate_204",
           "method": "HEAD",
-          "checked_at": 1793890799,
+          "checked_at": 1793901500,
           "samples_ms": [
-            434.2,
-            401.6
+            647.4,
+            634.8
           ],
           "attempts": 2,
           "failed": 0,
-          "median_ms": 417.9,
+          "median_ms": 641.1,
           "errors": {}
         }
       },
@@ -2532,14 +2575,14 @@
         "latency": {
           "url": "https://www.gstatic.com/generate_204",
           "method": "HEAD",
-          "checked_at": 1793890826,
+          "checked_at": 1793901463,
           "samples_ms": [
-            429.4,
-            425.6
+            636.6,
+            646.5
           ],
           "attempts": 2,
           "failed": 0,
-          "median_ms": 427.5,
+          "median_ms": 641.5,
           "errors": {}
         }
       },
@@ -2548,14 +2591,14 @@
         "latency": {
           "url": "https://www.gstatic.com/generate_204",
           "method": "HEAD",
-          "checked_at": 1793890803,
+          "checked_at": 1793901496,
           "samples_ms": [
-            420.7,
-            444.0
+            668.0,
+            640.3
           ],
           "attempts": 2,
           "failed": 0,
-          "median_ms": 432.4,
+          "median_ms": 654.1,
           "errors": {}
         }
       },
@@ -2564,14 +2607,14 @@
         "latency": {
           "url": "https://www.gstatic.com/generate_204",
           "method": "HEAD",
-          "checked_at": 1793890822,
+          "checked_at": 1793901470,
           "samples_ms": [
-            439.7,
-            442.4
+            654.8,
+            655.7
           ],
           "attempts": 2,
           "failed": 0,
-          "median_ms": 441.0,
+          "median_ms": 655.2,
           "errors": {}
         }
       },
@@ -2580,14 +2623,14 @@
         "latency": {
           "url": "https://www.gstatic.com/generate_204",
           "method": "HEAD",
-          "checked_at": 1793890803,
+          "checked_at": 1793901515,
           "samples_ms": [
-            451.6,
-            430.5
+            664.8,
+            676.9
           ],
           "attempts": 2,
           "failed": 0,
-          "median_ms": 441.1,
+          "median_ms": 670.8,
           "errors": {}
         }
       },
@@ -2596,14 +2639,14 @@
         "latency": {
           "url": "https://www.gstatic.com/generate_204",
           "method": "HEAD",
-          "checked_at": 1793890809,
+          "checked_at": 1793901516,
           "samples_ms": [
-            437.4,
-            448.3
+            696.6,
+            668.7
           ],
           "attempts": 2,
           "failed": 0,
-          "median_ms": 442.9,
+          "median_ms": 682.7,
           "errors": {}
         }
       },
@@ -2612,14 +2655,14 @@
         "latency": {
           "url": "https://www.gstatic.com/generate_204",
           "method": "HEAD",
-          "checked_at": 1793890865,
+          "checked_at": 1793901520,
           "samples_ms": [
-            444.7,
-            444.3
+            1179.3,
+            296.4
           ],
           "attempts": 2,
           "failed": 0,
-          "median_ms": 444.5,
+          "median_ms": 737.8,
           "errors": {}
         }
       },
@@ -2628,21 +2671,21 @@
         "latency": {
           "url": "https://www.gstatic.com/generate_204",
           "method": "HEAD",
-          "checked_at": 1793890803,
+          "checked_at": 1793901465,
           "samples_ms": [
-            446.8,
-            489.4
+            1578.0,
+            533.8
           ],
           "attempts": 2,
           "failed": 0,
-          "median_ms": 468.1,
+          "median_ms": 1055.9,
           "errors": {}
         }
       }
     ]
   },
-  "reputation_excluded": 8,
-  "foreign_exit_candidates": 157,
+  "reputation_excluded": 9,
+  "foreign_exit_candidates": 158,
   "geosite_sources": [
     {
       "category": "category-ru",
@@ -2652,8 +2695,8 @@
     }
   ],
   "client_geoip": "geoip:ru from client installed geoip.dat; update client geodata",
-  "config_utf16_bytes": 30054,
-  "config_utf8_bytes": 15027,
+  "config_utf16_bytes": 29546,
+  "config_utf8_bytes": 14773,
   "subscription_policy": {
     "clients": [
       "Happ",
@@ -2686,8 +2729,124 @@
     "probe": {
       "destination": "https://www.gstatic.com/generate_204",
       "interval": "30s",
-      "sampling": 3,
-      "timeout": "5s"
+      "sampling": 1,
+      "timeout": "5s",
+      "httpMethod": "HEAD"
+    },
+    "automatic_selection": {
+      "strategy": "two-level-leastPing",
+      "ranking_vantage": "client device",
+      "group_by": [
+        "protocol",
+        "transport",
+        "security"
+      ],
+      "group_score": "live HTTPing through the fastest observed member",
+      "priority_order": "dynamic_on_device",
+      "initial_fallback": "Автовыбор",
+      "probe_subjects": 46,
+      "groups": [
+        {
+          "protocol": "shadowsocks",
+          "transport": "tcp",
+          "security": "none",
+          "servers": [
+            "pool-04",
+            "pool-05",
+            "pool-06",
+            "pool-07",
+            "pool-09",
+            "pool-14",
+            "pool-27",
+            "pool-40"
+          ],
+          "balancer": "technology-01",
+          "outbound": "technology-out-01",
+          "inbound": "technology-in-01"
+        },
+        {
+          "protocol": "trojan",
+          "transport": "tcp",
+          "security": "tls",
+          "servers": [
+            "pool-08",
+            "pool-10",
+            "pool-11",
+            "pool-28",
+            "pool-37",
+            "pool-39"
+          ],
+          "balancer": "technology-02",
+          "outbound": "technology-out-02",
+          "inbound": "technology-in-02"
+        },
+        {
+          "protocol": "vless",
+          "transport": "grpc",
+          "security": "reality",
+          "servers": [
+            "pool-25"
+          ],
+          "balancer": "technology-03",
+          "outbound": "technology-out-03",
+          "inbound": "technology-in-03"
+        },
+        {
+          "protocol": "vless",
+          "transport": "tcp",
+          "security": "reality",
+          "servers": [
+            "Автовыбор",
+            "pool-02",
+            "pool-03",
+            "pool-12",
+            "pool-13",
+            "pool-16",
+            "pool-17",
+            "pool-18",
+            "pool-19",
+            "pool-20",
+            "pool-21",
+            "pool-22",
+            "pool-23",
+            "pool-24",
+            "pool-26",
+            "pool-30",
+            "pool-31",
+            "pool-32",
+            "pool-38"
+          ],
+          "balancer": "technology-04",
+          "outbound": "technology-out-04",
+          "inbound": "technology-in-04"
+        },
+        {
+          "protocol": "vless",
+          "transport": "tcp",
+          "security": "tls",
+          "servers": [
+            "pool-33",
+            "pool-34",
+            "pool-35",
+            "pool-36"
+          ],
+          "balancer": "technology-05",
+          "outbound": "technology-out-05",
+          "inbound": "technology-in-05"
+        },
+        {
+          "protocol": "vmess",
+          "transport": "tcp",
+          "security": "tls",
+          "servers": [
+            "pool-15",
+            "pool-29"
+          ],
+          "balancer": "technology-06",
+          "outbound": "technology-out-06",
+          "inbound": "technology-in-06"
+        }
+      ]
     },
     "geodata_sha256": {
       "geosite.dat": "916fea0cea925cc47f09001dfac652d5e8edb6db69ff13ad68e2b4ac9e8ecc1b",
