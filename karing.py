@@ -4,6 +4,7 @@ import copy
 import json
 import urllib.request
 from generate import serialized_config
+from technology_selection import PROXY_PROTOCOLS
 
 def download(url, limit=10_000_000):
     with urllib.request.urlopen(url, timeout=40) as response:
@@ -15,21 +16,24 @@ def download(url, limit=10_000_000):
 
 def automatic_config(config, label='Автовыбор'):
     variant = copy.deepcopy(config)
-    proxies = [o for o in variant['outbounds'] if o.get('tag', '').startswith('pool-')]
+    proxies = [o for o in variant['outbounds'] if o.get('protocol') in PROXY_PROTOCOLS]
     if not proxies:
         raise ValueError('no checked proxy servers for automatic pool')
     old_tag = proxies[0]['tag']
     proxies[0]['tag'] = label
     variant['remarks'] = label
-    tags = [o['tag'] for o in proxies]
     for rule in variant['routing']['rules']:
         if rule.get('outboundTag') == old_tag:
             rule['outboundTag'] = label
     for balancer in variant['routing']['balancers']:
-        balancer['selector'] = tags[:]
+        balancer['selector'] = [label if tag == old_tag else tag
+                                for tag in balancer['selector']]
+        if balancer.get('fallbackTag') == old_tag:
+            balancer['fallbackTag'] = label
     for key in ('observatory', 'burstObservatory'):
         if key in variant:
-            variant[key]['subjectSelector'] = tags[:]
+            variant[key]['subjectSelector'] = [label if tag == old_tag else tag
+                                               for tag in variant[key]['subjectSelector']]
     serialized_config(variant)
     return variant
 

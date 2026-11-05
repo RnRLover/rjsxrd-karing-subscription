@@ -52,8 +52,12 @@ class PoolTests(unittest.TestCase):
         for v in variants:
             self.assertLessEqual(len(json.dumps(v, ensure_ascii=False, separators=(',', ':')).encode('utf-16-le')) + 2, 240000)
             tags = {o['tag'] for o in v['outbounds'] if o['protocol'] in ('vless','vmess','trojan','shadowsocks')}
-            self.assertEqual(set(v['routing']['balancers'][0]['selector']), tags)
-            self.assertEqual(set(v['burstObservatory']['subjectSelector']), tags)
+            groups = v['routing']['balancers'][1:]
+            self.assertEqual({tag for group in groups for tag in group['selector']}, tags)
+            routes = {o['tag'] for o in v['outbounds']
+                      if o['protocol'] == 'loopback' and o['tag'] != 'default-proxy'}
+            self.assertEqual(set(v['routing']['balancers'][0]['selector']), routes)
+            self.assertEqual(set(v['burstObservatory']['subjectSelector']), tags | routes)
         self.assertIn('dns', trimmed)
         for variant in variants:
             self.assertIn('dns', variant)
