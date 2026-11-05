@@ -2,8 +2,7 @@ import copy
 import json
 import unittest
 from pathlib import Path
-from generate import CountryRanges
-from pool_selection import node_key, select_pool, recent_exit
+from pool_selection import node_key, select_pool
 from publication_changed import canonical
 from karing import fit_client_pool
 
@@ -28,19 +27,11 @@ class PoolTests(unittest.TestCase):
         self.assertIn('c', [n['host'] for n in chosen])
         self.assertEqual(len({n['host'] for n in chosen}), 2)
 
-    def test_previous_membership_and_order_win_equal_diversity_ties(self):
-        a, b, c = node('a'), node('b'), node('c')
-        keys = [node_key(b), node_key(a)]
-        chosen = select_pool([c, a, b], 2, keys, lambda host: 'same-network')
-        self.assertEqual([node_key(n) for n in chosen], keys)
-
-    def test_exit_cache_rejects_ru_expired_and_nonpublic(self):
-        n = node('a'); ranges = CountryRanges(['5.0.0.0/8'])
-        for ip, timestamp in [('5.1.1.1', 99), ('127.0.0.1', 99), ('8.8.8.8', 0)]:
-            self.assertIsNone(recent_exit(n, {node_key(n): {'exit_ip': ip, 'verified_at': timestamp}}, 100, ranges, ttl=50))
-        self.assertEqual(recent_exit(n, {node_key(n): {'exit_ip': '8.8.8.8', 'verified_at': 99}}, 100, ranges)['exit_ip'], '8.8.8.8')
-        changed = copy.deepcopy(n); changed['outbound']['settings']['servers'][0]['password'] = 'different'
-        self.assertNotEqual(node_key(n), node_key(changed))
+    def test_changed_credentials_have_a_distinct_identity(self):
+        original = node('a')
+        changed = copy.deepcopy(original)
+        changed['outbound']['settings']['servers'][0]['password'] = 'different'
+        self.assertNotEqual(node_key(original), node_key(changed))
 
     def test_size_trimming_keeps_common_pool_and_client_dns(self):
         from russia_config import build

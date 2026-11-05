@@ -19,11 +19,11 @@ from pathlib import Path
 
 from rjsxrd_parser import parse_url
 from routing import domains, policy
-from pool_selection import node_key, select_pool, recent_exit
-from latency_checks import measure_latency, reusable_latency, latency_report
-from ip_reputation import load_feed, rank_nodes, reputation_report
-from quality_checks import probe_quality, reusable_quality, record_result, history_summary, quality_report, quality_priority
-from certificate_checks import probe_transport, complete_transport, reusable_transport, transport_report
+from pool_selection import select_pool
+from latency_checks import measure_latency, latency_report
+from ip_reputation import CACHE_KEY, load_feed, rank_nodes, reputation_report
+from quality_checks import probe_quality, probe_control, quality_report, quality_priority
+from certificate_checks import probe_transport, complete_transport, transport_report
 
 ROOT = Path(__file__).resolve().parent
 
@@ -223,7 +223,12 @@ def verify_exits(nodes, ranges, xray, failures=None):
                 except Exception as error:
                     return {'probe_failure': stage + ':' + type(error).__name__}
             with concurrent.futures.ThreadPoolExecutor(max_workers=12) as executor:
-                results = list(executor.map(check, zip(nodes, ports)))
+                futures = [executor.submit(check, pair) for pair in zip(nodes, ports)]
+                results = []
+                for future in concurrent.futures.as_completed(futures):
+                    results.append(future.result())
+                    if len(results) % 50 == 0 or len(results) == len(nodes):
+                        print(json.dumps({'probed': len(results), 'total': len(nodes)}), flush=True)
                 failures.update(n['probe_failure'] for n in results if 'probe_failure' in n)
                 return [n for n in results if 'probe_failure' not in n]
         finally:
@@ -285,78 +290,29 @@ def main():
         allowed = dict(zip(hosts, executor.map(endpoint_allowed, hosts)))
     eligible = [n for n in candidates if allowed[n["host"]]]
     counters["nonpublic_or_unresolved_endpoint"] = len(candidates) - len(eligible)
-    cache_path = ROOT / '.runtime' / 'exit-cache.json'
-    exit_cache = json.loads(cache_path.read_text()) if cache_path.exists() else {}
+    # Every candidate is measured in this run. Only the external IPsum dataset
+    # is cached; no node measurements, failure cooldowns or history are loaded.
+    cache_path = ROOT / '.runtime' / 'reputation-cache.json'
+    reputation_cache = json.loads(cache_path.read_text()) if cache_path.exists() else {}
     now = int(time.time())
-    ttl = settings.get('exit_country_cache_seconds', 86400)
-    checked, pending = [], []
-    for node in eligible:
-        key = node_key(node)
-        entry = exit_cache.get(key, {})
-        cached = recent_exit(node, exit_cache, now, ranges, ttl)
-        if (cached and reusable_transport(entry.get('transport_check'), now)
-                and reusable_latency(entry.get('latency_check'), now)
-                and reusable_quality(entry.get('quality_check'), now)):
-            checked.append({**cached, 'transport_check': entry['transport_check'],
-                            'latency_check': entry['latency_check'],
-                            'quality_check': entry['quality_check'],
-                            'quality_history': history_summary(entry, now)})
-        else:
-            fresh_ru = (not cached and 'exit_ip' in entry
-                        and 0 <= now - entry.get('verified_at', 0) < ttl
-                        and not egress_allowed(entry['exit_ip'], ranges))
-            failed_recently = 0 <= now - entry.get('failed_at', 0) < 900
-            if not fresh_ru and not failed_recently:
-                pending.append(node)
-    counters['cached_foreign_exits'] = len(checked)
+    feed, reputation_source = load_feed(reputation_cache, fetch, now)
+    cache_path.parent.mkdir(exist_ok=True)
+    atomic_write(cache_path, json.dumps({CACHE_KEY: feed}, sort_keys=True) + '\n')
     transport_failures = Counter()
-    if pending:
-        control = probe_quality(urllib.request.build_opener(urllib.request.ProxyHandler({})))
-        if not control['passed']:
-            raise RuntimeError('Quality test destinations unavailable from runner; preserve existing pool/history: ' + json.dumps(control))
-    measured = verify_exits(pending, ranges, args.xray, transport_failures) if pending else []
+    control = probe_control(urllib.request.build_opener(urllib.request.ProxyHandler({})))
+    print(json.dumps({'quality_control': control}), flush=True)
+    if not control['passed']:
+        raise RuntimeError('Quality test destinations unavailable from runner after retries; keep published pool: '
+                           + json.dumps(control))
+    measured = verify_exits(eligible, ranges, args.xray, transport_failures)
+    checked = [n for n in measured if egress_allowed(n['exit_ip'], ranges)]
     print(json.dumps({'transport_failure_counts': dict(transport_failures),
-                      'quality_tested': len(measured),
-                      'quality_passed': sum(n.get('quality_check', {}).get('passed') is True for n in measured),
-                      'quality_errors': dict(Counter(e for n in measured for e in n.get('quality_check', {}).get('errors', [])))}))
-    measured_keys = {node_key(node) for node in measured}
-    for node in pending:
-        key = node_key(node)
-        if key not in measured_keys:
-            entry = record_result(exit_cache.get(key, {}), False, now)
-            entry['failed_at'] = now
-            # Never admit stale success after a failed current probe.
-            entry.pop('quality_check', None)
-            exit_cache[key] = entry
-    for node in measured:
-        key = node_key(node)
-        passed = egress_allowed(node['exit_ip'], ranges) and node.get('quality_check', {}).get('passed') is True
-        entry = record_result(exit_cache.get(key, {}), passed, now)
-        entry.update({k: node[k] for k in ('exit_ip', 'transport_check', 'latency_check', 'quality_check') if k in node})
-        entry['verified_at'] = now
-        if passed: entry.pop('failed_at', None)
-        else: entry['failed_at'] = now; entry.pop('quality_check', None)
-        exit_cache[key] = entry
-        if egress_allowed(node['exit_ip'], ranges):
-            checked.append({**node, 'quality_history': history_summary(entry, now)})
-    # Persist observations even when no pool can be published. A cached result
-    # does not add an observation. A missing CI cache starts provisional history.
-    active_keys = {node_key(n) for n in eligible}
-    for key in list(exit_cache):
-        if len(key) == 64 and key not in active_keys:
-            last = max(exit_cache[key].get('verified_at', 0), exit_cache[key].get('failed_at', 0))
-            if now - last > 7 * 86400: del exit_cache[key]
-    cache_path.parent.mkdir(exist_ok=True)
-    atomic_write(cache_path, json.dumps(exit_cache, sort_keys=True) + '\n')
-    feed, reputation_source = load_feed(exit_cache, fetch, now)
+                      'quality_tested': len(checked),
+                      'quality_passed': sum(n.get('quality_check', {}).get('passed') is True for n in checked),
+                      'quality_errors': dict(Counter(e for n in checked for e in n.get('quality_check', {}).get('errors', [])))}),
+          flush=True)
     checked = rank_nodes(checked, feed)
-    cache_path.parent.mkdir(exist_ok=True)
-    atomic_write(cache_path, json.dumps(exit_cache, sort_keys=True) + '\n')
-    previous_path = ROOT / 'ru.json'
-    previous = []
-    if previous_path.exists():
-        previous = [node_key({'outbound': ob}) for ob in json.loads(previous_path.read_bytes())['outbounds'] if ob['protocol'] in ('vless', 'vmess', 'trojan', 'shadowsocks')]
-    selected = select_pool(checked, min(settings['max_nodes'], 40), previous, require_quality=True)
+    selected = select_pool(checked, min(settings['max_nodes'], 40), require_quality=True)
     # Preserve the quality/diversity order if the Android budget trims a tail.
     while True:
         config = build(selected, routing)
@@ -369,7 +325,7 @@ def main():
             if 'publication size budget' not in str(error) or len(selected) <= 2:
                 raise
             selected.pop()
-    # A stable node starts first; device-side leastPing is unchanged.
+    # Current performance determines startup order; device-side leastPing is unchanged.
     from latency_checks import latency_value
     selected = sorted(selected, key=lambda n: (quality_priority(n), latency_value(n)))
     reputation = reputation_report(checked, selected, feed, reputation_source)
@@ -381,13 +337,14 @@ def main():
     report["service_acl"] = False
     report["routing_policy"] = "local direct; RU direct; everything else proxy"
     report['ru_reachability_required'] = False
-    report['pool_selection'] = 'verified transfer and two-site HTTPS health; actual rolling success >=90%; prefer established stability/performance bands; strict infrastructure caps; up to 40 nodes; client leastPing'
+    report['pool_selection'] = 'fresh checks only; two-site HTTPS HEAD health and latency; current performance bands; strict infrastructure caps; up to 40 nodes; client leastPing'
+    report['quality_control'] = control
     report['quality_selection'] = quality_report(checked, selected)
     report['ip_reputation'] = reputation
     report['transport_checks'] = transport_report(selected, transport_failures)
     report['latency_selection'] = latency_report(checked, selected)
-    report['latency_selection']['policy'] = 'quality/history bands first, exact median HTTPS latency within band; client leastPing unchanged'
-    report['latency_selection']['failed_probe_policy'] = 'current two-site health and full transfer required independently of legacy HEAD measurements'
+    report['latency_selection']['policy'] = 'current quality bands first, exact median HTTPS latency within band; client leastPing unchanged'
+    report['latency_selection']['failed_probe_policy'] = 'current two-site HTTPS health required independently of extra HEAD measurements'
     report['reputation_excluded'] = sum(n['reputation']['status'] == 'listed' for n in checked)
     report['foreign_exit_candidates'] = len(checked)
     report["geosite_sources"] = geo_sources

@@ -65,7 +65,7 @@ def reusable_transport(evidence, now):
 
 def transport_report(selected, failures):
     return {'policy': 'TLS chain/name/expiry via system CA plus Xray HTTPS; REALITY via Xray; SS without TLS not applicable',
-            'cache_seconds': CHECK_TTL, 'expiry_warning_days': 7,
+            'cache_seconds': 0, 'expiry_warning_days': 7,
             'failure_counts': dict(failures),
             'servers': [{'tag': f'pool-{i:02d}', **n['transport_check']} for i, n in enumerate(selected, 1)]}
 

@@ -66,7 +66,7 @@ def order_by_latency(nodes):
 
 def latency_report(nodes, selected):
     return {'url': URL, 'method': 'HEAD', 'attempts': SAMPLES, 'timeout_seconds': TIMEOUT,
-            'cache_seconds': TTL, 'vantage': 'GitHub Actions runner',
+            'cache_seconds': 0, 'vantage': 'GitHub Actions runner',
             'policy': 'select reputation-eligible diverse membership first; order selected pool by ascending median milliseconds; unknown last',
             'failed_probe_policy': 'keep nodes; partial samples use their median; no successful samples sorts last',
             'candidates': len(nodes),

@@ -1,38 +1,31 @@
 import copy
-import io
 import json
 import unittest
-from pathlib import Path
-from quality_checks import (probe_quality, HEALTH_URLS, TRANSFER_URL, TRANSFER_BYTES,
-                            TTL, reusable_quality, record_result, history_summary,
-                            quality_admitted, quality_signature, MAX_AGE)
+from unittest.mock import patch
+from quality_checks import (probe_quality, probe_control, HEALTH_URLS,
+                            quality_admitted, quality_signature)
 from pool_selection import select_pool
 from test_pool_selection import node
 
 
 class Response:
-    def __init__(self, url, status=204, body=b'', content_type='application/octet-stream'):
-        self.url, self.status, self.body = url, status, io.BytesIO(body)
-        self.headers = {'Content-Type': content_type}
+    def __init__(self, url, status=204):
+        self.url, self.status = url, status
     def getcode(self): return self.status
     def geturl(self): return self.url
-    def read(self, n): return self.body.read(n)
     def __enter__(self): return self
     def __exit__(self, *args): pass
 
 
 class Opener:
-    def __init__(self, failures=(), body=None, redirect=False, kind='application/octet-stream'):
-        self.calls = []; self.failures = set(failures)
-        self.body = Path(__file__).with_name('quality-probe.bin').read_bytes() if body is None else body
-        self.redirect, self.kind = redirect, kind
+    def __init__(self, failures=(), redirect=False, status=204):
+        self.calls = []; self.methods = []; self.failures = set(failures)
+        self.redirect, self.status = redirect, status
     def open(self, request, timeout):
         i = len(self.calls); self.calls.append(request.full_url)
+        self.methods.append(request.get_method())
         if i in self.failures: raise TimeoutError()
-        url = request.full_url
-        return Response('https://portal.invalid/' if self.redirect else url,
-                        200 if url == TRANSFER_URL else 204,
-                        self.body if url == TRANSFER_URL else b'', self.kind)
+        return Response('https://portal.invalid/' if self.redirect else request.full_url, self.status)
 
 
 class Clock:
@@ -40,57 +33,43 @@ class Clock:
     def __call__(self): self.value += self.step; return self.value
 
 
-def healthy(host, ip, observations=3, latency=100):
-    q = {'version': 1, 'passed': True, 'checked_at': 100,
+def healthy(host, ip, latency=100):
+    q = {'version': 3, 'passed': True, 'checked_at': 100,
          'samples_ms': [latency] * 4, 'median_ms': latency, 'spread_ms': 0,
-         'transfer_ms': 500, 'transfer_bytes': TRANSFER_BYTES}
-    return {**node(host), 'exit_ip': ip, 'quality_check': q,
-            'quality_history': {'observations': observations, 'passed': observations,
-                                'success_rate': 1, 'provisional': observations < 3}}
+         'sites': [{'url': url, 'passed': 2, 'attempts': 2} for url in HEALTH_URLS]}
+    return {**node(host), 'exit_ip': ip, 'quality_check': q}
 
 
 class QualityTests(unittest.TestCase):
-    def test_two_independent_sites_and_complete_bounded_transfer(self):
-        opener = Opener(); q = probe_quality(opener, Clock(), lambda:100)
-        self.assertTrue(q['passed']); self.assertEqual(q['transfer_bytes'], TRANSFER_BYTES)
-        self.assertEqual(opener.calls, [HEALTH_URLS[0]]*2+[HEALTH_URLS[1]]*2+[TRANSFER_URL])
-        self.assertTrue(reusable_quality(q, 100+TTL-1))
-        for at in (99, 100+TTL): self.assertFalse(reusable_quality(q, at))
-        self.assertFalse(reusable_quality({'version':0}, 100))
+    def test_only_two_site_https_head_is_requested_without_file_download(self):
+        opener=Opener(); q=probe_quality(opener,Clock(),lambda:100)
+        self.assertTrue(q['passed'])
+        self.assertEqual(opener.calls,[HEALTH_URLS[0]]*2+[HEALTH_URLS[1]]*2)
+        self.assertEqual(opener.methods,['HEAD']*4)
+        self.assertNotIn('transfer_bytes',q)
 
     def test_one_transient_probe_allowed_but_both_sites_required(self):
-        self.assertTrue(probe_quality(Opener(failures=[0]), Clock())['passed'])
+        self.assertTrue(probe_quality(Opener(failures=[0]),Clock())['passed'])
         for failures in ([0,1], [0,2], [0,1,2,3]):
-            opener=Opener(failures); q=probe_quality(opener, Clock())
-            self.assertFalse(q['passed']); self.assertNotIn(TRANSFER_URL, opener.calls)
+            self.assertFalse(probe_quality(Opener(failures=failures),Clock())['passed'])
+        self.assertFalse(probe_quality(Opener(redirect=True),Clock())['passed'])
+        self.assertFalse(probe_quality(Opener(status=200),Clock())['passed'])
 
-    def test_short_oversized_html_redirect_and_stalled_download_fail(self):
-        for opener in (Opener(body=b'x'*16000), Opener(body=b'x'*(TRANSFER_BYTES+1)),
-                       Opener(kind='text/html'), Opener(redirect=True), Opener(body=b'x'*TRANSFER_BYTES)):
-            self.assertFalse(probe_quality(opener, Clock())['passed'])
-        self.assertFalse(probe_quality(Opener(), Clock(step=2))['passed'])
-
-    def test_real_observations_only_rolling_window_age_and_recovery(self):
-        entry={}
-        for at in range(10, 20): entry=record_result(entry, at!=10, at)
-        summary=history_summary(entry,20)
-        self.assertEqual(summary['observations'],10);self.assertEqual(summary['success_rate'],.9)
-        unchanged=record_result(entry, True, 19)
-        self.assertEqual(unchanged,entry)
-        entry=record_result(entry,True,20)
-        self.assertEqual(history_summary(entry,21)['success_rate'],1)
-        self.assertEqual(history_summary(entry,21+MAX_AGE)['observations'],0)
-        n=healthy('a','8.8.8.8'); n['quality_history']['success_rate']=.8
-        self.assertFalse(quality_admitted(n))
-        n['quality_history']['success_rate']=.9
-        self.assertTrue(quality_admitted(n))
-        n['quality_check']['passed']=False
-        self.assertFalse(quality_admitted(n))
+    def test_runner_control_retries_without_admitting_a_failed_control(self):
+        failed={'passed':False,'errors':['TimeoutError']}
+        passed={'passed':True,'errors':[]}
+        pauses=[]
+        with patch('quality_checks.probe_quality', side_effect=[failed.copy(),passed.copy()]):
+            result=probe_control(None,pause=pauses.append)
+            self.assertTrue(result['passed']); self.assertEqual(result['control_attempts'],2)
+            self.assertEqual(pauses,[.5])
+        with patch('quality_checks.probe_quality', return_value=failed.copy()):
+            result=probe_control(None,pause=lambda _:None)
+            self.assertFalse(result['passed']); self.assertEqual(result['control_attempts'],3)
 
     def test_strict_exit_prefix_and_host_caps_no_unchecked_fallback(self):
         nodes=[healthy(f'h{i}', '8.8.8.8') for i in range(12)]
-        selected=select_pool(nodes,40,network_lookup=lambda h:'net',require_quality=True)
-        self.assertEqual(len(selected),2)
+        self.assertEqual(len(select_pool(nodes,40,network_lookup=lambda h:'net',require_quality=True)),2)
         for i,n in enumerate(nodes): n['exit_ip']=f'8.8.4.{i+1}'
         self.assertEqual(len(select_pool(nodes,40,network_lookup=lambda h:'net',require_quality=True)),4)
         self.assertEqual(select_pool([node('unchecked')],40,network_lookup=lambda h:h,require_quality=True),[])
@@ -99,15 +78,16 @@ class QualityTests(unittest.TestCase):
             n=healthy('host',f'8.8.4.{i+1}'); n['outbound']['streamSettings']['network']=str(i);same.append(n)
         self.assertEqual(len(select_pool(same,40,network_lookup=lambda h:h,require_quality=True)),2)
 
-    def test_established_quality_precedes_ping_and_new_nodes_are_limited(self):
-        slow=healthy('slow','8.8.8.8',latency=200)
-        new=healthy('new','1.1.1.1',observations=1,latency=1)
-        self.assertEqual(select_pool([new,slow],1,network_lookup=lambda h:h,require_quality=True),[slow])
-        mature=[healthy(f'm{i}', f'8.8.4.{i+1}') for i in range(10)]
-        new=[healthy(f'n{i}', f'1.1.1.{i+1}',observations=1) for i in range(50)]
-        chosen=select_pool(mature+new,40,network_lookup=lambda h:h,require_quality=True)
-        self.assertEqual(len(chosen),18)
-        self.assertEqual(len(select_pool(new,512,network_lookup=lambda h:h,require_quality=True)),40)
+    def test_current_quality_wins_regardless_of_old_history(self):
+        slow=healthy('slow','8.8.8.8',latency=500)
+        fast=healthy('fast','1.1.1.1',latency=1)
+        slow['quality_history']={'observations':10,'success_rate':1,'provisional':False}
+        fast['quality_history']={'observations':1,'success_rate':0,'provisional':True}
+        self.assertEqual(select_pool([slow,fast],1,network_lookup=lambda h:h,require_quality=True),[fast])
+        current=[healthy(f'n{i}',f'1.1.1.{i+1}') for i in range(50)]
+        self.assertEqual(len(select_pool(current,40,network_lookup=lambda h:h,require_quality=True)),40)
+        failed=healthy('failed','1.1.1.2');failed['quality_check']['passed']=False
+        self.assertFalse(quality_admitted(failed))
 
     def test_jitter_penalty_and_diversity_within_quality_band(self):
         a=healthy('a','8.8.8.8',latency=50); b=healthy('b','1.1.1.1',latency=100)
@@ -123,5 +103,6 @@ class QualityTests(unittest.TestCase):
         self.assertEqual(before,quality_signature(json.dumps(data)))
         data['quality_selection']['servers'][0]['check']['passed']=False
         self.assertNotEqual(before,quality_signature(json.dumps(data)))
+
 
 if __name__=='__main__': unittest.main()

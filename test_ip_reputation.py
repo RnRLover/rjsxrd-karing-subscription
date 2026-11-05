@@ -47,9 +47,8 @@ class ReputationTests(unittest.TestCase):
             with self.subTest(content=content), self.assertRaises(ValueError):
                 parse_feed(content, NOW)
 
-    def test_cache_refresh_is_daily_and_keeps_country_evidence(self):
-        country = {'exit_ip': '9.9.9.9', 'verified_at': NOW}
-        cache, calls = {'node-key': country}, []
+    def test_reputation_dataset_cache_refresh_is_daily(self):
+        cache, calls = {}, []
         def fetch(url):
             calls.append(url)
             return text()
@@ -58,7 +57,6 @@ class ReputationTests(unittest.TestCase):
         self.assertEqual((source, source2), ('download', 'cache'))
         self.assertEqual(calls, [FEED_URL])
         self.assertEqual(first, second)
-        self.assertEqual(cache['node-key'], country)
         load_feed(cache, fetch, NOW+86400)
         self.assertEqual(len(calls), 2)
 
@@ -81,14 +79,12 @@ class ReputationTests(unittest.TestCase):
         self.assertEqual(b['reputation']['score'], 80)
         self.assertNotIn('reputation', a['outbound'])
 
-    def test_unlisted_exits_beat_diversity_and_previous_marked_membership(self):
+    def test_unlisted_exits_beat_diversity(self):
         a, b, marked = rank_nodes([node('a', '9.9.9.9'), node('b', '9.9.9.10'),
                                   node('c', '1.1.1.1')], self.feed)
-        chosen = select_pool([marked, b, a], 2, [node_key(marked)],
-                             lambda host: 'other' if host == 'c' else 'same')
+        chosen = select_pool([marked, b, a], 2, network_lookup=lambda host: 'other' if host == 'c' else 'same')
         self.assertEqual({n['host'] for n in chosen}, {'a', 'b'})
-        self.assertEqual(chosen, select_pool([a, b, marked, a], 2, [node_key(marked)],
-                                           lambda host: 'other' if host == 'c' else 'same'))
+        self.assertEqual(chosen, select_pool([a, b, marked, a], 2, network_lookup=lambda host: 'other' if host == 'c' else 'same'))
 
     def test_listed_exits_are_excluded_even_when_pool_has_space(self):
         nodes = rank_nodes([node('three', '8.8.8.8'), node('one', '1.1.1.1'),

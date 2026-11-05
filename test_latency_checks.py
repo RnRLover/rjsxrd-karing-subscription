@@ -48,12 +48,6 @@ class LatencyTests(unittest.TestCase):
         self.assertEqual(e['median_ms'], 200)
         self.assertEqual(latency_priority({'latency_check': e}), (1, 2))
 
-    def test_runner_latency_does_not_override_stability_or_maximum_count(self):
-        slow, fast, unknown = measured('slow', 1300), measured('fast', 80), node('unknown')
-        selected = select_pool([slow, unknown, fast], 1, [node_key(slow)], lambda h: h)
-        self.assertEqual(selected[0]['host'], 'slow')
-        self.assertEqual(len(select_pool([slow, unknown, fast], 10, network_lookup=lambda h: h)), 3)
-
     def test_reputation_precedes_latency_and_bucket_retains_diversity(self):
         clean, listed = measured('clean', 1500), measured('listed', 10, reputation='listed')
         self.assertEqual(select_pool([listed, clean], 1, network_lookup=lambda h: h)[0]['host'], 'clean')
