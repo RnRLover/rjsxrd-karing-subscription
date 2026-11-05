@@ -1,19 +1,13 @@
 name: Update subscription
 on:
   workflow_dispatch:
-    inputs:
-      refresh_pools:
-        description: 'Refresh servers (disable to rebuild routing on the last validated pool)'
-        required: true
-        default: true
-        type: boolean
   schedule:
     - cron: '7,22,37,52 * * * *'
   push:
     paths:
       - '*.py'
       - 'settings.json'
-      - 'routing-policy.json'
+      - 'incy-routing.json'
       - '.github/workflows/update.yml'
 permissions:
   contents: write
@@ -39,22 +33,21 @@ jobs:
           path: .runtime/reputation-cache.json
           key: ipsum-feed-v2-${{ github.run_id }}-${{ github.run_attempt }}
           restore-keys: ipsum-feed-v2-
-      - name: Select diverse pool with foreign exit evidence (no public RU probes)
-        if: github.event_name != 'workflow_dispatch' || inputs.refresh_pools
-        run: python -u generate.py --xray .runtime/xray --verify-exits
+      - name: Build INCY pool in upstream order (known listed IPs excluded)
+        run: python -u generate.py --xray .runtime/xray
       - name: Save IPsum dataset (no server measurements)
         if: always()
         uses: actions/cache/save@v4
         with:
           path: .runtime/reputation-cache.json
           key: ipsum-feed-v2-${{ github.run_id }}-${{ github.run_attempt }}
-      - name: Generate common subscription
-        run: python karing.py --xray .runtime/xray
       - name: Check common routing, DNS interception and ad blocking
         run: python check_subscription.py --xray .runtime/xray
       - name: Check split DNS transport and no direct fallback
         run: python check_dns_transport.py --xray .runtime/xray
       - name: Check actual automatic selection and failover
         run: python check_auto_selection.py --xray .runtime/xray
+      - name: Check IPv4 and IPv6 direct connections and fallback
+        run: python check_dual_stack.py --xray .runtime/xray
       - name: Publish validated files
         run: python publish_subscription.py

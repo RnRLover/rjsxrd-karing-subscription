@@ -1,11 +1,34 @@
 """Publish validated outputs only while their source revision is still current."""
 from pathlib import Path
+import json
 import subprocess
-from publication_changed import changed
 
 ROOT = Path(__file__).resolve().parent
-OUTPUTS = ('subscription.json', 'ru.json', 'report.json')
-RETIRED = ('quality-probe.bin',)
+OUTPUTS = ('subscription.json', 'report.json')
+RETIRED = ('ru.json',)
+
+
+def report_signature(data):
+    report = json.loads(data)
+    reputation = report.get('ip_reputation', {})
+    return {'servers': reputation.get('servers', []),
+            'selection': reputation.get('selection_priority'),
+            'policy': report.get('subscription_policy'),
+            'counts': report.get('counts')}
+
+
+def changed(root):
+    for name in OUTPUTS:
+        old = git(root, 'show', 'HEAD:' + name, check=False)
+        if old.returncode:
+            return True
+        new = (root / name).read_text(encoding='utf-8')
+        if name == 'report.json':
+            if report_signature(old.stdout) != report_signature(new):
+                return True
+        elif old.stdout != new:
+            return True
+    return False
 
 
 def git(root, *args, check=True):

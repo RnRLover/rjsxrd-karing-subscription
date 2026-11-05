@@ -18,7 +18,7 @@ import tempfile
 import threading
 import time
 
-from generate import xray_validate
+from incy import xray_validate, load_configs
 
 ROOT = Path(__file__).resolve().parent
 
@@ -52,7 +52,7 @@ def tcp_fixture(label):
 
 
 def check_profile(args):
-    original = json.loads((ROOT / args.config).read_bytes())
+    original = load_configs(ROOT / args.config)
     if isinstance(original, list):
         original = original[args.profile_index]
     assert 'dns' in original and 'fakedns' not in original
@@ -97,7 +97,7 @@ def check_profile(args):
     for outbound in config['outbounds']:
         if outbound['tag'] == 'block' or outbound['protocol'] in ('loopback', 'dns'):
             continue
-        port = (direct if outbound['tag'] == 'direct' else proxy).getsockname()[1]
+        port = (direct if outbound['tag'] in ('direct', 'lan') else proxy).getsockname()[1]
         tag = outbound['tag']
         outbound.clear()
         outbound.update(tag=tag, protocol='freedom',
@@ -166,6 +166,8 @@ def check_profile(args):
                     ('GitHub web editor', 'vscode.github.dev', 'DIRECT'),
                     ('GitHub app', 'fixture.githubapp.com', 'DIRECT'),
                     ('GitHub container registry', 'ghcr.io', 'DIRECT'),
+                    ('GitHub category npm', 'npmjs.org', 'DIRECT'),
+                    ('GitHub category Copilot', 'api.githubcopilot.com', 'DIRECT'),
                     ('GitHub legacy release host', 'github-production-release-asset-2e65be.s3.amazonaws.com', 'DIRECT'),
                     ('GitHub legacy cloud host', 'github-cloud.s3.amazonaws.com', 'DIRECT'),
                     ('Non-GitHub lookalike', 'notgithub.com', 'PROXY'),
@@ -181,6 +183,7 @@ def check_profile(args):
                     ('DNS ad sink IPv4', '0.0.0.0', 'BLOCK'),
                     ('DNS ad sink IPv6', '::', 'BLOCK'),
                     ('Foreign IP', '8.8.8.8', 'PROXY'),
+                    ('Foreign IPv6', '2001:4860:4860::8888', 'PROXY'),
                     ('Foreign domain', 'foreign.fixture-domain.com', 'PROXY'),
                     ('Advertisement', 'doubleclick.net', 'BLOCK'),
                     ('RU advertisement before direct', 'ads.adfox.ru', 'BLOCK')]
@@ -247,7 +250,7 @@ def main():
     parser.add_argument('--config', default='subscription.json')
     parser.add_argument('--profile-index', type=int, default=None)
     args = parser.parse_args()
-    content = json.loads((ROOT / args.config).read_bytes())
+    content = load_configs(ROOT / args.config)
     indices = ([args.profile_index] if args.profile_index is not None else
                range(len(content)) if isinstance(content, list) else [0])
     for index in indices:
