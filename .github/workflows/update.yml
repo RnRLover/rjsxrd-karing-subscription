@@ -33,21 +33,21 @@ jobs:
         run: python -m unittest discover -v
       - name: Prepare official Xray
         run: python setup_xray.py
-      - name: Restore recent exit-country evidence
+      - name: Restore IPsum dataset (no server measurements)
         uses: actions/cache/restore@v4
         with:
-          path: .runtime/exit-cache.json
-          key: exit-country-v1-${{ github.run_id }}-${{ github.run_attempt }}
-          restore-keys: exit-country-v1-
+          path: .runtime/reputation-cache.json
+          key: ipsum-feed-v2-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: ipsum-feed-v2-
       - name: Select diverse pool with foreign exit evidence (no public RU probes)
         if: github.event_name != 'workflow_dispatch' || inputs.refresh_pools
-        run: python generate.py --xray .runtime/xray --verify-exits
-      - name: Save exit-country evidence outside subscription commits
+        run: python -u generate.py --xray .runtime/xray --verify-exits
+      - name: Save IPsum dataset (no server measurements)
         if: always()
         uses: actions/cache/save@v4
         with:
-          path: .runtime/exit-cache.json
-          key: exit-country-v1-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .runtime/reputation-cache.json
+          key: ipsum-feed-v2-${{ github.run_id }}-${{ github.run_attempt }}
       - name: Generate common subscription
         run: python karing.py --xray .runtime/xray
       - name: Check common routing, DNS interception and ad blocking
@@ -57,11 +57,4 @@ jobs:
       - name: Check actual automatic selection and failover
         run: python check_auto_selection.py --xray .runtime/xray
       - name: Publish validated files
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          if python publication_changed.py; then
-            git add subscription.json ru.json report.json
-            git commit -m "Update validated rjsxrd subscription"
-            git push
-          fi
+        run: python publish_subscription.py
