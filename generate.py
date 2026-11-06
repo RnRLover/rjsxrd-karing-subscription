@@ -1,4 +1,4 @@
-"""Publish the upstream-ordered INCY pool; exclude only known listed IPs."""
+"""Publish the first eligible upstream nodes from each technology for INCY."""
 import argparse
 from collections import Counter
 import concurrent.futures
@@ -111,9 +111,44 @@ def entry_ips(host):
 
 
 def exclude_listed(nodes):
-    """Preserve upstream order, all unknowns and all countries; no pool caps."""
+    """Preserve upstream order, all unknowns and all countries."""
     return [node for node in nodes if node.get('reputation', {}).get('status') != 'listed'
             and not any(record['status'] == 'listed' for record in node.get('entry_reputation', []))]
+
+
+def technology_key(node):
+    outbound = node['outbound']
+    stream = outbound.get('streamSettings', {})
+    transport = stream.get('network', 'tcp').lower()
+    transport = {'raw': 'tcp', 'websocket': 'ws', 'splithttp': 'xhttp'}.get(transport, transport)
+    return (outbound['protocol'], transport, stream.get('security', 'none').lower())
+
+
+def select_per_technology(nodes, limit):
+    """Take each technology's first eligible entries without reordering the pool."""
+    if type(limit) is not int or limit < 1:
+        raise ValueError('max_nodes_per_technology must be a positive integer')
+    selected, used = [], Counter()
+    for node in nodes:
+        key = technology_key(node)
+        if used[key] < limit:
+            selected.append(node)
+            used[key] += 1
+    return selected
+
+
+def technology_report(eligible, selected, limit):
+    available = Counter(technology_key(node) for node in eligible)
+    groups = {key: {'protocol': key[0], 'transport': key[1], 'security': key[2],
+                    'eligible': count, 'selected': 0, 'tags': []}
+              for key, count in available.items()}
+    for index, node in enumerate(selected, 1):
+        group = groups[technology_key(node)]
+        group['selected'] += 1
+        group['tags'].append('Автовыбор' if index == 1 else f'pool-{index:03d}')
+    return {'group_by': ['protocol', 'transport', 'security'], 'per_technology_limit': limit,
+            'order': 'first eligible entries in upstream order',
+            'balancing': 'one shared leastPing pool', 'groups': list(groups.values())}
 
 
 def probe_exit(opener, timeout=4):
@@ -207,8 +242,11 @@ def main():
     measured = probe_exits(retained, args.xray, settings['reputation_workers'],
                            settings['reputation_timeout_seconds'])
     rated = assess_nodes(measured, feed)
-    selected = exclude_listed(rated)
-    counts['listed_exit'] = len(rated) - len(selected)
+    eligible = exclude_listed(rated)
+    counts['listed_exit'] = len(rated) - len(eligible)
+    limit = settings['max_nodes_per_technology']
+    selected = select_per_technology(eligible, limit)
+    counts['over_technology_limit'] = len(eligible) - len(selected)
     if not selected:
         raise ValueError('no non-listed candidates; keep published subscription')
     config = build(selected, profile, settings['probe'])
@@ -226,9 +264,12 @@ def main():
         'source': settings['subscription_url'], 'source_sha256': hashlib.sha256(original.encode()).hexdigest(),
         'counts': dict(counts), 'selected': len(selected), 'xray_validated': True,
         'selected_protocols': dict(Counter(node['outbound']['protocol'] for node in selected)),
-        'pool_selection': 'upstream order; exact duplicates removed; known listed entry/exit IPs excluded',
+        'pool_selection': 'first eligible entries per protocol/transport/security in upstream order; '
+                          'exact duplicates removed; known listed entry/exit IPs excluded',
+        'technology_selection': technology_report(eligible, selected, limit),
         'history_used': False, 'github_latency_ranking': False, 'country_filter': False,
-        'tcp_udp_quality_gate': False, 'file_transfer_check': False, 'pool_limit': None,
+        'tcp_udp_quality_gate': False, 'file_transfer_check': False,
+        'pool_limit': {'per_technology': limit},
         'unknown_exit_retained': sum(node.get('exit_ip') is None for node in selected),
         'exit_discovery_errors': dict(Counter(node['exit_discovery_error'] for node in selected
                                               if node.get('exit_discovery_error'))),
@@ -249,6 +290,8 @@ def main():
     atomic_write(ROOT / 'subscription.json', subscription(config))
     atomic_write(ROOT / 'report.json', json.dumps(report, ensure_ascii=False, indent=2) + '\n')
     print(json.dumps({'selected': len(selected), 'protocols': report['selected_protocols'],
+                      'technologies': len(report['technology_selection']['groups']),
+                      'max_nodes_per_technology': limit,
                       'unknown_exit_retained': report['unknown_exit_retained'],
                       'upstream_order_preserved': True}), flush=True)
 

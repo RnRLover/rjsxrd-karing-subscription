@@ -3,7 +3,8 @@ from pathlib import Path
 import tempfile
 import unittest
 
-from generate import collect_nodes, exclude_listed, parse_node
+from generate import (collect_nodes, exclude_listed, parse_node, select_per_technology,
+                      technology_report)
 from incy import (PROXY_PROTOCOLS, PROFILE_URL, build, load_configs, read_profile,
                   serialized_config, subscription)
 
@@ -43,7 +44,41 @@ class SubscriptionTests(unittest.TestCase):
         nodes[0]['entry_reputation'] = [{'ip': '1.1.1.1', 'status': 'listed'}]
         self.assertEqual(exclude_listed(nodes), [nodes[1], nodes[3]])
 
-    def test_400_nodes_are_not_capped_trimmed_or_reordered(self):
+    def test_three_first_eligible_nodes_per_technology_share_one_balancer(self):
+        uris = []
+        for i in range(5):
+            tcp = URI.replace('1.1.1.1', f'node{i}.example')
+            uris.extend([tcp, tcp, tcp.replace('type=tcp', 'type=xhttp')])
+        uris.append('hy2://secret@hy.example:443?sni=hy.example')
+        nodes, counts = collect_nodes('\n'.join(uris))
+        self.assertEqual(counts['duplicate'], 5)
+        nodes[0]['entry_reputation'] = [{'status': 'listed'}]
+        nodes[1]['reputation'] = {'status': 'listed'}
+        nodes[2]['exit_ip'] = None
+        nodes[2]['reputation'] = {'status': 'unknown'}
+        nodes[2]['exit_discovery_error'] = 'TimeoutError'
+        eligible = exclude_listed(nodes)
+        selected = select_per_technology(eligible, 3)
+        self.assertEqual(selected, nodes[2:8] + [nodes[-1]])
+        config = build(selected)
+        proxies = [o for o in config['outbounds'] if o['protocol'] in PROXY_PROTOCOLS]
+        self.assertEqual(len(config['routing']['balancers']), 1)
+        self.assertEqual(config['routing']['balancers'][0]['selector'], [o['tag'] for o in proxies])
+        report = technology_report(eligible, selected, 3)
+        self.assertEqual([g['selected'] for g in report['groups']], [3, 3, 1])
+        self.assertEqual([g['eligible'] for g in report['groups']], [4, 4, 1])
+        self.assertEqual(report['groups'][0]['tags'], ['Автовыбор', 'pool-003', 'pool-005'])
+
+    def test_security_variants_have_separate_quotas_and_invalid_limits_fail(self):
+        reality = [parse_node(URI.replace(':443?', f':{1000+i}?')) for i in range(4)]
+        tls = [parse_node(URI.replace('security=reality', 'security=tls').replace(':443?', f':{2000+i}?'))
+               for i in range(4)]
+        self.assertEqual(select_per_technology(reality + tls, 3), reality[:3] + tls[:3])
+        for limit in [0, -1, 2.5, True, '3']:
+            with self.subTest(limit=limit), self.assertRaises(ValueError):
+                select_per_technology(reality, limit)
+
+    def test_builder_preserves_all_supplied_nodes_without_an_additional_cap(self):
         nodes = [parse_node(URI.replace(':443?', f':{1000+i}?')) for i in range(400)]
         before = copy.deepcopy(nodes)
         config = build(nodes)

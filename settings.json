@@ -1,5 +1,6 @@
 {
   "subscription_url": "https://raw.githubusercontent.com/whoahaow/rjsxrd/main/githubmirror/bypass/bypass-all.txt",
+  "max_nodes_per_technology": 3,
   "reputation_workers": 24,
   "reputation_timeout_seconds": 4,
   "probe": {
