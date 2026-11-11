@@ -49,5 +49,7 @@ jobs:
         run: python check_auto_selection.py --xray .runtime/xray
       - name: Check IPv4 and IPv6 direct connections and fallback
         run: python check_dual_stack.py --xray .runtime/xray
+      - name: Check Vision UDP 443 permission and TCP relay
+        run: python check_quic_transport.py --xray .runtime/xray
       - name: Publish validated files
         run: python publish_subscription.py
