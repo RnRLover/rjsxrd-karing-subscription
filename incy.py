@@ -65,6 +65,15 @@ def build(nodes, profile=None, probe=None):
     for index, node in enumerate(nodes, 1):
         outbound = copy.deepcopy(node['outbound'] if 'outbound' in node else node)
         outbound['tag'] = 'Автовыбор' if index == 1 else f'pool-{index:03d}'
+        if outbound.get('protocol') == 'vless':
+            settings = outbound.get('settings', {})
+            users = [settings] + [user for peer in settings.get('vnext', [])
+                                   for user in peer.get('users', [])]
+            for user in users:
+                # Preserve Vision while allowing proxied QUIC instead of the
+                # plain Vision client's deliberate rejection of UDP/443.
+                if user.get('flow') == 'xtls-rprx-vision':
+                    user['flow'] = 'xtls-rprx-vision-udp443'
         stream = outbound.setdefault('streamSettings', {})
         sockopt = stream.setdefault('sockopt', {})
         if stream.get('network') == 'hysteria':
