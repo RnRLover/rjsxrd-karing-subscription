@@ -14,6 +14,7 @@ def report_signature(data):
     return {'servers': reputation.get('servers', []),
             'selection': reputation.get('selection_priority'),
             'policy': report.get('subscription_policy'),
+            'quality_checks': report.get('quality_checks'),
             'counts': report.get('counts')}
 
 

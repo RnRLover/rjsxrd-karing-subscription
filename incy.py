@@ -46,32 +46,35 @@ def xray_validate(xray, config):
             raise ValueError('Xray rejected configuration: ' + (result.stderr + result.stdout)[-900:])
 
 
+def proxy_outbound(node, tag):
+    """Use identical node parameters in the publication and live pool checks."""
+    outbound = copy.deepcopy(node['outbound'] if 'outbound' in node else node)
+    outbound['tag'] = tag
+    if outbound.get('protocol') == 'vless':
+        settings = outbound.get('settings', {})
+        users = [settings] + [user for peer in settings.get('vnext', [])
+                               for user in peer.get('users', [])]
+        for user in users:
+            # Preserve Vision and permit the browser's proxied UDP/443.
+            if user.get('flow') == 'xtls-rprx-vision':
+                user['flow'] = 'xtls-rprx-vision-udp443'
+    stream = outbound.setdefault('streamSettings', {})
+    sockopt = stream.setdefault('sockopt', {})
+    if stream.get('network') == 'hysteria':
+        # QUIC is UDP; TCP Happy Eyeballs does not apply to its socket.
+        sockopt['domainStrategy'] = 'ForceIPv4v6'
+    else:
+        sockopt.update(domainStrategy='ForceIP', happyEyeballs={
+            'tryDelayMs': 250, 'prioritizeIPv6': False,
+            'interleave': 1, 'maxConcurrentTry': 4})
+    return outbound
+
+
 def build(nodes, probe=None):
     if not nodes:
         raise ValueError('no supported non-listed candidates; keep published subscription')
-    proxies = []
-    for index, node in enumerate(nodes, 1):
-        outbound = copy.deepcopy(node['outbound'] if 'outbound' in node else node)
-        outbound['tag'] = 'Автовыбор' if index == 1 else f'pool-{index:03d}'
-        if outbound.get('protocol') == 'vless':
-            settings = outbound.get('settings', {})
-            users = [settings] + [user for peer in settings.get('vnext', [])
-                                   for user in peer.get('users', [])]
-            for user in users:
-                # Preserve Vision while allowing proxied QUIC instead of the
-                # plain Vision client's deliberate rejection of UDP/443.
-                if user.get('flow') == 'xtls-rprx-vision':
-                    user['flow'] = 'xtls-rprx-vision-udp443'
-        stream = outbound.setdefault('streamSettings', {})
-        sockopt = stream.setdefault('sockopt', {})
-        if stream.get('network') == 'hysteria':
-            # QUIC is UDP; TCP Happy Eyeballs does not apply to its socket.
-            sockopt['domainStrategy'] = 'ForceIPv4v6'
-        else:
-            sockopt.update(domainStrategy='ForceIP', happyEyeballs={
-                'tryDelayMs': 250, 'prioritizeIPv6': False,
-                'interleave': 1, 'maxConcurrentTry': 4})
-        proxies.append(outbound)
+    proxies = [proxy_outbound(node, 'Автовыбор' if index == 1 else f'pool-{index:03d}')
+               for index, node in enumerate(nodes, 1)]
     tags = [outbound['tag'] for outbound in proxies]
     sniffing = {'enabled': True, 'destOverride': ['http', 'tls', 'quic'], 'routeOnly': True}
     rules = [

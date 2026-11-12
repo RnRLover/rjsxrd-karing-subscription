@@ -6,6 +6,7 @@ import copy
 import hashlib
 import ipaddress
 import json
+import os
 from pathlib import Path
 import socket
 import subprocess
@@ -17,6 +18,7 @@ import urllib.request
 from incy import (ROOT, PROXY_PROTOCOLS, atomic_write, build,
                   serialized_config, subscription, xray_validate)
 from ip_reputation import CACHE_KEY, load_feed, assess_nodes, rate_ip, reputation_report
+from pool_quality import ProbeUnavailable, baseline, eligible_nodes, probe_nodes
 from rjsxrd_parser import parse_url
 from rjsxrd_helpers import query_parameters
 
@@ -223,6 +225,11 @@ def main():
     parser.add_argument('--xray', required=True)
     args = parser.parse_args()
     settings = json.loads((ROOT / 'settings.json').read_bytes())
+    try:
+        usable_targets, baseline_evidence = baseline(settings['quality'])
+    except ProbeUnavailable as error:
+        print('::notice::' + str(error), flush=True)
+        return False
     original = fetch(settings['subscription_url']).decode('utf-8-sig')
     nodes, counts = collect_nodes(original)
     nodes = compatible_nodes(nodes, args.xray, counts)
@@ -240,13 +247,27 @@ def main():
     measured = probe_exits(retained, args.xray, settings['reputation_workers'],
                            settings['reputation_timeout_seconds'])
     rated = assess_nodes(measured, feed)
-    eligible = exclude_listed(rated)
-    counts['listed_exit'] = len(rated) - len(eligible)
+    non_listed = exclude_listed(rated)
+    counts['listed_exit'] = len(rated) - len(non_listed)
+    try:
+        checked = probe_nodes(non_listed, args.xray, settings['quality'], usable_targets)
+    except ProbeUnavailable as error:
+        print('::notice::' + str(error), flush=True)
+        return False
+    eligible = eligible_nodes(checked)
+    counts['https_failed'] = sum(not node['quality']['https']['ok'] for node in checked)
+    counts['quic_failed_after_https'] = sum(node['quality']['https']['ok'] and
+                                           not node['quality']['quic']['ok'] for node in checked)
+    if not eligible:
+        print('::notice::No candidate passed both HTTPS and HTTP/3; preserve published pool', flush=True)
+        return False
     limit = settings['max_nodes_per_technology']
     selected = select_per_technology(eligible, limit)
     counts['over_technology_limit'] = len(eligible) - len(selected)
-    if not selected:
-        raise ValueError('no non-listed candidates; keep published subscription')
+    if len(selected) < settings['quality']['minimum_healthy']:
+        print('::notice::Not enough HTTPS+HTTP3 candidates for automatic failover; '
+              'preserve published pool', flush=True)
+        return False
     config = build(selected, probe=settings['probe'])
     xray_validate(args.xray, config)
     report = {
@@ -255,10 +276,21 @@ def main():
         'counts': dict(counts), 'selected': len(selected), 'xray_validated': True,
         'selected_protocols': dict(Counter(node['outbound']['protocol'] for node in selected)),
         'pool_selection': 'first eligible entries per protocol/transport/security in upstream order; '
-                          'exact duplicates removed; known listed entry/exit IPs excluded',
+                          'exact duplicates removed; known listed entry/exit IPs excluded; '
+                          'fresh HTTPS and HTTP/3 UDP checks required',
         'technology_selection': technology_report(eligible, selected, limit),
         'history_used': False, 'github_latency_ranking': False, 'country_filter': False,
-        'tcp_udp_quality_gate': False, 'file_transfer_check': False,
+        'tcp_udp_quality_gate': True, 'file_transfer_check': False,
+        'quality_checks': {
+            'vantage': 'GitHub Actions runner; not a measurement from the client network',
+            'https': 'TLS-verified HEAD over TCP through the actual outbound',
+            'quic': 'TLS-verified HTTP/3 HEAD over SOCKS5 UDP ASSOCIATE; no TCP fallback',
+            'settings': settings['quality'], 'direct_baseline': baseline_evidence,
+            'candidates_checked': len(checked), 'passed_both': len(eligible),
+            'history_used': False, 'latency_ranking': False,
+            'selected': [{'tag': 'Автовыбор' if index == 1 else f'pool-{index:03d}',
+                          **node['quality']} for index, node in enumerate(selected, 1)],
+        },
         'pool_limit': {'per_technology': limit},
         'unknown_exit_retained': sum(node.get('exit_ip') is None for node in selected),
         'exit_discovery_errors': dict(Counter(node['exit_discovery_error'] for node in selected
@@ -267,6 +299,7 @@ def main():
         'subscription_policy': {
             'clients': ['INCY'], 'format': 'full-xray-json-array-with-body-metadata',
             'native_routing_profile': False,
+            'pool_admission': 'HTTPS/TCP and HTTP3/UDP443 verified in this build',
             'dns_query_strategy': 'UseIP', 'ipv6_supported': True,
             'traffic': 'full-tunnel; no geographic, GitHub or ad-domain routing rules',
             'dns_transport': {'provider': 'AdGuard public filtering DNS', 'all_names': 'doh-direct',
@@ -288,7 +321,11 @@ def main():
                       'max_nodes_per_technology': limit,
                       'unknown_exit_retained': report['unknown_exit_retained'],
                       'upstream_order_preserved': True}), flush=True)
+    return True
 
 
 if __name__ == '__main__':
-    main()
+    ready = main()
+    if output := os.environ.get('GITHUB_OUTPUT'):
+        with open(output, 'a', encoding='utf-8') as handle:
+            handle.write('ready=' + str(ready).lower() + '\n')
