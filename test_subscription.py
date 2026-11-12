@@ -5,7 +5,7 @@ import unittest
 
 from generate import (collect_nodes, exclude_listed, parse_node, select_per_technology,
                       technology_report)
-from incy import (PROXY_PROTOCOLS, PROFILE_URL, build, load_configs, read_profile,
+from incy import (PROXY_PROTOCOLS, build, load_configs, read_profile,
                   serialized_config, subscription)
 
 UUID = '123e4567-e89b-12d3-a456-426614174000'
@@ -120,19 +120,21 @@ class SubscriptionTests(unittest.TestCase):
         self.assertEqual(len(config['routing']['balancers'][0]['selector']), 2)
         self.assertTrue(any(o['protocol'] == 'hysteria' for o in config['outbounds']))
 
-    def test_delivery_keeps_one_full_config_and_subscription_routing_command(self):
+    def test_delivery_keeps_one_full_config_without_routing_profile_commands(self):
         config = build([parse_node(URI)])
         body = subscription(config)
-        self.assertEqual(body.count('incy://autorouting/onadd/'), 1)
-        self.assertIn('incy://autorouting/onadd/' + PROFILE_URL, body)
-        self.assertIn('#routing-geo-update-interval: 24', body)
+        self.assertNotIn('incy://', body)
+        self.assertNotIn('routing-geo-update-interval', body)
+        self.assertIn('#profile-title: rjsxrd · INCY', body)
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory, 'subscription.json')
             path.write_text(body)
             self.assertEqual(load_configs(path), [config])
-            path.write_text(body + 'happ://routing/onadd/unexpected\n')
-            with self.assertRaises(ValueError):
-                load_configs(path)
+            for command in ['happ://routing/onadd/unexpected',
+                            'incy://autorouting/onadd/https://example.com/routing.json']:
+                path.write_text(body + command + '\n')
+                with self.assertRaises(ValueError):
+                    load_configs(path)
 
     def test_oversized_and_empty_pools_fail_without_truncation(self):
         with self.assertRaises(ValueError):

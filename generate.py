@@ -15,7 +15,7 @@ import time
 import urllib.parse
 import urllib.request
 
-from incy import (ROOT, PROFILE_URL, PROXY_PROTOCOLS, atomic_write, build, read_profile,
+from incy import (ROOT, PROXY_PROTOCOLS, atomic_write, build, read_profile,
                   serialized_config, subscription, xray_validate)
 from ip_reputation import CACHE_KEY, load_feed, assess_nodes, rate_ip, reputation_report
 from rjsxrd_parser import parse_url
@@ -276,7 +276,7 @@ def main():
         'ip_reputation': reputation_report(rated, selected, feed, feed_source),
         'subscription_policy': {
             'clients': ['INCY'], 'format': 'full-xray-json-array-with-body-metadata',
-            'native_routing_profile': True, 'routing_profile_url': PROFILE_URL,
+            'native_routing_profile': False,
             'dns_query_strategy': 'UseIP', 'ipv6_supported': True,
             'dns_transport': {'domestic_and_bootstrap': 'doh-direct', 'external': 'doh-direct',
                               'external_resolvers': [s['address'] for s in config['dns']['servers']

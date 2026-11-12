@@ -867,8 +867,7 @@
       "INCY"
     ],
     "format": "full-xray-json-array-with-body-metadata",
-    "native_routing_profile": true,
-    "routing_profile_url": "https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/incy-routing.json",
+    "native_routing_profile": false,
     "dns_query_strategy": "UseIP",
     "ipv6_supported": true,
     "dns_transport": {

@@ -1,4 +1,4 @@
-"""INCY full configuration and its subscription-bound native routing profile."""
+"""INCY full configuration with DNS and routing kept inside the JSON."""
 import copy
 import ipaddress
 import json
@@ -9,12 +9,10 @@ import tempfile
 from urllib.parse import urlsplit
 
 ROOT = Path(__file__).resolve().parent
-PUBLIC = 'https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads/main/'
-PROFILE_URL = PUBLIC + 'incy-routing.json'
 PROXY_PROTOCOLS = ('vless', 'vmess', 'trojan', 'shadowsocks', 'hysteria')
 MAX_CONFIG_UTF16 = 800_000
-# Diagnostic DNS delivery: HTTPS is independent of the proxy pool. The native
-# profile supplies the primary resolver; the full config adds another provider.
+# HTTPS DNS is independent of the proxy pool. The internal build template
+# supplies the primary resolver; the full config adds another provider.
 REMOTE_DNS_FALLBACK = ('https://dns.google/dns-query', '8.8.8.8')
 
 
@@ -156,11 +154,9 @@ def build(nodes, profile=None, probe=None):
 
 
 def subscription(config):
-    """Keep the existing URL; INCY extracts these body commands before JSON."""
+    """Keep the existing URL without installing or activating routing profiles."""
     return (serialized_config([config]) + '\n'
-            + 'incy://autorouting/onadd/' + PROFILE_URL + '\n'
-            + '#profile-title: rjsxrd · INCY\n'
-            + '#routing-geo-update-interval: 24\n')
+            + '#profile-title: rjsxrd · INCY\n')
 
 
 def load_configs(path):
@@ -168,6 +164,6 @@ def load_configs(path):
     # Accept pure JSON fixtures as well as the delivered JSON + body metadata.
     configs, end = json.JSONDecoder().raw_decode(text)
     for line in text[end:].strip().splitlines():
-        if not (line.startswith('incy://autorouting/onadd/') or line.startswith('#')):
+        if not line.startswith('#'):
             raise ValueError('unexpected subscription body command')
     return configs if isinstance(configs, list) else [configs]
