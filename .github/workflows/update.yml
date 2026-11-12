@@ -6,6 +6,7 @@ on:
   push:
     paths:
       - '*.py'
+      - 'requirements.txt'
       - 'settings.json'
       - '.github/workflows/update.yml'
 permissions:
@@ -22,10 +23,14 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Install pinned HTTP3 probe dependency
+        run: python -m pip install -r requirements.txt
       - name: Tests
         run: python -m unittest discover -v
       - name: Prepare official Xray
         run: python setup_xray.py
+      - name: Check actual HTTP3 admission, retries and TLS validation
+        run: python check_pool_quality.py --xray .runtime/xray
       - name: Restore IPsum dataset (no server measurements)
         uses: actions/cache/restore@v4
         with:
@@ -33,6 +38,7 @@ jobs:
           key: ipsum-feed-v2-${{ github.run_id }}-${{ github.run_attempt }}
           restore-keys: ipsum-feed-v2-
       - name: Build INCY pool in upstream order (known listed IPs excluded)
+        id: build
         run: python -u generate.py --xray .runtime/xray
       - name: Save IPsum dataset (no server measurements)
         if: always()
@@ -51,4 +57,5 @@ jobs:
       - name: Check Vision UDP 443 permission and TCP relay
         run: python check_quic_transport.py --xray .runtime/xray
       - name: Publish validated files
+        if: steps.build.outputs.ready == 'true'
         run: python publish_subscription.py
