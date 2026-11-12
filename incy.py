@@ -13,6 +13,9 @@ PUBLIC = 'https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/
 PROFILE_URL = PUBLIC + 'incy-routing.json'
 PROXY_PROTOCOLS = ('vless', 'vmess', 'trojan', 'shadowsocks', 'hysteria')
 MAX_CONFIG_UTF16 = 800_000
+# Diagnostic DNS delivery: HTTPS is independent of the proxy pool. The native
+# profile supplies the primary resolver; the full config adds another provider.
+REMOTE_DNS_FALLBACK = ('https://dns.google/dns-query', '8.8.8.8')
 
 
 def read_profile():
@@ -109,12 +112,15 @@ def build(nodes, profile=None, probe=None):
         raise ValueError('DoH URL must use a hostname to survive INCY DNS-IP bypass rules')
     hosts = copy.deepcopy(profile.get('DnsHosts', {}))
     hosts[remote_host] = profile['RemoteDNSIP']
+    fallback_url, fallback_ip = REMOTE_DNS_FALLBACK
+    hosts[urlsplit(fallback_url).hostname] = fallback_ip
+    remote_servers = [{'address': url, 'tag': 'dns-remote'}
+                      for url in dict.fromkeys((remote, fallback_url))]
     for domain in profile['BlockSites']:
         hosts[domain] = '0.0.0.0'
     sniffing = {'enabled': True, 'destOverride': ['http', 'tls', 'quic'], 'routeOnly': True}
     rules = [
-        {'type': 'field', 'inboundTag': ['dns-direct'], 'outboundTag': 'direct'},
-        {'type': 'field', 'inboundTag': ['dns-proxy'], 'balancerTag': 'auto'},
+        {'type': 'field', 'inboundTag': ['dns-direct', 'dns-remote'], 'outboundTag': 'direct'},
         {'type': 'field', 'inboundTag': ['default-auto'], 'balancerTag': 'auto'},
         {'type': 'field', 'inboundTag': ['socks-in', 'http-in'], 'port': '53',
          'network': 'tcp,udp', 'outboundTag': 'dns-out'},
@@ -130,11 +136,11 @@ def build(nodes, profile=None, probe=None):
         'remarks': 'Автовыбор', 'log': {'loglevel': 'warning'},
         'meta': {'serverDescription': 'INCY · IPv4/IPv6 · RU и GitHub напрямую · блокировка рекламы'},
         'dns': {'queryStrategy': 'UseIP', 'disableFallbackIfMatch': True,
-                'tag': 'dns-proxy', 'hosts': hosts, 'servers': [
+                'tag': 'dns-remote', 'hosts': hosts, 'servers': [
                     {'address': 'localhost', 'domains': ['geosite:private'], 'skipFallback': True},
                     {'address': profile['DomesticDNSIP'], 'domains': public_direct + sorted(bootstrap),
                      'skipFallback': True, 'tag': 'dns-direct'},
-                    {'address': remote, 'tag': 'dns-proxy'},
+                    *remote_servers,
                 ]},
         'inbounds': [
             {'tag': 'socks-in', 'listen': '127.0.0.1', 'port': 10808, 'protocol': 'socks',

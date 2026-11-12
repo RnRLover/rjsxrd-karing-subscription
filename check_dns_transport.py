@@ -1,5 +1,5 @@
-"""Run production DNS tags and routing against local UDP and trusted TLS DoH fixtures.
-Only proxy/direct transports are redirected. Upstream DoH URLs and tags stay intact.
+"""Check direct DoH and resolver failover while every proxy transport fails.
+Only transport destinations are redirected. Upstream DoH URLs and tags stay intact.
 The temporary certificate is trusted only by the test process, never by clients.
 """
 import argparse
@@ -44,8 +44,7 @@ def answer(data, ip):
 
 def main(xray):
     config = copy.deepcopy(load_configs(ROOT / 'subscription.json')[0])
-    # Emulate the documented INCY patch, before every provider rule. Hostname
-    # DoH must still follow dns-proxy instead of this direct IP exception.
+    # Emulate INCY's DNS-IP direct exception before every provider rule.
     config['routing']['rules'].insert(0, {'type': 'field',
         'ip': ['1.1.1.1', '8.8.8.8', '77.88.8.8'], 'outboundTag': 'direct'})
     # Keep this fixture independent of whether the upstream happens to publish
@@ -53,9 +52,10 @@ def main(xray):
     bootstrap = 'bootstrap.fixture-domain.com'
     domestic = next(s for s in config['dns']['servers'] if s.get('tag') == 'dns-direct')
     domestic['domains'].append('full:' + bootstrap)
-    state = {'external': [], 'direct': [], 'external_healthy': True}
+    primary, backup = 'cloudflare-dns.com', 'dns.google'
+    state = {'doh': {primary: [], backup: []}, 'direct': [],
+             'healthy': {primary: True, backup: True}, 'proxy_attempts': 0}
     udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    udp.bind(('127.0.0.1', 0))
     def udp_worker():
         while True:
             try:
@@ -64,7 +64,6 @@ def main(xray):
                 udp.sendto(answer(data, '77.88.8.8'), addr)
             except OSError:
                 return
-    threading.Thread(target=udp_worker, daemon=True).start()
     with tempfile.TemporaryDirectory() as directory:
         directory = Path(directory)
         cert, key = directory / 'cert.pem', directory / 'key.pem'
@@ -102,8 +101,9 @@ def main(xray):
                             if not flags & 1:
                                 continue
                             request = bodies.pop(stream)
-                            state['external'].append(question(request)[0])
-                            payload = answer(request, '9.9.9.9') if state['external_healthy'] else b''
+                            resolver = conn.resolver_name
+                            state['doh'][resolver].append(question(request)[0])
+                            payload = answer(request, '9.9.9.9') if state['healthy'][resolver] else b''
                             # HPACK static :status 200; literal :status 503.
                             frame(1, 4, stream, b'\x88' if payload else b'\x08\x03503')
                             frame(0, 1, stream, payload)
@@ -114,18 +114,29 @@ def main(xray):
         tls = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
         tls.load_cert_chain(cert, key)
         tls.set_alpn_protocols(['h2'])
+        tls.set_servername_callback(lambda conn, name, context: setattr(conn, 'resolver_name', name))
         https.socket = tls.wrap_socket(https.socket, server_side=True)
         threading.Thread(target=https.serve_forever, daemon=True).start()
+        # The direct outbound keeps one redirect: TCP reaches trusted DoH,
+        # UDP on the same port reaches the domestic resolver fixture.
+        udp.bind(('127.0.0.1', https.server_address[1]))
+        threading.Thread(target=udp_worker, daemon=True).start()
+        class UnavailableProxy(BaseRequestHandler):
+            def handle(self):
+                state['proxy_attempts'] += 1
+        unavailable = ThreadingTCPServer(('127.0.0.1', 0), UnavailableProxy)
+        unavailable.daemon_threads = True
+        threading.Thread(target=unavailable.serve_forever, daemon=True).start()
         for outbound in config['outbounds']:
             if outbound['protocol'] in ('loopback', 'blackhole', 'dns'):
                 continue
             tag = outbound['tag']
-            dest_port = udp.getsockname()[1] if tag in ('direct', 'lan') else https.server_address[1]
+            dest_port = https.server_address[1] if tag in ('direct', 'lan') else unavailable.server_address[1]
             outbound.clear()
             outbound.update(tag=tag, protocol='freedom',
                             settings={'redirect': f'127.0.0.1:{dest_port}'})
-        # The production tags and DoH URLs are retained without +local or
-        # insecure TLS options. Redirected proxy transport terminates at TLS.
+        # Production tags and DoH URLs are retained without +local or insecure
+        # TLS options. Any mistaken proxy use fails and is recorded.
         config['burstObservatory']['subjectSelector'] = ['unused-test-subject']
         config.pop('geodata', None)
         for inbound in config['inbounds']:
@@ -183,10 +194,15 @@ def main(xray):
                             assert reply[3] & 15 == 0 and reply[6:8] == b'\x00\x00'
                         assert socket.inet_ntoa(query('doubleclick.net')[-4:]) == '0.0.0.0'
                         assert state['direct'] == direct_queries, state
-                        assert state['external'] == ['external.fixture-domain.com', 'ipv6.fixture-domain.com'], state
-                        state['external_healthy'] = False
+                        assert state['doh'][primary] == ['external.fixture-domain.com', 'ipv6.fixture-domain.com'], state
+                        assert state['doh'][backup] == [], state
+                        state['healthy'][primary] = False
+                        assert socket.inet_ntoa(query('backup.fixture-domain.com')[-4:]) == '9.9.9.9'
+                        assert 'backup.fixture-domain.com' in state['doh'][primary], state
+                        assert 'backup.fixture-domain.com' in state['doh'][backup], state
+                        state['healthy'][backup] = False
                         # An uncached GitHub hostname must still resolve when
-                        # both proxy DoH paths are failing.
+                        # both direct DoH resolvers are failing.
                         assert socket.inet_ntoa(query('codeload.github.com')[-4:]) == '77.88.8.8'
                         direct_queries.append('codeload.github.com')
                         try:
@@ -195,12 +211,14 @@ def main(xray):
                         except socket.timeout:
                             pass  # dns-out may drop failed queries instead of returning SERVFAIL.
                         assert state['direct'] == direct_queries, 'External DNS leaked to direct resolver'
-                        assert 'failed.fixture-domain.com' in state['external']
-                print(json.dumps({'ru_dns_direct': True, 'bootstrap_dns_direct': True, 'external_doh_via_proxy': True,
-                                  'tls_verified': True, 'ads_no_upstream': True, 'AAAA_via_proxy': True,
+                        assert all('failed.fixture-domain.com' in calls for calls in state['doh'].values()), state
+                        assert state['proxy_attempts'] == 0, state
+                print(json.dumps({'ru_dns_direct': True, 'bootstrap_dns_direct': True, 'external_doh_direct': True,
+                                  'tls_verified': True, 'ads_no_upstream': True, 'AAAA_via_direct_doh': True,
                                   'non_ip_queries_return_without_timeout': True, 'INCY_DNS_IP_patch_survived': True,
-                                  'external_failure_no_direct_fallback': True,
-                                  'github_dns_direct': True, 'github_resolves_without_proxy_doh': True}))
+                                  'primary_failure_uses_backup_doh': True,
+                                  'external_failure_no_plain_dns_fallback': True, 'dns_works_without_proxies': True,
+                                  'github_dns_direct': True, 'github_resolves_without_external_doh': True}))
             except Exception:
                 log.flush()
                 print(log_path.read_text()[-14000:])
@@ -211,6 +229,8 @@ def main(xray):
                     process.wait(timeout=5)
                 https.shutdown()
                 https.server_close()
+                unavailable.shutdown()
+                unavailable.server_close()
                 udp.close()
 
 

@@ -962,8 +962,12 @@
     "ipv6_supported": true,
     "dns_transport": {
       "domestic_and_bootstrap": "direct",
-      "external": "doh-via-auto",
-      "external_direct_fallback": false,
+      "external": "doh-direct",
+      "external_resolvers": [
+        "https://cloudflare-dns.com/dns-query",
+        "https://dns.google/dns-query"
+      ],
+      "external_resolver_fallback": true,
       "lan_names": "system"
     },
     "direct_domains": [
@@ -994,6 +998,6 @@
     },
     "client_geodata_download_verified": false
   },
-  "config_utf8_bytes": 25602,
-  "config_utf16_bytes": 51056
+  "config_utf8_bytes": 25637,
+  "config_utf16_bytes": 51126
 }

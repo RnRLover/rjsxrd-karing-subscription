@@ -278,8 +278,10 @@ def main():
             'clients': ['INCY'], 'format': 'full-xray-json-array-with-body-metadata',
             'native_routing_profile': True, 'routing_profile_url': PROFILE_URL,
             'dns_query_strategy': 'UseIP', 'ipv6_supported': True,
-            'dns_transport': {'domestic_and_bootstrap': 'direct', 'external': 'doh-via-auto',
-                              'external_direct_fallback': False, 'lan_names': 'system'},
+            'dns_transport': {'domestic_and_bootstrap': 'direct', 'external': 'doh-direct',
+                              'external_resolvers': [s['address'] for s in config['dns']['servers']
+                                                     if s.get('tag') == 'dns-remote'],
+                              'external_resolver_fallback': True, 'lan_names': 'system'},
             'direct_domains': profile['DirectSites'], 'direct_ips': profile['DirectIp'],
             'block_domains': profile['BlockSites'], 'probe': settings['probe'],
             'geodata_sha256': hashes, 'client_geodata_download_verified': False,

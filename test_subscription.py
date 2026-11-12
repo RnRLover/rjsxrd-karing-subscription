@@ -100,7 +100,8 @@ class SubscriptionTests(unittest.TestCase):
         self.assertEqual(direct, set(profile['DirectSites']))
         self.assertIn('geosite:github', direct)
         self.assertEqual(config['dns']['queryStrategy'], 'UseIP')
-        self.assertEqual(config['dns']['servers'][-1]['address'], profile['RemoteDNSDomain'])
+        remote = [s for s in config['dns']['servers'] if s.get('tag') == 'dns-remote']
+        self.assertEqual(remote[0]['address'], profile['RemoteDNSDomain'])
         self.assertEqual(config['dns']['hosts']['geosite:category-ads-all'], '0.0.0.0')
         self.assertNotIn('geodata', config)
         self.assertNotIn('fakedns', config)
