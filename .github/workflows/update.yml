@@ -43,7 +43,7 @@ jobs:
           key: ipsum-feed-v2-${{ github.run_id }}-${{ github.run_attempt }}
       - name: Check common routing, DNS interception and ad blocking
         run: python check_subscription.py --xray .runtime/xray
-      - name: Check split DNS transport and no direct fallback
+      - name: Check direct DoH, resolver failover and independence from proxies
         run: python check_dns_transport.py --xray .runtime/xray
       - name: Check actual automatic selection and failover
         run: python check_auto_selection.py --xray .runtime/xray
