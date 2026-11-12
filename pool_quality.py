@@ -20,7 +20,7 @@ import time
 from urllib.parse import urlsplit
 
 from aioquic.h3.connection import H3_ALPN, H3Connection
-from aioquic.h3.events import HeadersReceived, DataReceived
+from aioquic.h3.events import DataReceived, HeadersReceived
 from aioquic.quic.configuration import QuicConfiguration
 from aioquic.quic.connection import QuicConnection
 from aioquic.quic.events import ConnectionTerminated, HandshakeCompleted
@@ -144,7 +144,7 @@ def quic_head(endpoint, proxy_port=None, timeout=4, cafile=None):
         control, relay = socks_connection(proxy_port, 3, '0.0.0.0', 0, deadline)
         family = socket.AF_INET6 if ':' in relay[0] else socket.AF_INET
     udp = socket.socket(family, socket.SOCK_DGRAM)
-    http, request_id, response_status = None, None, None
+    http, request_id, status = None, None, None
     def transmit():
         for data, target in quic.datagrams_to_send(now=time.monotonic()):
             udp.settimeout(remaining(deadline))
@@ -175,12 +175,13 @@ def quic_head(endpoint, proxy_port=None, timeout=4, cafile=None):
                                 continue
                             if status >= 400:
                                 raise ProbeError('unsuccessful HTTP/3 status')
-                            response_status = status
                             if response.stream_ended:
                                 return
-                        elif (isinstance(response, DataReceived) and response.stream_id == request_id
-                              and response.stream_ended and response_status is not None):
-                            return
+                        elif isinstance(response, DataReceived) and response.stream_id == request_id:
+                            if response.data:
+                                raise ProbeError('unexpected response body to HTTP/3 HEAD')
+                            if response.stream_ended and status is not None and 200 <= status < 400:
+                                return
             transmit()
             timer = quic.get_timer()
             now = time.monotonic()
@@ -209,7 +210,7 @@ def quic_head(endpoint, proxy_port=None, timeout=4, cafile=None):
 
 
 def attempt(probe, endpoints, proxy_port, timeout, attempts, cafile=None):
-    errors, calls = Counter(), 0
+    errors, calls, last_error = Counter(), 0, ''
     for _ in range(attempts):
         for endpoint in endpoints:
             calls += 1
@@ -218,14 +219,13 @@ def attempt(probe, endpoints, proxy_port, timeout, attempts, cafile=None):
                 return {'ok': True, 'target': endpoint.url, 'attempts': calls, 'errors': dict(errors)}
             except (OSError, ValueError) as error:
                 errors[type(error).__name__] += 1
-    return {'ok': False, 'attempts': calls, 'errors': dict(errors)}
+                last_error = str(error)[:200]
+    return {'ok': False, 'attempts': calls, 'errors': dict(errors), 'last_error': last_error}
 
 
 def baseline(settings):
     timeout, attempts, workers = (settings[k] for k in ('timeout_seconds', 'attempts', 'workers'))
-    minimum = settings.get('minimum_healthy', 2)
-    if (type(minimum) is not int or minimum < 2 or
-            type(attempts) is not int or not 1 <= attempts <= 3 or
+    if (type(attempts) is not int or not 1 <= attempts <= 3 or
             type(workers) is not int or not 1 <= workers <= 64 or not 0 < timeout <= 15):
         raise ValueError('invalid pool quality limits')
     urls = settings['targets']
@@ -234,8 +234,7 @@ def baseline(settings):
     endpoints, unresolved = [], []
     for url in urls:
         parsed = urlsplit(url)
-        if (parsed.scheme != 'https' or not parsed.hostname or parsed.port not in (None, 443)
-                or parsed.username or parsed.password or parsed.fragment):
+        if parsed.scheme != 'https' or not parsed.hostname or parsed.port not in (None, 443):
             raise ValueError('quality target must be HTTPS on port 443')
         try:
             # IPv4 target probes avoid confusing a runner with no IPv6 route
@@ -245,8 +244,6 @@ def baseline(settings):
             endpoints.append(Endpoint(url, parsed.hostname, path + ('?' + parsed.query if parsed.query else ''), ip))
         except OSError:
             unresolved.append(url)
-    if not endpoints:
-        raise ProbeUnavailable('no resolvable health targets; preserve published pool')
     tasks = [(kind, probe, endpoint) for kind, probe in [('https', https_head), ('quic', quic_head)]
              for endpoint in endpoints]
     def check(task):
@@ -257,13 +254,9 @@ def baseline(settings):
     usable = {kind: [endpoint for k, endpoint, result in results if k == kind and result['ok']]
               for kind in ('https', 'quic')}
     evidence = {'targets': [{'protocol': kind, 'url': endpoint.url, **result}
-                            for kind, endpoint, result in results], 'unresolved': unresolved,
-                'direct_available': {kind: bool(values) for kind, values in usable.items()}}
-    # The runner may block direct UDP while UDP encapsulated inside a TCP VPN
-    # works. Keep alternate targets and require evidence through real tunnels;
-    # a direct failure alone must not exclude every candidate.
-    for kind, values in usable.items():
-        usable[kind] = values + [endpoint for endpoint in endpoints if endpoint not in values]
+                            for kind, endpoint, result in results], 'unresolved': unresolved}
+    if not all(usable.values()):
+        raise ProbeUnavailable('direct HTTPS/HTTP3 baseline unavailable; preserve published pool')
     return usable, evidence
 
 

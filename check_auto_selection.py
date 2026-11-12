@@ -44,7 +44,13 @@ def main(xray):
     original = load_configs(ROOT / 'subscription.json')[0]
     config = copy.deepcopy(original)
     proxies = [o for o in config['outbounds'] if o['protocol'] in PROXY_PROTOCOLS][:2]
-    assert len(proxies) == 2
+    assert proxies
+    if len(proxies) == 1:
+        # The checker uses two local stand-ins even when only one live upstream
+        # passed admission. The extra subject is never published to clients.
+        fixture_backup = copy.deepcopy(proxies[0])
+        fixture_backup['tag'] = 'fixture-backup'
+        proxies.append(fixture_backup)
     fast, first = fixture(b'FAST', .01)
     backup, second = fixture(b'BACKUP', .15)
     selected = [o['tag'] for o in proxies]

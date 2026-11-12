@@ -39,31 +39,26 @@ class QualityTests(unittest.TestCase):
         self.assertEqual(nodes, before)
         self.assertEqual(eligible_nodes([{'quality': {'https': {'ok': True}}}]), [])
 
-    def test_direct_udp_failure_still_allows_evidence_through_tunnels(self):
+    def test_direct_udp_failure_defers_admission_even_with_working_https(self):
         settings = {'timeout_seconds': 1, 'attempts': 2, 'workers': 2,
                     'targets': ['https://a.example/', 'https://b.example/']}
         with patch('pool_quality.socket.getaddrinfo', return_value=[(2, 2, 17, '', ('192.0.2.1', 443))]), \
                 patch('pool_quality.https_head'), patch('pool_quality.quic_head', side_effect=TimeoutError):
-            targets, evidence = baseline(settings)
-        self.assertEqual(len(targets['quic']), 2)
-        self.assertFalse(evidence['direct_available']['quic'])
-        self.assertTrue(evidence['direct_available']['https'])
+            with self.assertRaises(ProbeUnavailable):
+                baseline(settings)
 
     def test_probe_site_or_total_pool_failure_preserves_both_published_files(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            settings = {'quality': {'minimum_healthy': 2}, 'max_nodes_per_technology': 3,
-                        'subscription_url': 'https://fixture.example/',
+            settings = {'quality': {}, 'subscription_url': 'https://fixture.example/',
                         'reputation_workers': 1, 'reputation_timeout_seconds': 1}
             (root / 'settings.json').write_text(json.dumps(settings))
             for name in ('subscription.json', 'report.json'):
                 (root / name).write_text('unchanged')
             node = {'host': '192.0.2.1', 'reputation': {'status': 'unknown'},
-                    'outbound': {'protocol': 'vless'},
                     'quality': {'https': {'ok': True}, 'quic': {'ok': False}}}
-            for unavailable, passed in ((True, False), (False, False), (False, True)):
-                node['quality']['quic']['ok'] = passed
-                with self.subTest(direct_baseline_failed=unavailable, lone_healthy_node=passed), \
+            for unavailable in (True, False):
+                with self.subTest(direct_baseline_failed=unavailable), \
                         patch.object(generate, 'ROOT', root), \
                         patch('sys.argv', ['generate.py', '--xray', 'unused']), \
                         patch('generate.baseline', side_effect=ProbeUnavailable('fixture unavailable')

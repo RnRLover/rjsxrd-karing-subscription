@@ -12,9 +12,10 @@ def report_signature(data):
     report = json.loads(data)
     reputation = report.get('ip_reputation', {})
     return {'servers': reputation.get('servers', []),
+            'quality_gate': report.get('tcp_udp_quality_gate'),
+            'quality_settings': report.get('quality_checks', {}).get('settings'),
             'selection': reputation.get('selection_priority'),
             'policy': report.get('subscription_policy'),
-            'quality_checks': report.get('quality_checks'),
             'counts': report.get('counts')}
 
 

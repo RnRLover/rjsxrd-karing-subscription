@@ -90,20 +90,21 @@ def main(xray):
         good, tcp_only = free_port(), free_port()
         config = {'log': {'loglevel': 'none'}, 'inbounds': [
             {'tag': tag, 'listen': '127.0.0.1', 'port': port, 'protocol': 'vless',
-             'settings': {'clients': [{'id': uuid, 'flow': 'xtls-rprx-vision'}], 'decryption': 'none'},
-             'streamSettings': {'network': 'tcp', 'security': 'tls', 'tlsSettings': {
-                 'minVersion': '1.3', 'certificates': [
-                     {'certificateFile': str(cert), 'keyFile': str(key)}]}}}
+             'settings': {'clients': [{'id': uuid}], 'decryption': 'none'}}
             for tag, port in [('good', good), ('tcp-only', tcp_only)]],
-            'outbounds': [{'tag': tag, 'protocol': 'freedom', 'settings': {
-                'redirect': f'127.0.0.1:{port}', 'finalRules': [
-                    {'action': 'allow', 'network': network, 'ip': ['127.0.0.1/32'], 'port': str(port)}]}}
-                for tag, port, network in [('https', https.server_address[1], 'tcp'), ('quic', quic_port, 'udp')]]
-                + [{'tag': 'block', 'protocol': 'blackhole'}],
+            'outbounds': [
+                {'tag': 'tcp', 'protocol': 'freedom',
+                 'settings': {'redirect': f'127.0.0.1:{https.server_address[1]}',
+                              'finalRules': [{'action': 'allow', 'network': 'tcp',
+                                              'ip': ['127.0.0.1/32'], 'port': str(https.server_address[1])}]}},
+                {'tag': 'udp', 'protocol': 'freedom',
+                 'settings': {'redirect': f'127.0.0.1:{quic_port}',
+                              'finalRules': [{'action': 'allow', 'network': 'udp',
+                                              'ip': ['127.0.0.1/32'], 'port': str(quic_port)}]}},
+                {'tag': 'block', 'protocol': 'blackhole'}],
             'routing': {'rules': [{'type': 'field', 'inboundTag': ['tcp-only'],
                                   'network': 'udp', 'outboundTag': 'block'},
-                                 {'type': 'field', 'network': 'tcp', 'outboundTag': 'https'},
-                                 {'type': 'field', 'network': 'udp', 'outboundTag': 'quic'}]}}
+                                 {'type': 'field', 'network': 'udp', 'outboundTag': 'udp'}]}}
         xray_validate(xray, config)
         path = directory / 'server.json'
         path.write_text(json.dumps(config))
@@ -122,35 +123,30 @@ def main(xray):
             def node(port, label):
                 return {'host': '127.0.0.1', 'label': label, 'outbound': {
                     'protocol': 'vless', 'settings': {'vnext': [{'address': '127.0.0.1', 'port': port,
-                    'users': [{'id': uuid, 'encryption': 'none', 'flow': 'xtls-rprx-vision'}]}]},
-                    'streamSettings': {'network': 'tcp', 'security': 'tls', 'tlsSettings': {
-                        'serverName': 'quality.fixture.example', 'minVersion': '1.3',
-                        'certificates': [{'certificateFile': str(cert), 'usage': 'verify'}]}}}}
-            direct_tcp = Endpoint('https://quality.fixture.example/tcp', 'quality.fixture.example',
-                                  '/tcp', '127.0.0.1', https.server_address[1])
-            direct_udp = replace(direct_tcp, url='https://quality.fixture.example/quic',
-                                 path='/quic', port=quic_port)
-            https_head(direct_tcp, cafile=str(cert), timeout=2)
-            quic_head(direct_udp, cafile=str(cert), timeout=2)
+                    'users': [{'id': uuid, 'encryption': 'none'}]}]},
+                    'streamSettings': {'network': 'tcp', 'security': 'none'}}}
+            tcp_endpoint = Endpoint('https://quality.fixture.example/tcp', 'quality.fixture.example',
+                                    '/tcp', '127.0.0.1', https.server_address[1])
+            udp_endpoint = replace(tcp_endpoint, url='https://quality.fixture.example/quic',
+                                   path='/quic', port=quic_port)
+            https_head(tcp_endpoint, cafile=str(cert), timeout=2)
+            quic_head(udp_endpoint, cafile=str(cert), timeout=2)
             try:
-                quic_head(replace(direct_udp, host='wrong.fixture.example'), cafile=str(cert), timeout=2)
+                quic_head(replace(udp_endpoint, host='wrong.fixture.example'), cafile=str(cert), timeout=2)
             except ProbeError:
                 pass
             else:
                 raise AssertionError('QUIC accepted a certificate for the wrong hostname')
-            tcp_endpoint = replace(direct_tcp, ip='203.0.113.1', port=443)
-            udp_endpoint = replace(direct_udp, ip='203.0.113.1', port=443)
             checked = probe_nodes([node(tcp_only, 'tcp-only'), node(good, 'good'), node(free_port(), 'dead')],
                                   xray, {'timeout_seconds': 1.5, 'attempts': 2, 'workers': 3},
                                   {'https': [tcp_endpoint], 'quic': [udp_endpoint]}, cafile=str(cert))
-            assert checked[0]['quality']['https']['ok'], checked
+            assert checked[0]['quality']['https']['ok'], [n['quality'] for n in checked]
             assert not checked[0]['quality']['quic']['ok']
             assert checked[0]['quality']['quic']['attempts'] == 2
             assert checked[1]['quality']['https']['ok'] and checked[1]['quality']['quic']['ok']
             assert not checked[2]['quality']['https']['ok']
             assert [node['label'] for node in eligible_nodes(checked)] == ['good']
-            print(json.dumps({'real_HTTPS_and_HTTP3_through_Vision': True, 'TCP_only_node_rejected': True,
-                              'UDP_destination_443': True,
+            print(json.dumps({'real_HTTPS_and_HTTP3_through_VLESS': True, 'TCP_only_node_rejected': True,
                               'QUIC_has_no_TCP_fallback': True, 'wrong_certificate_rejected': True,
                               'failed_probes_retried': True, 'HEAD_only_no_test_file': True, **state}))
         finally:

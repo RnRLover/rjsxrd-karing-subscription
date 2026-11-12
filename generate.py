@@ -264,10 +264,8 @@ def main():
     limit = settings['max_nodes_per_technology']
     selected = select_per_technology(eligible, limit)
     counts['over_technology_limit'] = len(eligible) - len(selected)
-    if len(selected) < settings['quality']['minimum_healthy']:
-        print('::notice::Not enough HTTPS+HTTP3 candidates for automatic failover; '
-              'preserve published pool', flush=True)
-        return False
+    if not selected:
+        raise ValueError('no non-listed candidates; keep published subscription')
     config = build(selected, probe=settings['probe'])
     xray_validate(args.xray, config)
     report = {
@@ -299,7 +297,6 @@ def main():
         'subscription_policy': {
             'clients': ['INCY'], 'format': 'full-xray-json-array-with-body-metadata',
             'native_routing_profile': False,
-            'pool_admission': 'HTTPS/TCP and HTTP3/UDP443 verified in this build',
             'dns_query_strategy': 'UseIP', 'ipv6_supported': True,
             'traffic': 'full-tunnel; no geographic, GitHub or ad-domain routing rules',
             'dns_transport': {'provider': 'AdGuard public filtering DNS', 'all_names': 'doh-direct',

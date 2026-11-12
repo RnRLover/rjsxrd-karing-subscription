@@ -4,7 +4,6 @@
   "reputation_workers": 24,
   "reputation_timeout_seconds": 4,
   "quality": {
-    "minimum_healthy": 2,
     "workers": 24,
     "timeout_seconds": 4,
     "attempts": 2,
