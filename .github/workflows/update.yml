@@ -7,7 +7,6 @@ on:
     paths:
       - '*.py'
       - 'settings.json'
-      - 'incy-routing.json'
       - '.github/workflows/update.yml'
 permissions:
   contents: write
@@ -41,9 +40,9 @@ jobs:
         with:
           path: .runtime/reputation-cache.json
           key: ipsum-feed-v2-${{ github.run_id }}-${{ github.run_attempt }}
-      - name: Check common routing, DNS interception and ad blocking
+      - name: Check full-tunnel routing and DNS interception without geodata
         run: python check_subscription.py --xray .runtime/xray
-      - name: Check direct DoH, resolver failover and independence from proxies
+      - name: Check AdGuard DoH, DNS filtering and independence from proxies
         run: python check_dns_transport.py --xray .runtime/xray
       - name: Check actual automatic selection and failover
         run: python check_auto_selection.py --xray .runtime/xray
