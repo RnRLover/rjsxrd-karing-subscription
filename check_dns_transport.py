@@ -50,8 +50,6 @@ def main(xray):
     # Keep this fixture independent of whether the upstream happens to publish
     # any hostname endpoints in this particular run.
     bootstrap = 'bootstrap.fixture-domain.com'
-    domestic = next(s for s in config['dns']['servers'] if s.get('tag') == 'dns-direct')
-    domestic['domains'].append('full:' + bootstrap)
     primary, backup = 'cloudflare-dns.com', 'dns.google'
     state = {'doh': {primary: [], backup: []}, 'direct': [],
              'healthy': {primary: True, backup: True}, 'proxy_attempts': 0}
@@ -118,7 +116,7 @@ def main(xray):
         https.socket = tls.wrap_socket(https.socket, server_side=True)
         threading.Thread(target=https.serve_forever, daemon=True).start()
         # The direct outbound keeps one redirect: TCP reaches trusted DoH,
-        # UDP on the same port reaches the domestic resolver fixture.
+        # UDP on the same port is a trap for accidental plain DNS use.
         udp.bind(('127.0.0.1', https.server_address[1]))
         threading.Thread(target=udp_worker, daemon=True).start()
         class UnavailableProxy(BaseRequestHandler):
@@ -175,8 +173,8 @@ def main(xray):
                             data = b'\x12\x34\x01\x00\x00\x01\x00\x00\x00\x00\x00\x00' + encoded + b'\x00' + struct.pack('!HH', qtype, 1)
                             client.sendto(b'\x00\x00\x00\x01' + socket.inet_aton('9.9.9.9') + struct.pack('!H', 53) + data, relay)
                             return client.recv(4096)[10:]
-                        assert socket.inet_ntoa(query('transport-fixture.ru')[-4:]) == '77.88.8.8'
-                        assert socket.inet_ntoa(query(bootstrap)[-4:]) == '77.88.8.8'
+                        assert socket.inet_ntoa(query('transport-fixture.ru')[-4:]) == '9.9.9.9'
+                        assert socket.inet_ntoa(query(bootstrap)[-4:]) == '9.9.9.9'
                         github_hosts = ['github.com', 'api.github.com', 'raw.githubusercontent.com',
                                         'release-assets.githubusercontent.com', 'objects.githubusercontent.com',
                                         'github.githubassets.com', 'subscription-fixture.github.io',
@@ -184,8 +182,8 @@ def main(xray):
                                         'github-cloud.s3.amazonaws.com',
                                         'github-production-release-asset-2e65be.s3.amazonaws.com']
                         for host in github_hosts:
-                            assert socket.inet_ntoa(query(host)[-4:]) == '77.88.8.8', host
-                        direct_queries = ['transport-fixture.ru', bootstrap] + github_hosts
+                            assert socket.inet_ntoa(query(host)[-4:]) == '9.9.9.9', host
+                        public_queries = ['transport-fixture.ru', bootstrap] + github_hosts
                         assert socket.inet_ntoa(query('external.fixture-domain.com')[-4:]) == '9.9.9.9'
                         ipv6 = query('ipv6.fixture-domain.com', 28)
                         assert str(ipaddress.IPv6Address(ipv6[-16:])) == '2001:4860:4860::8888'
@@ -193,32 +191,33 @@ def main(xray):
                             reply = query('records.fixture-domain.com', qtype)
                             assert reply[3] & 15 == 0 and reply[6:8] == b'\x00\x00'
                         assert socket.inet_ntoa(query('doubleclick.net')[-4:]) == '0.0.0.0'
-                        assert state['direct'] == direct_queries, state
-                        assert state['doh'][primary] == ['external.fixture-domain.com', 'ipv6.fixture-domain.com'], state
+                        assert state['direct'] == [], state
+                        assert state['doh'][primary] == public_queries + ['external.fixture-domain.com', 'ipv6.fixture-domain.com'], state
                         assert state['doh'][backup] == [], state
                         state['healthy'][primary] = False
                         assert socket.inet_ntoa(query('backup.fixture-domain.com')[-4:]) == '9.9.9.9'
                         assert 'backup.fixture-domain.com' in state['doh'][primary], state
                         assert 'backup.fixture-domain.com' in state['doh'][backup], state
+                        # The backup also covers direct sites and proxy endpoint
+                        # names; neither may depend on the old UDP resolver.
+                        for host in ['codeload.github.com', 'backup-bootstrap.fixture-domain.com']:
+                            assert socket.inet_ntoa(query(host)[-4:]) == '9.9.9.9', host
+                            assert all(host in calls for calls in state['doh'].values()), state
                         state['healthy'][backup] = False
-                        # An uncached GitHub hostname must still resolve when
-                        # both direct DoH resolvers are failing.
-                        assert socket.inet_ntoa(query('codeload.github.com')[-4:]) == '77.88.8.8'
-                        direct_queries.append('codeload.github.com')
                         try:
                             failed = query('failed.fixture-domain.com')
                             assert failed[3] & 15, 'Expected DNS error after DoH failure'
                         except socket.timeout:
                             pass  # dns-out may drop failed queries instead of returning SERVFAIL.
-                        assert state['direct'] == direct_queries, 'External DNS leaked to direct resolver'
+                        assert state['direct'] == [], 'Public DNS leaked to plain UDP resolver'
                         assert all('failed.fixture-domain.com' in calls for calls in state['doh'].values()), state
                         assert state['proxy_attempts'] == 0, state
-                print(json.dumps({'ru_dns_direct': True, 'bootstrap_dns_direct': True, 'external_doh_direct': True,
+                print(json.dumps({'ru_dns_doh_direct': True, 'bootstrap_dns_doh_direct': True, 'external_doh_direct': True,
                                   'tls_verified': True, 'ads_no_upstream': True, 'AAAA_via_direct_doh': True,
                                   'non_ip_queries_return_without_timeout': True, 'INCY_DNS_IP_patch_survived': True,
                                   'primary_failure_uses_backup_doh': True,
                                   'external_failure_no_plain_dns_fallback': True, 'dns_works_without_proxies': True,
-                                  'github_dns_direct': True, 'github_resolves_without_external_doh': True}))
+                                  'github_dns_doh_direct': True, 'github_and_bootstrap_use_backup_doh': True}))
             except Exception:
                 log.flush()
                 print(log_path.read_text()[-14000:])

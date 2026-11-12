@@ -869,14 +869,15 @@
     "dns_query_strategy": "UseIP",
     "ipv6_supported": true,
     "dns_transport": {
-      "domestic_and_bootstrap": "direct",
+      "domestic_and_bootstrap": "doh-direct",
       "external": "doh-direct",
       "external_resolvers": [
         "https://cloudflare-dns.com/dns-query",
         "https://dns.google/dns-query"
       ],
       "external_resolver_fallback": true,
-      "lan_names": "system"
+      "lan_names": "system",
+      "plain_public_dns_fallback": false
     },
     "direct_domains": [
       "geosite:category-ru",
@@ -906,6 +907,6 @@
     },
     "client_geodata_download_verified": false
   },
-  "config_utf8_bytes": 23637,
-  "config_utf16_bytes": 47126
+  "config_utf8_bytes": 23333,
+  "config_utf16_bytes": 46518
 }

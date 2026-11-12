@@ -51,20 +51,11 @@ def xray_validate(xray, config):
             raise ValueError('Xray rejected configuration: ' + (result.stderr + result.stdout)[-900:])
 
 
-def server_address(outbound):
-    settings = outbound.get('settings', {})
-    if outbound.get('protocol') == 'hysteria':
-        return settings.get('address', '')
-    servers = settings.get('vnext', []) + settings.get('servers', [])
-    return servers[0].get('address', '') if servers else ''
-
-
 def build(nodes, profile=None, probe=None):
     profile = profile or read_profile()
     if not nodes:
         raise ValueError('no supported non-listed candidates; keep published subscription')
     proxies = []
-    bootstrap = set()
     for index, node in enumerate(nodes, 1):
         outbound = copy.deepcopy(node['outbound'] if 'outbound' in node else node)
         outbound['tag'] = 'Автовыбор' if index == 1 else f'pool-{index:03d}'
@@ -86,17 +77,11 @@ def build(nodes, profile=None, probe=None):
             sockopt.update(domainStrategy='ForceIP', happyEyeballs={
                 'tryDelayMs': 250, 'prioritizeIPv6': False,
                 'interleave': 1, 'maxConcurrentTry': 4})
-        host = server_address(outbound)
-        if host:
-            try:
-                ipaddress.ip_address(host)
-            except ValueError:
-                bootstrap.add('full:' + host.lower().rstrip('.'))
         proxies.append(outbound)
     tags = [outbound['tag'] for outbound in proxies]
     direct_domains = copy.deepcopy(profile['DirectSites'])
-    # Private names use the local resolver; public direct/bootstrap names use
-    # the profile's domestic resolver. Never send LAN-only names to Yandex.
+    # All public names, including proxy endpoints, use the independent DoH
+    # chain. Only private names stay with the local resolver.
     public_direct = [domain for domain in direct_domains if domain != 'geosite:private']
     remote = profile['RemoteDNSDomain']
     if profile['RemoteDNSType'] != 'DoH' or not remote.startswith('https://'):
@@ -138,8 +123,6 @@ def build(nodes, profile=None, probe=None):
         'dns': {'queryStrategy': 'UseIP', 'disableFallbackIfMatch': True,
                 'tag': 'dns-remote', 'hosts': hosts, 'servers': [
                     {'address': 'localhost', 'domains': ['geosite:private'], 'skipFallback': True},
-                    {'address': profile['DomesticDNSIP'], 'domains': public_direct + sorted(bootstrap),
-                     'skipFallback': True, 'tag': 'dns-direct'},
                     *remote_servers,
                 ]},
         'inbounds': [

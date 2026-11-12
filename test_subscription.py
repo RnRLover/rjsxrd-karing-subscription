@@ -112,8 +112,11 @@ class SubscriptionTests(unittest.TestCase):
         nodes = [parse_node(URI.replace('1.1.1.1', 'vpn.example')),
                  parse_node('hy2://secret@hy.example:443?sni=hy.example')]
         config = build(nodes)
-        domestic = next(s for s in config['dns']['servers'] if s.get('tag') == 'dns-direct')
-        self.assertTrue({'full:vpn.example', 'full:hy.example'} <= set(domestic['domains']))
+        public_dns = [s for s in config['dns']['servers'] if s['address'] != 'localhost']
+        self.assertTrue(all(s['address'].startswith('https://') for s in public_dns))
+        self.assertTrue(all('domains' not in s for s in public_dns))
+        self.assertEqual(config['dns']['hosts']['cloudflare-dns.com'], '1.1.1.1')
+        self.assertEqual(config['dns']['hosts']['dns.google'], '8.8.8.8')
         self.assertEqual(len(config['routing']['balancers'][0]['selector']), 2)
         self.assertTrue(any(o['protocol'] == 'hysteria' for o in config['outbounds']))
 
