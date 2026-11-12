@@ -1,23 +1,20 @@
 """INCY full configuration with DNS and routing kept inside the JSON."""
 import copy
-import ipaddress
 import json
 import os
 from pathlib import Path
 import subprocess
 import tempfile
-from urllib.parse import urlsplit
 
 ROOT = Path(__file__).resolve().parent
 PROXY_PROTOCOLS = ('vless', 'vmess', 'trojan', 'shadowsocks', 'hysteria')
 MAX_CONFIG_UTF16 = 800_000
-# HTTPS DNS is independent of the proxy pool. The internal build template
-# supplies the primary resolver; the full config adds another provider.
-REMOTE_DNS_FALLBACK = ('https://dns.google/dns-query', '8.8.8.8')
-
-
-def read_profile():
-    return json.loads((ROOT / 'incy-routing.json').read_bytes())
+# Published standard filtering endpoints, not the unfiltered or family service.
+# Fixed bootstrap addresses avoid asking another DNS provider for this hostname.
+ADGUARD_DOH = 'https://dns.adguard-dns.com/dns-query'
+ADGUARD_HOST = 'dns.adguard-dns.com'
+ADGUARD_IPS = ('94.140.14.14', '94.140.15.15',
+               '2a10:50c0::ad1:ff', '2a10:50c0::ad2:ff')
 
 
 def serialized_config(config):
@@ -49,8 +46,7 @@ def xray_validate(xray, config):
             raise ValueError('Xray rejected configuration: ' + (result.stderr + result.stdout)[-900:])
 
 
-def build(nodes, profile=None, probe=None):
-    profile = profile or read_profile()
+def build(nodes, probe=None):
     if not nodes:
         raise ValueError('no supported non-listed candidates; keep published subscription')
     proxies = []
@@ -77,52 +73,22 @@ def build(nodes, profile=None, probe=None):
                 'interleave': 1, 'maxConcurrentTry': 4})
         proxies.append(outbound)
     tags = [outbound['tag'] for outbound in proxies]
-    direct_domains = copy.deepcopy(profile['DirectSites'])
-    # All public names, including proxy endpoints, use the independent DoH
-    # chain. Only private names stay with the local resolver.
-    public_direct = [domain for domain in direct_domains if domain != 'geosite:private']
-    remote = profile['RemoteDNSDomain']
-    if profile['RemoteDNSType'] != 'DoH' or not remote.startswith('https://'):
-        raise ValueError('remote DNS must be HTTPS DoH')
-    if ipaddress.ip_address(profile['RemoteDNSIP']).version not in (4, 6):
-        raise ValueError('invalid remote DNS bootstrap address')
-    remote_host = urlsplit(remote).hostname
-    try:
-        ipaddress.ip_address(remote_host)
-    except ValueError:
-        pass
-    else:
-        raise ValueError('DoH URL must use a hostname to survive INCY DNS-IP bypass rules')
-    hosts = copy.deepcopy(profile.get('DnsHosts', {}))
-    hosts[remote_host] = profile['RemoteDNSIP']
-    fallback_url, fallback_ip = REMOTE_DNS_FALLBACK
-    hosts[urlsplit(fallback_url).hostname] = fallback_ip
-    remote_servers = [{'address': url, 'tag': 'dns-remote'}
-                      for url in dict.fromkeys((remote, fallback_url))]
-    for domain in profile['BlockSites']:
-        hosts[domain] = '0.0.0.0'
     sniffing = {'enabled': True, 'destOverride': ['http', 'tls', 'quic'], 'routeOnly': True}
     rules = [
-        {'type': 'field', 'inboundTag': ['dns-direct', 'dns-remote'], 'outboundTag': 'direct'},
-        {'type': 'field', 'inboundTag': ['default-auto'], 'balancerTag': 'auto'},
+        # DNS must work even before the observatory has measured any proxies.
+        {'type': 'field', 'inboundTag': ['dns-remote'], 'outboundTag': 'direct'},
         {'type': 'field', 'inboundTag': ['socks-in', 'http-in'], 'port': '53',
          'network': 'tcp,udp', 'outboundTag': 'dns-out'},
-        {'type': 'field', 'domain': copy.deepcopy(profile['BlockSites']), 'outboundTag': 'block'},
-        {'type': 'field', 'ip': copy.deepcopy(profile['BlockIp']), 'outboundTag': 'block'},
-        {'type': 'field', 'domain': ['geosite:private'], 'outboundTag': 'lan'},
-        {'type': 'field', 'domain': public_direct, 'outboundTag': 'direct'},
-        {'type': 'field', 'ip': ['geoip:private'], 'outboundTag': 'lan'},
-        {'type': 'field', 'ip': [ip for ip in profile['DirectIp'] if ip != 'geoip:private'],
-         'outboundTag': 'direct'},
+        # AdGuard may answer blocked A/AAAA questions with unspecified addresses.
+        {'type': 'field', 'ip': ['0.0.0.0/32', '::/128'], 'outboundTag': 'block'},
+        {'type': 'field', 'network': 'tcp,udp', 'balancerTag': 'auto'},
     ]
     config = {
         'remarks': 'Автовыбор', 'log': {'loglevel': 'warning'},
-        'meta': {'serverDescription': 'INCY · IPv4/IPv6 · RU и GitHub напрямую · блокировка рекламы'},
-        'dns': {'queryStrategy': 'UseIP', 'disableFallbackIfMatch': True,
-                'tag': 'dns-remote', 'hosts': hosts, 'servers': [
-                    {'address': 'localhost', 'domains': ['geosite:private'], 'skipFallback': True},
-                    *remote_servers,
-                ]},
+        'meta': {'serverDescription': 'INCY · IPv4/IPv6 · весь трафик через VPN · AdGuard DNS'},
+        'dns': {'queryStrategy': 'UseIP', 'tag': 'dns-remote',
+                'hosts': {ADGUARD_HOST: list(ADGUARD_IPS)},
+                'servers': [{'address': ADGUARD_DOH, 'tag': 'dns-remote'}]},
         'inbounds': [
             {'tag': 'socks-in', 'listen': '127.0.0.1', 'port': 10808, 'protocol': 'socks',
              'settings': {'udp': True}, 'sniffing': copy.deepcopy(sniffing)},
@@ -130,18 +96,16 @@ def build(nodes, profile=None, probe=None):
              'sniffing': copy.deepcopy(sniffing)},
         ],
         'outbounds': [
-            {'tag': 'default-proxy', 'protocol': 'loopback', 'settings': {'inboundTag': 'default-auto'}},
             *proxies,
             {'tag': 'direct', 'protocol': 'freedom', 'streamSettings': {'sockopt': {
                 'domainStrategy': 'ForceIP', 'happyEyeballs': {
                     'tryDelayMs': 250, 'prioritizeIPv6': False, 'interleave': 1, 'maxConcurrentTry': 4}}}},
-            {'tag': 'lan', 'protocol': 'freedom'},
             {'tag': 'block', 'protocol': 'blackhole'},
             # The modern default imports A/AAAA and answers other types with
             # empty NOERROR, rather than silently dropping them until timeout.
             {'tag': 'dns-out', 'protocol': 'dns'},
         ],
-        'routing': {'domainStrategy': profile['DomainStrategy'], 'rules': rules,
+        'routing': {'domainStrategy': 'AsIs', 'rules': rules,
                     'balancers': [{'tag': 'auto', 'selector': tags, 'fallbackTag': tags[0],
                                    'strategy': {'type': 'leastPing'}}]},
         'burstObservatory': {'subjectSelector': tags, 'pingConfig': copy.deepcopy(probe or {

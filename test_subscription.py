@@ -5,7 +5,7 @@ import unittest
 
 from generate import (collect_nodes, exclude_listed, parse_node, select_per_technology,
                       technology_report)
-from incy import (PROXY_PROTOCOLS, build, load_configs, read_profile,
+from incy import (ADGUARD_DOH, ADGUARD_HOST, ADGUARD_IPS, PROXY_PROTOCOLS, build, load_configs,
                   serialized_config, subscription)
 
 UUID = '123e4567-e89b-12d3-a456-426614174000'
@@ -92,18 +92,17 @@ class SubscriptionTests(unittest.TestCase):
         self.assertEqual(config['burstObservatory']['pingConfig']['interval'], '1m')
         serialized_config(config)
 
-    def test_profile_and_full_config_have_the_same_direct_and_block_domains(self):
-        profile = read_profile()
+    def test_full_tunnel_uses_adguard_without_domain_policies_or_geodata(self):
         config = build([parse_node(URI)])
-        direct = {d for r in config['routing']['rules'] if r.get('outboundTag') in ('direct', 'lan')
-                  for d in r.get('domain', [])}
-        self.assertEqual(direct, set(profile['DirectSites']))
-        self.assertIn('geosite:github', direct)
+        self.assertFalse(any('domain' in rule for rule in config['routing']['rules']))
+        self.assertEqual(config['routing']['domainStrategy'], 'AsIs')
+        self.assertEqual(config['routing']['rules'][-1]['balancerTag'], 'auto')
         self.assertEqual(config['dns']['queryStrategy'], 'UseIP')
-        remote = [s for s in config['dns']['servers'] if s.get('tag') == 'dns-remote']
-        self.assertEqual(remote[0]['address'], profile['RemoteDNSDomain'])
-        self.assertEqual(config['dns']['hosts']['geosite:category-ads-all'], '0.0.0.0')
-        self.assertNotIn('geodata', config)
+        self.assertEqual(config['dns']['servers'], [{'address': ADGUARD_DOH, 'tag': 'dns-remote'}])
+        self.assertEqual(config['dns']['hosts'], {ADGUARD_HOST: list(ADGUARD_IPS)})
+        for removed in ['geodata', 'geoip:', 'geosite:', 'cloudflare-dns.com', 'dns.google']:
+            self.assertNotIn(removed, serialized_config(config))
+        self.assertFalse(any(o['protocol'] == 'loopback' for o in config['outbounds']))
         self.assertNotIn('fakedns', config)
         direct_out = next(o for o in config['outbounds'] if o['tag'] == 'direct')
         self.assertEqual(direct_out['streamSettings']['sockopt']['domainStrategy'], 'ForceIP')
@@ -115,8 +114,7 @@ class SubscriptionTests(unittest.TestCase):
         public_dns = [s for s in config['dns']['servers'] if s['address'] != 'localhost']
         self.assertTrue(all(s['address'].startswith('https://') for s in public_dns))
         self.assertTrue(all('domains' not in s for s in public_dns))
-        self.assertEqual(config['dns']['hosts']['cloudflare-dns.com'], '1.1.1.1')
-        self.assertEqual(config['dns']['hosts']['dns.google'], '8.8.8.8')
+        self.assertEqual(config['dns']['hosts'][ADGUARD_HOST], list(ADGUARD_IPS))
         self.assertEqual(len(config['routing']['balancers'][0]['selector']), 2)
         self.assertTrue(any(o['protocol'] == 'hysteria' for o in config['outbounds']))
 

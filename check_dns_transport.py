@@ -1,4 +1,4 @@
-"""Check direct DoH and resolver failover while every proxy transport fails.
+"""Check filtering AdGuard DoH while every proxy transport fails.
 Only transport destinations are redirected. Upstream DoH URLs and tags stay intact.
 The temporary certificate is trusted only by the test process, never by clients.
 """
@@ -17,7 +17,7 @@ import tempfile
 import threading
 import time
 from check_subscription import receive
-from incy import load_configs
+from incy import ADGUARD_DOH, ADGUARD_HOST, ADGUARD_IPS, load_configs
 
 ROOT = Path(__file__).resolve().parent
 
@@ -35,7 +35,7 @@ def answer(data, ip):
     _, end = question(data)
     qtype = struct.unpack('!H', data[end-4:end-2])[0]
     if qtype == 28:
-        ip = '2a02:6b8::1' if ip == '77.88.8.8' else '2001:4860:4860::8888'
+        ip = '::' if ip == '0.0.0.0' else '2001:4860:4860::8888'
     packed = ipaddress.ip_address(ip).packed
     return (data[:2] + b'\x81\x80\x00\x01\x00\x01\x00\x00\x00\x00'
             + data[12:end] + b'\xc0\x0c' + struct.pack('!HHIH', qtype, 1, 60, len(packed))
@@ -46,13 +46,13 @@ def main(xray):
     config = copy.deepcopy(load_configs(ROOT / 'subscription.json')[0])
     # Emulate INCY's DNS-IP direct exception before every provider rule.
     config['routing']['rules'].insert(0, {'type': 'field',
-        'ip': ['1.1.1.1', '8.8.8.8', '77.88.8.8'], 'outboundTag': 'direct'})
+        'ip': list(ADGUARD_IPS), 'outboundTag': 'direct'})
     # Keep this fixture independent of whether the upstream happens to publish
     # any hostname endpoints in this particular run.
     bootstrap = 'bootstrap.fixture-domain.com'
-    primary, backup = 'cloudflare-dns.com', 'dns.google'
-    state = {'doh': {primary: [], backup: []}, 'direct': [],
-             'healthy': {primary: True, backup: True}, 'proxy_attempts': 0}
+    assert config['dns']['servers'] == [{'address': ADGUARD_DOH, 'tag': 'dns-remote'}]
+    assert config['dns']['hosts'] == {ADGUARD_HOST: list(ADGUARD_IPS)}
+    state = {'doh': [], 'direct': [], 'healthy': True, 'proxy_attempts': 0}
     udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     def udp_worker():
         while True:
@@ -68,7 +68,7 @@ def main(xray):
         subprocess.run(['openssl', 'req', '-x509', '-newkey', 'rsa:2048', '-nodes',
                         '-keyout', str(key), '-out', str(cert), '-days', '1',
                         '-subj', '/CN=DNS transport fixture',
-                        '-addext', 'subjectAltName=DNS:cloudflare-dns.com,DNS:dns.google,IP:1.1.1.1,IP:8.8.8.8',
+                        '-addext', 'subjectAltName=DNS:' + ADGUARD_HOST,
                         '-addext', 'basicConstraints=critical,CA:TRUE'],
                        check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         class Handler(BaseRequestHandler):
@@ -99,9 +99,11 @@ def main(xray):
                             if not flags & 1:
                                 continue
                             request = bodies.pop(stream)
-                            resolver = conn.resolver_name
-                            state['doh'][resolver].append(question(request)[0])
-                            payload = answer(request, '9.9.9.9') if state['healthy'][resolver] else b''
+                            assert conn.resolver_name == ADGUARD_HOST
+                            name = question(request)[0]
+                            state['doh'].append(name)
+                            ip = '0.0.0.0' if name in ('doubleclick.net', 'ads.adfox.ru') else '9.9.9.9'
+                            payload = answer(request, ip) if state['healthy'] else b''
                             # HPACK static :status 200; literal :status 503.
                             frame(1, 4, stream, b'\x88' if payload else b'\x08\x03503')
                             frame(0, 1, stream, payload)
@@ -129,7 +131,7 @@ def main(xray):
             if outbound['protocol'] in ('loopback', 'blackhole', 'dns'):
                 continue
             tag = outbound['tag']
-            dest_port = https.server_address[1] if tag in ('direct', 'lan') else unavailable.server_address[1]
+            dest_port = https.server_address[1] if tag == 'direct' else unavailable.server_address[1]
             outbound.clear()
             outbound.update(tag=tag, protocol='freedom',
                             settings={'redirect': f'127.0.0.1:{dest_port}'})
@@ -190,34 +192,32 @@ def main(xray):
                         for qtype in (16, 65):
                             reply = query('records.fixture-domain.com', qtype)
                             assert reply[3] & 15 == 0 and reply[6:8] == b'\x00\x00'
-                        assert socket.inet_ntoa(query('doubleclick.net')[-4:]) == '0.0.0.0'
+                        for host in ('doubleclick.net', 'ads.adfox.ru'):
+                            assert socket.inet_ntoa(query(host)[-4:]) == '0.0.0.0'
+                            blocked6 = query(host, 28)
+                            assert str(ipaddress.IPv6Address(blocked6[-16:])) == '::'
+                            assert state['doh'].count(host) == 2, state
                         assert state['direct'] == [], state
-                        assert state['doh'][primary] == public_queries + ['external.fixture-domain.com', 'ipv6.fixture-domain.com'], state
-                        assert state['doh'][backup] == [], state
-                        state['healthy'][primary] = False
-                        assert socket.inet_ntoa(query('backup.fixture-domain.com')[-4:]) == '9.9.9.9'
-                        assert 'backup.fixture-domain.com' in state['doh'][primary], state
-                        assert 'backup.fixture-domain.com' in state['doh'][backup], state
-                        # The backup also covers direct sites and proxy endpoint
-                        # names; neither may depend on the old UDP resolver.
-                        for host in ['codeload.github.com', 'backup-bootstrap.fixture-domain.com']:
-                            assert socket.inet_ntoa(query(host)[-4:]) == '9.9.9.9', host
-                            assert all(host in calls for calls in state['doh'].values()), state
-                        state['healthy'][backup] = False
+                        assert state['doh'][:len(public_queries)] == public_queries, state
+                        assert state['proxy_attempts'] == 0, state
+                        state['healthy'] = False
                         try:
                             failed = query('failed.fixture-domain.com')
                             assert failed[3] & 15, 'Expected DNS error after DoH failure'
                         except socket.timeout:
                             pass  # dns-out may drop failed queries instead of returning SERVFAIL.
-                        assert state['direct'] == [], 'Public DNS leaked to plain UDP resolver'
-                        assert all('failed.fixture-domain.com' in calls for calls in state['doh'].values()), state
+                        assert state['direct'] == [], 'DNS leaked to a plain UDP resolver'
+                        assert 'failed.fixture-domain.com' in state['doh'], state
                         assert state['proxy_attempts'] == 0, state
-                print(json.dumps({'ru_dns_doh_direct': True, 'bootstrap_dns_doh_direct': True, 'external_doh_direct': True,
-                                  'tls_verified': True, 'ads_no_upstream': True, 'AAAA_via_direct_doh': True,
-                                  'non_ip_queries_return_without_timeout': True, 'INCY_DNS_IP_patch_survived': True,
-                                  'primary_failure_uses_backup_doh': True,
-                                  'external_failure_no_plain_dns_fallback': True, 'dns_works_without_proxies': True,
-                                  'github_dns_doh_direct': True, 'github_and_bootstrap_use_backup_doh': True}))
+                        state['healthy'] = True
+                        assert socket.inet_ntoa(query('recovery.fixture-domain.com')[-4:]) == '9.9.9.9'
+                print(json.dumps({'all_names_use_adguard_doh_direct': True,
+                                  'tls_verified': True, 'provider_filtered_A_and_AAAA': True,
+                                  'AAAA_via_direct_doh': True,
+                                  'non_ip_queries_return_without_timeout': True,
+                                  'INCY_DNS_IP_patch_survived': True,
+                                  'failure_no_other_provider_or_plain_dns_fallback': True,
+                                  'dns_works_without_proxies': True, 'recovers_after_DOH_failure': True}))
             except Exception:
                 log.flush()
                 print(log_path.read_text()[-14000:])

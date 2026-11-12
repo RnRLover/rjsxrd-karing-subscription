@@ -6,7 +6,6 @@ import copy
 import hashlib
 import ipaddress
 import json
-import os
 from pathlib import Path
 import socket
 import subprocess
@@ -15,7 +14,7 @@ import time
 import urllib.parse
 import urllib.request
 
-from incy import (ROOT, PROXY_PROTOCOLS, atomic_write, build, read_profile,
+from incy import (ROOT, PROXY_PROTOCOLS, atomic_write, build,
                   serialized_config, subscription, xray_validate)
 from ip_reputation import CACHE_KEY, load_feed, assess_nodes, rate_ip, reputation_report
 from rjsxrd_parser import parse_url
@@ -224,7 +223,6 @@ def main():
     parser.add_argument('--xray', required=True)
     args = parser.parse_args()
     settings = json.loads((ROOT / 'settings.json').read_bytes())
-    profile = read_profile()
     original = fetch(settings['subscription_url']).decode('utf-8-sig')
     nodes, counts = collect_nodes(original)
     nodes = compatible_nodes(nodes, args.xray, counts)
@@ -249,15 +247,7 @@ def main():
     counts['over_technology_limit'] = len(eligible) - len(selected)
     if not selected:
         raise ValueError('no non-listed candidates; keep published subscription')
-    config = build(selected, profile, settings['probe'])
-    runtime = ROOT / '.runtime'
-    runtime.mkdir(exist_ok=True)
-    hashes = {}
-    for name, key in [('geoip.dat', 'Geoipurl'), ('geosite.dat', 'Geositeurl')]:
-        data = fetch(profile[key], 40_000_000)
-        (runtime / name).write_bytes(data)
-        hashes[name] = hashlib.sha256(data).hexdigest()
-    os.environ['XRAY_LOCATION_ASSET'] = str(runtime)
+    config = build(selected, probe=settings['probe'])
     xray_validate(args.xray, config)
     report = {
         'generated_at_utc': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
@@ -278,14 +268,15 @@ def main():
             'clients': ['INCY'], 'format': 'full-xray-json-array-with-body-metadata',
             'native_routing_profile': False,
             'dns_query_strategy': 'UseIP', 'ipv6_supported': True,
-            'dns_transport': {'domestic_and_bootstrap': 'doh-direct', 'external': 'doh-direct',
-                              'external_resolvers': [s['address'] for s in config['dns']['servers']
-                                                     if s.get('tag') == 'dns-remote'],
-                              'external_resolver_fallback': True, 'plain_public_dns_fallback': False,
-                              'lan_names': 'system'},
-            'direct_domains': profile['DirectSites'], 'direct_ips': profile['DirectIp'],
-            'block_domains': profile['BlockSites'], 'probe': settings['probe'],
-            'geodata_sha256': hashes, 'client_geodata_download_verified': False,
+            'traffic': 'full-tunnel; no geographic, GitHub or ad-domain routing rules',
+            'dns_transport': {'provider': 'AdGuard public filtering DNS', 'all_names': 'doh-direct',
+                              'resolvers': [s['address'] for s in config['dns']['servers']],
+                              'bootstrap_addresses': config['dns']['hosts'],
+                              'independent_provider_fallback': False,
+                              'plain_public_dns_fallback': False},
+            'direct_domains': [], 'direct_ips': [], 'block_domains': [],
+            'ad_blocking': 'AdGuard DNS filtering; no local domain lists',
+            'probe': settings['probe'], 'geodata_required': False,
         },
         'config_utf8_bytes': len(serialized_config(config).encode()),
         'config_utf16_bytes': len(serialized_config(config).encode('utf-16-le')),

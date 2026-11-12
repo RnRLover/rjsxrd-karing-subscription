@@ -3,7 +3,7 @@
 Production rules, sniffing and balancer selectors stay unchanged. Only outbound
 transports, inbound ports, probe subjects and the test DNS resolver are replaced.
 The fixture resolver and redirects are never written to the subscription.
-The production DNS hosts filter and all routing rules remain active.
+All production routing rules remain active; DNS filtering belongs to AdGuard.
 """
 import argparse
 import copy
@@ -56,13 +56,11 @@ def check_profile(args):
     if isinstance(original, list):
         original = original[args.profile_index]
     assert 'dns' in original and 'fakedns' not in original
-    assert original['routing']['domainStrategy'] == 'IPIfNonMatch'
+    assert original['routing']['domainStrategy'] == 'AsIs'
     assert any(o['protocol'] == 'dns' for o in original['outbounds'])
-    assert original['outbounds'][0] == {
-        'tag': 'default-proxy', 'protocol': 'loopback',
-        'settings': {'inboundTag': 'default-auto'}}
-    assert not any(r.get('network') == 'tcp,udp' and r.get('balancerTag') == 'auto'
-                   and not r.get('inboundTag') for r in original['routing']['rules'])
+    assert not any(o['protocol'] == 'loopback' for o in original['outbounds'])
+    assert original['routing']['rules'][-1] == {
+        'type': 'field', 'network': 'tcp,udp', 'balancerTag': 'auto'}
     assert any(r.get('port') == '53' and r.get('outboundTag') == 'dns-out'
                for r in original['routing']['rules'])
     config = copy.deepcopy(original)
@@ -82,7 +80,7 @@ def check_profile(args):
                     pos += length + 1
                 name = '.'.join(parts)
                 dns_queries.append(name)
-                address = '77.88.8.8' if name == 'geoip-only.fixture-domain.com' else '8.8.8.8'
+                address = '0.0.0.0' if name in ('doubleclick.net', 'ads.adfox.ru') else '8.8.8.8'
                 answer = (request[:2] + b'\x81\x80\x00\x01\x00\x01\x00\x00\x00\x00'
                           + request[12:pos+5] + b'\xc0\x0c\x00\x01\x00\x01\x00\x00\x00\x3c\x00\x04'
                           + socket.inet_aton(address))
@@ -95,9 +93,9 @@ def check_profile(args):
                 return
     threading.Thread(target=dns_worker, daemon=True).start()
     for outbound in config['outbounds']:
-        if outbound['tag'] == 'block' or outbound['protocol'] in ('loopback', 'dns'):
+        if outbound['tag'] == 'block' or outbound['protocol'] == 'dns':
             continue
-        port = (direct if outbound['tag'] in ('direct', 'lan') else proxy).getsockname()[1]
+        port = (direct if outbound['tag'] == 'direct' else proxy).getsockname()[1]
         tag = outbound['tag']
         outbound.clear()
         outbound.update(tag=tag, protocol='freedom',
@@ -107,15 +105,14 @@ def check_profile(args):
             held.bind(('127.0.0.1', 0))
             inbound['port'] = held.getsockname()[1]
     config['dns']['servers'] = [{'address': '127.0.0.1', 'port': dns.getsockname()[1],
-                                 'tag': 'dns-direct'}]
+                                 'tag': 'dns-remote'}]
     config['burstObservatory']['subjectSelector'] = ['unused-test-subject']
     config['log'] = {'loglevel': 'debug'}
     assert config['routing'] == original['routing']
     port = next(i['port'] for i in config['inbounds'] if i['protocol'] == 'socks')
     with tempfile.TemporaryDirectory() as directory:
         directory = Path(directory)
-        for name in ('geoip.dat', 'geosite.dat'):
-            (directory / name).write_bytes((ROOT / '.runtime' / name).read_bytes())
+        # An empty asset directory proves the full JSON needs no geo databases.
         os.environ['XRAY_LOCATION_ASSET'] = str(directory)
         xray = str(Path(args.xray).resolve())
         xray_validate(xray, config)
@@ -152,41 +149,25 @@ def check_profile(args):
                             value = b''
                         return value.decode() if value else 'BLOCK'
                 cases = [
-                    ('RU TLD with foreign DNS address', 'routing-fixture.ru', 'DIRECT'),
-                    ('SU TLD with foreign DNS address', 'routing-fixture.su', 'DIRECT'),
-                    ('RF TLD with foreign DNS address', 'routing-fixture.xn--p1ai', 'DIRECT'),
-                    ('RU service on .com', 'vk.com', 'DIRECT'),
-                    ('GitHub', 'github.com', 'DIRECT'),
-                    ('GitHub API subdomain', 'api.github.com', 'DIRECT'),
-                    ('GitHub raw subscription', 'raw.githubusercontent.com', 'DIRECT'),
-                    ('GitHub release assets', 'release-assets.githubusercontent.com', 'DIRECT'),
-                    ('GitHub release objects', 'objects.githubusercontent.com', 'DIRECT'),
-                    ('GitHub static assets', 'github.githubassets.com', 'DIRECT'),
-                    ('GitHub Pages subscription', 'subscription-fixture.github.io', 'DIRECT'),
-                    ('GitHub web editor', 'vscode.github.dev', 'DIRECT'),
-                    ('GitHub app', 'fixture.githubapp.com', 'DIRECT'),
-                    ('GitHub container registry', 'ghcr.io', 'DIRECT'),
-                    ('GitHub category npm', 'npmjs.org', 'DIRECT'),
-                    ('GitHub category Copilot', 'api.githubcopilot.com', 'DIRECT'),
-                    ('GitHub legacy release host', 'github-production-release-asset-2e65be.s3.amazonaws.com', 'DIRECT'),
-                    ('GitHub legacy cloud host', 'github-cloud.s3.amazonaws.com', 'DIRECT'),
-                    ('Non-GitHub lookalike', 'notgithub.com', 'PROXY'),
-                    ('GitHub name inside foreign domain', 'github.com.fixture-domain.com', 'PROXY'),
-                    ('Raw host name inside foreign domain', 'githubusercontent.com.fixture-domain.com', 'PROXY'),
-                    ('Unrelated S3 bucket', 'unrelated-fixture.s3.amazonaws.com', 'PROXY'),
-                    ('RU IP', '77.88.8.8', 'DIRECT'),
-                    ('GeoIP-only domain', 'geoip-only.fixture-domain.com', 'DIRECT'),
-                    ('LAN IPv4', '192.168.1.1', 'DIRECT'),
-                    ('LAN IPv6', 'fd00::1', 'DIRECT'),
-                    ('LAN link local IPv6', 'fe80::1', 'DIRECT'),
-                    ('Localhost', '127.0.0.1', 'DIRECT'),
+                    ('RU domain', 'routing-fixture.ru', 'PROXY'),
+                    ('SU domain', 'routing-fixture.su', 'PROXY'),
+                    ('RF domain', 'routing-fixture.xn--p1ai', 'PROXY'),
+                    ('RU service on .com', 'vk.com', 'PROXY'),
+                    ('GitHub', 'github.com', 'PROXY'),
+                    ('GitHub API', 'api.github.com', 'PROXY'),
+                    ('GitHub raw subscription', 'raw.githubusercontent.com', 'PROXY'),
+                    ('GitHub release assets', 'release-assets.githubusercontent.com', 'PROXY'),
+                    ('RU IP', '77.88.8.8', 'PROXY'),
+                    ('LAN IPv4', '192.168.1.1', 'PROXY'),
+                    ('LAN IPv6', 'fd00::1', 'PROXY'),
                     ('DNS ad sink IPv4', '0.0.0.0', 'BLOCK'),
                     ('DNS ad sink IPv6', '::', 'BLOCK'),
                     ('Foreign IP', '8.8.8.8', 'PROXY'),
                     ('Foreign IPv6', '2001:4860:4860::8888', 'PROXY'),
                     ('Foreign domain', 'foreign.fixture-domain.com', 'PROXY'),
-                    ('Advertisement', 'doubleclick.net', 'BLOCK'),
-                    ('RU advertisement before direct', 'ads.adfox.ru', 'BLOCK')]
+                    # No local ad-domain rule: filtering happens in DNS, not
+                    # by domain matching in this full-tunnel routing fixture.
+                    ('Ad domain without DNS lookup', 'doubleclick.net', 'PROXY')]
                 results = []
                 for label, host, expected in cases:
                     actual = request(host)
@@ -194,17 +175,15 @@ def check_profile(args):
                                     'expected': expected, 'actual': actual})
                 actual = request('8.8.8.8', b'GET / HTTP/1.1\r\nHost: routing-fixture.ru\r\n\r\n')
                 results.append({'case': 'Sniffed RU host at foreign IP',
-                                'expected': 'DIRECT', 'actual': actual})
+                                'expected': 'PROXY', 'actual': actual})
                 actual = request('8.8.8.8', b'GET / HTTP/1.1\r\nHost: raw.githubusercontent.com\r\n\r\n')
                 results.append({'case': 'Sniffed GitHub host at foreign IP',
-                                'expected': 'DIRECT', 'actual': actual})
-                # Preserve a real RU destination even when a sniffed hostname
-                # has a different, foreign DNS answer in the core resolver.
+                                'expected': 'PROXY', 'actual': actual})
+                # A Russian original destination also stays in the pool.
                 results.append({'case': 'Original RU IP with foreign DNS answer',
-                                'expected': 'DIRECT',
+                                'expected': 'PROXY',
                                 'actual': request('77.88.8.8', b'GET / HTTP/1.1\r\nHost: foreign.fixture-domain.com\r\n\r\n')})
-                # Exercise real DNS interception and the production hosts ad
-                # filter; only its upstream address is replaced by the fixture.
+                # Exercise DNS interception with provider-side filtered answers.
                 with socket.create_connection(('127.0.0.1', port), timeout=5) as conn:
                     conn.sendall(b'\x05\x01\x00')
                     assert receive(conn, 2) == b'\x05\x00'
@@ -226,10 +205,10 @@ def check_profile(args):
                         results.append({'case': 'Intercepted DNS: ' + host,
                                         'expected': expected, 'actual': actual})
                     udp.close()
-                    assert 'doubleclick.net' not in dns_queries
-                    assert 'ads.adfox.ru' not in dns_queries
-                assert 'geoip-only.fixture-domain.com' in dns_queries
-                print(json.dumps({'routing_rules_unchanged': True, 'DNS_interception_and_ad_filter': True,
+                    assert 'doubleclick.net' in dns_queries
+                    assert 'ads.adfox.ru' in dns_queries
+                print(json.dumps({'routing_rules_unchanged': True, 'no_geodata_required': True,
+                                  'DNS_interception_and_provider_filtered_answers': True,
                                   'results': results}, ensure_ascii=False))
                 assert all(r['actual'] == r['expected'] for r in results), 'Routing regression'
             except Exception:

@@ -53,7 +53,7 @@ def exercise(xray, directory, cert, key, tcp_port, udp_port, published):
             'serverName': 'vision.fixture.test', 'minVersion': '1.3',
             'certificates': [{'certificateFile': str(cert), 'usage': 'verify'}]}}}
     before = copy.deepcopy(original)
-    outbound = build([original])['outbounds'][1] if published else copy.deepcopy(original)
+    outbound = build([original])['outbounds'][0] if published else copy.deepcopy(original)
     assert original == before, 'building must not modify source parameters'
     outbound['tag'] = 'vision'
     config = {'log': {'loglevel': 'info'}, 'inbounds': [

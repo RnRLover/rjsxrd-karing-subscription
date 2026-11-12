@@ -5,7 +5,7 @@ import subprocess
 
 ROOT = Path(__file__).resolve().parent
 OUTPUTS = ('subscription.json', 'report.json')
-RETIRED = ('ru.json',)
+RETIRED = ('ru.json', 'incy-routing.json')
 
 
 def report_signature(data):

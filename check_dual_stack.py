@@ -1,4 +1,4 @@
-"""Exercise production Freedom DNS and TCP IPv4/IPv6 fallback on loopback."""
+"""Exercise the DNS direct socket's production IPv4/IPv6 TCP fallback locally."""
 import argparse
 import copy
 import json
@@ -40,6 +40,11 @@ def main(xray):
     config['dns']['hosts'].update({
         'ipv4-only.fixture-domain.ru': ['127.0.0.1', '::1'],
         'ipv6-only.fixture-domain.ru': ['127.0.0.1', '::1']})
+    # Only the DNS transport goes directly in production. Send fixture requests
+    # through its real Freedom socket, preserving its DNS and Happy Eyeballs.
+    config['routing']['rules'].insert(0, {'type': 'field',
+        'domain': ['full:ipv4-only.fixture-domain.ru', 'full:ipv6-only.fixture-domain.ru'],
+        'outboundTag': 'direct'})
     config['burstObservatory']['subjectSelector'] = ['unused-test-subject']
     for inbound in config['inbounds']:
         with socket.socket() as held:
