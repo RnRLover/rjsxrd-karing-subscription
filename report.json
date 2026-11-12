@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-11-12T18:19:40Z",
+  "generated_at_utc": "2026-11-12T18:25:49Z",
   "source": "https://raw.githubusercontent.com/whoahaow/rjsxrd/main/githubmirror/bypass/bypass-all.txt",
   "source_sha256": "cbae32295cde6f7e79e8635bc6441cb3ca198b9214b53f53600ffe6c9d19ef90",
   "counts": {
@@ -7,16 +7,16 @@
     "duplicate": 10,
     "core_incompatible": 0,
     "listed_entry": 4,
-    "listed_exit": 2,
-    "https_failed": 20,
-    "quic_failed_after_https": 28,
-    "over_technology_limit": 39
+    "listed_exit": 3,
+    "https_failed": 16,
+    "quic_failed_after_https": 32,
+    "over_technology_limit": 37
   },
-  "selected": 24,
+  "selected": 25,
   "xray_validated": true,
   "selected_protocols": {
     "shadowsocks": 3,
-    "vless": 14,
+    "vless": 15,
     "vmess": 6,
     "hysteria": 1
   },
@@ -47,7 +47,7 @@
         "protocol": "vless",
         "transport": "tcp",
         "security": "reality",
-        "eligible": 26,
+        "eligible": 22,
         "selected": 3,
         "tags": [
           "pool-004",
@@ -63,8 +63,8 @@
         "selected": 3,
         "tags": [
           "pool-006",
-          "pool-014",
-          "pool-023"
+          "pool-015",
+          "pool-025"
         ]
       },
       {
@@ -75,8 +75,20 @@
         "selected": 3,
         "tags": [
           "pool-008",
+          "pool-010",
+          "pool-011"
+        ]
+      },
+      {
+        "protocol": "vless",
+        "transport": "xhttp",
+        "security": "reality",
+        "eligible": 7,
+        "selected": 3,
+        "tags": [
           "pool-009",
-          "pool-010"
+          "pool-014",
+          "pool-019"
         ]
       },
       {
@@ -86,32 +98,21 @@
         "eligible": 3,
         "selected": 3,
         "tags": [
-          "pool-011",
-          "pool-018",
-          "pool-019"
+          "pool-012",
+          "pool-020",
+          "pool-021"
         ]
       },
       {
         "protocol": "vmess",
         "transport": "tcp",
         "security": "none",
-        "eligible": 2,
-        "selected": 2,
-        "tags": [
-          "pool-012",
-          "pool-015"
-        ]
-      },
-      {
-        "protocol": "vless",
-        "transport": "xhttp",
-        "security": "reality",
-        "eligible": 5,
+        "eligible": 3,
         "selected": 3,
         "tags": [
           "pool-013",
-          "pool-017",
-          "pool-020"
+          "pool-016",
+          "pool-018"
         ]
       },
       {
@@ -121,32 +122,23 @@
         "eligible": 1,
         "selected": 1,
         "tags": [
-          "pool-016"
+          "pool-017"
         ]
       },
       {
         "protocol": "vless",
         "transport": "grpc",
         "security": "tls",
-        "eligible": 1,
-        "selected": 1,
+        "eligible": 2,
+        "selected": 2,
         "tags": [
-          "pool-021"
+          "pool-022",
+          "pool-023"
         ]
       },
       {
         "protocol": "vless",
         "transport": "tcp",
-        "security": "tls",
-        "eligible": 1,
-        "selected": 1,
-        "tags": [
-          "pool-022"
-        ]
-      },
-      {
-        "protocol": "vmess",
-        "transport": "ws",
         "security": "tls",
         "eligible": 1,
         "selected": 1,
@@ -171,7 +163,7 @@
       "attempts": 2,
       "targets": [
         "https://www.google.com/generate_204",
-        "https://www.cloudflare.com/cdn-cgi/trace"
+        "https://speed.cloudflare.com/__down?bytes=0"
       ]
     },
     "direct_baseline": {
@@ -186,13 +178,11 @@
         },
         {
           "protocol": "https",
-          "url": "https://www.cloudflare.com/cdn-cgi/trace",
-          "ok": false,
-          "attempts": 2,
-          "errors": {
-            "ProbeError": 2
-          },
-          "last_error": "unsuccessful HTTPS status"
+          "url": "https://speed.cloudflare.com/__down?bytes=0",
+          "ok": true,
+          "target": "https://speed.cloudflare.com/__down?bytes=0",
+          "attempts": 1,
+          "errors": {}
         },
         {
           "protocol": "quic",
@@ -204,19 +194,19 @@
         },
         {
           "protocol": "quic",
-          "url": "https://www.cloudflare.com/cdn-cgi/trace",
+          "url": "https://speed.cloudflare.com/__down?bytes=0",
           "ok": false,
           "attempts": 2,
           "errors": {
             "ProbeError": 2
           },
-          "last_error": "unsuccessful HTTP/3 status"
+          "last_error": "QUIC terminated: 296"
         }
       ],
       "unresolved": []
     },
-    "candidates_checked": 111,
-    "passed_both": 63,
+    "candidates_checked": 110,
+    "passed_both": 62,
     "history_used": false,
     "latency_ranking": false,
     "selected": [
@@ -291,8 +281,10 @@
         "quic": {
           "ok": true,
           "target": "https://www.google.com/generate_204",
-          "attempts": 1,
-          "errors": {}
+          "attempts": 2,
+          "errors": {
+            "TimeoutError": 1
+          }
         }
       },
       {
@@ -375,10 +367,8 @@
         "https": {
           "ok": true,
           "target": "https://www.google.com/generate_204",
-          "attempts": 2,
-          "errors": {
-            "TimeoutError": 1
-          }
+          "attempts": 1,
+          "errors": {}
         },
         "quic": {
           "ok": true,
@@ -413,10 +403,8 @@
         "quic": {
           "ok": true,
           "target": "https://www.google.com/generate_204",
-          "attempts": 2,
-          "errors": {
-            "TimeoutError": 1
-          }
+          "attempts": 1,
+          "errors": {}
         }
       },
       {
@@ -424,14 +412,18 @@
         "https": {
           "ok": true,
           "target": "https://www.google.com/generate_204",
-          "attempts": 1,
-          "errors": {}
+          "attempts": 3,
+          "errors": {
+            "TimeoutError": 2
+          }
         },
         "quic": {
           "ok": true,
           "target": "https://www.google.com/generate_204",
-          "attempts": 1,
-          "errors": {}
+          "attempts": 2,
+          "errors": {
+            "TimeoutError": 1
+          }
         }
       },
       {
@@ -499,8 +491,10 @@
         "https": {
           "ok": true,
           "target": "https://www.google.com/generate_204",
-          "attempts": 1,
-          "errors": {}
+          "attempts": 3,
+          "errors": {
+            "TimeoutError": 2
+          }
         },
         "quic": {
           "ok": true,
@@ -513,7 +507,7 @@
         "tag": "pool-020",
         "https": {
           "ok": true,
-          "target": "https://www.google.com/generate_204",
+          "target": "https://speed.cloudflare.com/__down?bytes=0",
           "attempts": 2,
           "errors": {
             "TimeoutError": 1
@@ -552,8 +546,10 @@
         "quic": {
           "ok": true,
           "target": "https://www.google.com/generate_204",
-          "attempts": 1,
-          "errors": {}
+          "attempts": 2,
+          "errors": {
+            "TimeoutError": 1
+          }
         }
       },
       {
@@ -582,10 +578,23 @@
         "quic": {
           "ok": true,
           "target": "https://www.google.com/generate_204",
-          "attempts": 2,
-          "errors": {
-            "TimeoutError": 1
-          }
+          "attempts": 1,
+          "errors": {}
+        }
+      },
+      {
+        "tag": "pool-025",
+        "https": {
+          "ok": true,
+          "target": "https://www.google.com/generate_204",
+          "attempts": 1,
+          "errors": {}
+        },
+        "quic": {
+          "ok": true,
+          "target": "https://www.google.com/generate_204",
+          "attempts": 1,
+          "errors": {}
         }
       }
     ]
@@ -593,10 +602,9 @@
   "pool_limit": {
     "per_technology": 3
   },
-  "unknown_exit_retained": 6,
+  "unknown_exit_retained": 7,
   "exit_discovery_errors": {
-    "URLError": 5,
-    "TimeoutError": 1
+    "URLError": 7
   },
   "ip_reputation": {
     "provider": "IPsum (stamparm/ipsum)",
@@ -611,13 +619,13 @@
     "selection_priority": "exclude listed addresses; retain unknown coverage; preserve upstream order within the technology quota without reputation ranking",
     "meaning": "No listing in this feed is not a positive whitelist or proof of Gemini access.",
     "candidates": {
-      "not_listed": 61,
-      "unknown": 50,
-      "listed": 2
+      "not_listed": 58,
+      "unknown": 52,
+      "listed": 3
     },
     "selected": {
-      "not_listed": 15,
-      "unknown": 9
+      "not_listed": 13,
+      "unknown": 12
     },
     "servers": [
       {
@@ -682,10 +690,10 @@
       },
       {
         "tag": "pool-005",
-        "exit_ip": "48.102.169.193",
-        "status": "not_listed",
-        "score": 100,
-        "blacklist_count": 0,
+        "exit_ip": null,
+        "status": "unknown",
+        "score": null,
+        "blacklist_count": null,
         "entry_reputation": [
           {
             "ip": "48.102.169.193",
@@ -742,6 +750,21 @@
       },
       {
         "tag": "pool-009",
+        "exit_ip": "195.211.99.82",
+        "status": "not_listed",
+        "score": 100,
+        "blacklist_count": 0,
+        "entry_reputation": [
+          {
+            "ip": "212.115.55.89",
+            "status": "not_listed",
+            "score": 100,
+            "blacklist_count": 0
+          }
+        ]
+      },
+      {
+        "tag": "pool-010",
         "exit_ip": "167.88.62.51",
         "status": "not_listed",
         "score": 100,
@@ -756,7 +779,7 @@
         ]
       },
       {
-        "tag": "pool-010",
+        "tag": "pool-011",
         "exit_ip": "38.128.66.249",
         "status": "not_listed",
         "score": 100,
@@ -771,7 +794,7 @@
         ]
       },
       {
-        "tag": "pool-011",
+        "tag": "pool-012",
         "exit_ip": "185.126.67.62",
         "status": "not_listed",
         "score": 100,
@@ -786,7 +809,7 @@
         ]
       },
       {
-        "tag": "pool-012",
+        "tag": "pool-013",
         "exit_ip": "38.110.1.246",
         "status": "not_listed",
         "score": 100,
@@ -801,11 +824,11 @@
         ]
       },
       {
-        "tag": "pool-013",
-        "exit_ip": null,
-        "status": "unknown",
-        "score": null,
-        "blacklist_count": null,
+        "tag": "pool-014",
+        "exit_ip": "195.211.99.82",
+        "status": "not_listed",
+        "score": 100,
+        "blacklist_count": 0,
         "entry_reputation": [
           {
             "ip": "212.115.55.89",
@@ -816,7 +839,7 @@
         ]
       },
       {
-        "tag": "pool-014",
+        "tag": "pool-015",
         "exit_ip": "2a03:6f00:8::a9b",
         "status": "unknown",
         "score": null,
@@ -831,7 +854,7 @@
         ]
       },
       {
-        "tag": "pool-015",
+        "tag": "pool-016",
         "exit_ip": "38.60.224.173",
         "status": "not_listed",
         "score": 100,
@@ -846,29 +869,14 @@
         ]
       },
       {
-        "tag": "pool-016",
-        "exit_ip": "13.143.189.100",
-        "status": "not_listed",
-        "score": 100,
-        "blacklist_count": 0,
+        "tag": "pool-017",
+        "exit_ip": null,
+        "status": "unknown",
+        "score": null,
+        "blacklist_count": null,
         "entry_reputation": [
           {
             "ip": "13.143.189.102",
-            "status": "not_listed",
-            "score": 100,
-            "blacklist_count": 0
-          }
-        ]
-      },
-      {
-        "tag": "pool-017",
-        "exit_ip": "82.139.231.38",
-        "status": "not_listed",
-        "score": 100,
-        "blacklist_count": 0,
-        "entry_reputation": [
-          {
-            "ip": "201.8.64.229",
             "status": "not_listed",
             "score": 100,
             "blacklist_count": 0
@@ -883,7 +891,13 @@
         "blacklist_count": null,
         "entry_reputation": [
           {
-            "ip": "213.176.73.220",
+            "ip": "2406:da1e:a4c:3400:2122:c952:e104:9df5",
+            "status": "unknown",
+            "score": null,
+            "blacklist_count": null
+          },
+          {
+            "ip": "54.46.2.161",
             "status": "not_listed",
             "score": 100,
             "blacklist_count": 0
@@ -898,7 +912,7 @@
         "blacklist_count": null,
         "entry_reputation": [
           {
-            "ip": "213.176.73.220",
+            "ip": "201.8.64.229",
             "status": "not_listed",
             "score": 100,
             "blacklist_count": 0
@@ -907,13 +921,13 @@
       },
       {
         "tag": "pool-020",
-        "exit_ip": "145.79.187.28",
-        "status": "not_listed",
-        "score": 100,
-        "blacklist_count": 0,
+        "exit_ip": "2a01:ecc0:3c0:98::2",
+        "status": "unknown",
+        "score": null,
+        "blacklist_count": null,
         "entry_reputation": [
           {
-            "ip": "145.79.187.28",
+            "ip": "213.176.73.220",
             "status": "not_listed",
             "score": 100,
             "blacklist_count": 0
@@ -922,6 +936,36 @@
       },
       {
         "tag": "pool-021",
+        "exit_ip": "2a01:ecc0:3c0:98::2",
+        "status": "unknown",
+        "score": null,
+        "blacklist_count": null,
+        "entry_reputation": [
+          {
+            "ip": "213.176.73.220",
+            "status": "not_listed",
+            "score": 100,
+            "blacklist_count": 0
+          }
+        ]
+      },
+      {
+        "tag": "pool-022",
+        "exit_ip": "185.126.67.33",
+        "status": "not_listed",
+        "score": 100,
+        "blacklist_count": 0,
+        "entry_reputation": [
+          {
+            "ip": "5.129.193.120",
+            "status": "not_listed",
+            "score": 100,
+            "blacklist_count": 0
+          }
+        ]
+      },
+      {
+        "tag": "pool-023",
         "exit_ip": null,
         "status": "unknown",
         "score": null,
@@ -936,7 +980,7 @@
         ]
       },
       {
-        "tag": "pool-022",
+        "tag": "pool-024",
         "exit_ip": "2a03:6f02::1:68c8",
         "status": "unknown",
         "score": null,
@@ -951,29 +995,14 @@
         ]
       },
       {
-        "tag": "pool-023",
-        "exit_ip": "216.227.161.95",
-        "status": "not_listed",
-        "score": 100,
-        "blacklist_count": 0,
-        "entry_reputation": [
-          {
-            "ip": "216.227.161.95",
-            "status": "not_listed",
-            "score": 100,
-            "blacklist_count": 0
-          }
-        ]
-      },
-      {
-        "tag": "pool-024",
+        "tag": "pool-025",
         "exit_ip": null,
         "status": "unknown",
         "score": null,
         "blacklist_count": null,
         "entry_reputation": [
           {
-            "ip": "104.17.77.77",
+            "ip": "216.227.161.95",
             "status": "not_listed",
             "score": 100,
             "blacklist_count": 0
@@ -1021,6 +1050,6 @@
     },
     "geodata_required": false
   },
-  "config_utf8_bytes": 13937,
-  "config_utf16_bytes": 27748
+  "config_utf8_bytes": 14342,
+  "config_utf16_bytes": 28558
 }
