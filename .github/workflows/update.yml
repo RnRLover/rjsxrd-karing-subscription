@@ -46,15 +46,20 @@ jobs:
         with:
           path: .runtime/reputation-cache.json
           key: ipsum-feed-v2-${{ github.run_id }}-${{ github.run_attempt }}
-      - name: Check full-tunnel routing and DNS interception without geodata
+      - name: Check RU and GitHub direct routing and DNS interception
+        if: steps.build.outputs.ready == 'true'
         run: python check_subscription.py --xray .runtime/xray
       - name: Check AdGuard DoH, DNS filtering and independence from proxies
+        if: steps.build.outputs.ready == 'true'
         run: python check_dns_transport.py --xray .runtime/xray
       - name: Check actual automatic selection and failover
+        if: steps.build.outputs.ready == 'true'
         run: python check_auto_selection.py --xray .runtime/xray
       - name: Check IPv4 and IPv6 direct connections and fallback
+        if: steps.build.outputs.ready == 'true'
         run: python check_dual_stack.py --xray .runtime/xray
       - name: Check Vision UDP 443 permission and TCP relay
+        if: steps.build.outputs.ready == 'true'
         run: python check_quic_transport.py --xray .runtime/xray
       - name: Publish validated files
         if: steps.build.outputs.ready == 'true'
