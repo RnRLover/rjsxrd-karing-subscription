@@ -8,6 +8,10 @@ import zipfile
 from pathlib import Path
 
 LATEST_RELEASE = "https://github.com/XTLS/Xray-core/releases/latest"
+GEODATA_SOURCES = {
+    'geoip.dat': 'https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geoip.dat',
+    'geosite.dat': 'https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geosite.dat',
+}
 
 
 def latest_version():
@@ -21,6 +25,18 @@ def latest_version():
 
 def download(url):
     with urllib.request.urlopen(url, timeout=60) as r: return r.read()
+
+
+def prepare_geodata(root, fetch=download):
+    """CI assets only; neither these files nor a routing profile are imported."""
+    hashes = {}
+    for name, url in GEODATA_SOURCES.items():
+        data = fetch(url)
+        if not 1000 < len(data) < 40_000_000:
+            raise ValueError('invalid geodata payload size: ' + name)
+        (root / name).write_bytes(data)
+        hashes[name] = hashlib.sha256(data).hexdigest()
+    return hashes
 
 if __name__ == "__main__":
     version = latest_version()
@@ -36,4 +52,5 @@ if __name__ == "__main__":
     with zipfile.ZipFile(io.BytesIO(data)) as archive:
         (root / executable).write_bytes(archive.read(executable))
     if os.name != "nt": (root / executable).chmod(0o755)
+    prepare_geodata(root)
     print(f"Verified {version} SHA256 {sha}")

@@ -5,7 +5,8 @@ import unittest
 
 from generate import (collect_nodes, exclude_listed, parse_node, select_per_technology,
                       technology_report)
-from incy import (ADGUARD_DOH, ADGUARD_HOST, ADGUARD_IPS, PROXY_PROTOCOLS, build, load_configs,
+from incy import (ADGUARD_DOH, ADGUARD_HOST, ADGUARD_IPS, DIRECT_DOMAINS, DIRECT_IPS,
+                  PROXY_PROTOCOLS, build, load_configs,
                   serialized_config, subscription)
 
 UUID = '123e4567-e89b-12d3-a456-426614174000'
@@ -92,15 +93,17 @@ class SubscriptionTests(unittest.TestCase):
         self.assertEqual(config['burstObservatory']['pingConfig']['interval'], '1m')
         serialized_config(config)
 
-    def test_full_tunnel_uses_adguard_without_domain_policies_or_geodata(self):
+    def test_ru_and_github_routes_are_inside_the_full_config_with_adguard(self):
         config = build([parse_node(URI)])
-        self.assertFalse(any('domain' in rule for rule in config['routing']['rules']))
-        self.assertEqual(config['routing']['domainStrategy'], 'AsIs')
+        direct = [r for r in config['routing']['rules'] if r.get('outboundTag') == 'direct']
+        self.assertTrue(any(r.get('domain') == list(DIRECT_DOMAINS) for r in direct))
+        self.assertTrue(any(r.get('ip') == list(DIRECT_IPS) for r in direct))
+        self.assertEqual(config['routing']['domainStrategy'], 'IPIfNonMatch')
         self.assertEqual(config['routing']['rules'][-1]['balancerTag'], 'auto')
         self.assertEqual(config['dns']['queryStrategy'], 'UseIP')
         self.assertEqual(config['dns']['servers'], [{'address': ADGUARD_DOH, 'tag': 'dns-remote'}])
         self.assertEqual(config['dns']['hosts'], {ADGUARD_HOST: list(ADGUARD_IPS)})
-        for removed in ['geodata', 'geoip:', 'geosite:', 'cloudflare-dns.com', 'dns.google']:
+        for removed in ['cloudflare-dns.com', 'dns.google']:
             self.assertNotIn(removed, serialized_config(config))
         self.assertFalse(any(o['protocol'] == 'loopback' for o in config['outbounds']))
         self.assertNotIn('fakedns', config)

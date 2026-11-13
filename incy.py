@@ -15,6 +15,9 @@ ADGUARD_DOH = 'https://dns.adguard-dns.com/dns-query'
 ADGUARD_HOST = 'dns.adguard-dns.com'
 ADGUARD_IPS = ('94.140.14.14', '94.140.15.15',
                '2a10:50c0::ad1:ff', '2a10:50c0::ad2:ff')
+DIRECT_DOMAINS = ('geosite:category-ru', 'domain:ru', 'domain:su',
+                  'domain:xn--p1ai', 'geosite:github')
+DIRECT_IPS = ('geoip:ru',)
 
 
 def serialized_config(config):
@@ -84,11 +87,13 @@ def build(nodes, probe=None):
          'network': 'tcp,udp', 'outboundTag': 'dns-out'},
         # AdGuard may answer blocked A/AAAA questions with unspecified addresses.
         {'type': 'field', 'ip': ['0.0.0.0/32', '::/128'], 'outboundTag': 'block'},
-        {'type': 'field', 'network': 'tcp,udp', 'balancerTag': 'auto'},
+        {'type': 'field', 'domain': list(DIRECT_DOMAINS), 'outboundTag': 'direct'},
+        {'type': 'field', 'ip': list(DIRECT_IPS), 'outboundTag': 'direct'},
+        {'type': 'field', 'ip': ['0.0.0.0/0', '::/0'], 'network': 'tcp,udp', 'balancerTag': 'auto'},
     ]
     config = {
         'remarks': 'Автовыбор', 'log': {'loglevel': 'warning'},
-        'meta': {'serverDescription': 'INCY · IPv4/IPv6 · весь трафик через VPN · AdGuard DNS'},
+        'meta': {'serverDescription': 'INCY · IPv4/IPv6 · РУ и GitHub напрямую · AdGuard DNS'},
         'dns': {'queryStrategy': 'UseIP', 'tag': 'dns-remote',
                 'hosts': {ADGUARD_HOST: list(ADGUARD_IPS)},
                 'servers': [{'address': ADGUARD_DOH, 'tag': 'dns-remote'}]},
@@ -108,7 +113,9 @@ def build(nodes, probe=None):
             # empty NOERROR, rather than silently dropping them until timeout.
             {'tag': 'dns-out', 'protocol': 'dns'},
         ],
-        'routing': {'domainStrategy': 'AsIs', 'rules': rules,
+        # An IP-only final rule permits the IPIfNonMatch DNS pass for names,
+        # while preserving a known original IP when sniffing supplies a name.
+        'routing': {'domainStrategy': 'IPIfNonMatch', 'rules': rules,
                     'balancers': [{'tag': 'auto', 'selector': tags, 'fallbackTag': tags[0],
                                    'strategy': {'type': 'leastPing'}}]},
         'burstObservatory': {'subjectSelector': tags, 'pingConfig': copy.deepcopy(probe or {

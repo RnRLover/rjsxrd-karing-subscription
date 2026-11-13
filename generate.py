@@ -15,7 +15,7 @@ import time
 import urllib.parse
 import urllib.request
 
-from incy import (ROOT, PROXY_PROTOCOLS, atomic_write, build,
+from incy import (ROOT, PROXY_PROTOCOLS, DIRECT_DOMAINS, DIRECT_IPS, atomic_write, build,
                   serialized_config, subscription, xray_validate)
 from ip_reputation import CACHE_KEY, load_feed, assess_nodes, rate_ip, reputation_report
 from pool_quality import ProbeUnavailable, baseline, eligible_nodes, probe_nodes
@@ -298,15 +298,19 @@ def main():
             'clients': ['INCY'], 'format': 'full-xray-json-array-with-body-metadata',
             'native_routing_profile': False,
             'dns_query_strategy': 'UseIP', 'ipv6_supported': True,
-            'traffic': 'full-tunnel; no geographic, GitHub or ad-domain routing rules',
+            'traffic': 'RU domains/IPs and GitHub direct; other traffic uses the verified auto pool',
             'dns_transport': {'provider': 'AdGuard public filtering DNS', 'all_names': 'doh-direct',
                               'resolvers': [s['address'] for s in config['dns']['servers']],
                               'bootstrap_addresses': config['dns']['hosts'],
                               'independent_provider_fallback': False,
                               'plain_public_dns_fallback': False},
-            'direct_domains': [], 'direct_ips': [], 'block_domains': [],
+            'direct_domains': list(DIRECT_DOMAINS), 'direct_ips': list(DIRECT_IPS), 'block_domains': [],
             'ad_blocking': 'AdGuard DNS filtering; no local domain lists',
-            'probe': settings['probe'], 'geodata_required': False,
+            'probe': settings['probe'], 'geodata_required': True,
+            'routing_domain_strategy': 'IPIfNonMatch',
+            'geodata_sha256': {name: hashlib.sha256((ROOT / '.runtime' / name).read_bytes()).hexdigest()
+                               for name in ('geoip.dat', 'geosite.dat')},
+            'client_geodata_verified': False,
         },
         'config_utf8_bytes': len(serialized_config(config).encode()),
         'config_utf16_bytes': len(serialized_config(config).encode('utf-16-le')),
