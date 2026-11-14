@@ -3,7 +3,7 @@
 Production rules, sniffing and balancer selectors stay unchanged. Only outbound
 transports, inbound ports, probe subjects and the test DNS resolver are replaced.
 The fixture resolver and redirects are never written to the subscription.
-All production routing rules remain active; DNS filtering belongs to AdGuard.
+All production routing rules remain active, including reference geosite blocking.
 """
 import argparse
 import copy
@@ -56,13 +56,10 @@ def check_profile(args):
     if isinstance(original, list):
         original = original[args.profile_index]
     assert 'dns' in original and 'fakedns' not in original
-    assert original['routing']['domainStrategy'] == 'IPIfNonMatch'
-    assert any(o['protocol'] == 'dns' for o in original['outbounds'])
-    assert not any(o['protocol'] == 'loopback' for o in original['outbounds'])
+    assert original['routing']['domainStrategy'] == 'AsIs'
+    assert not any(o['protocol'] in ('dns', 'loopback') for o in original['outbounds'])
     assert original['routing']['rules'][-1] == {
-        'type': 'field', 'ip': ['0.0.0.0/0', '::/0'], 'network': 'tcp,udp', 'balancerTag': 'auto'}
-    assert any(r.get('port') == '53' and r.get('outboundTag') == 'dns-out'
-               for r in original['routing']['rules'])
+        'type': 'field', 'network': 'tcp,udp', 'balancerTag': 'balancer'}
     config = copy.deepcopy(original)
     direct = tcp_fixture(b'DIRECT')
     proxy = tcp_fixture(b'PROXY')
@@ -151,75 +148,39 @@ def check_profile(args):
                             value = b''
                         return value.decode() if value else 'BLOCK'
                 cases = [
-                    ('RU domain', 'routing-fixture.ru', 'DIRECT'),
-                    ('SU domain', 'routing-fixture.su', 'DIRECT'),
-                    ('RF domain', 'routing-fixture.xn--p1ai', 'DIRECT'),
-                    ('RU service on .com', 'vk.com', 'DIRECT'),
-                    ('GitHub', 'github.com', 'DIRECT'),
-                    ('GitHub API', 'api.github.com', 'DIRECT'),
-                    ('GitHub raw subscription', 'raw.githubusercontent.com', 'DIRECT'),
-                    ('GitHub release assets', 'release-assets.githubusercontent.com', 'DIRECT'),
-                    ('GitHub release objects', 'objects.githubusercontent.com', 'DIRECT'),
-                    ('GitHub static assets', 'github.githubassets.com', 'DIRECT'),
-                    ('GitHub Pages', 'routing-fixture.github.io', 'DIRECT'),
-                    ('GitHub web editor', 'vscode.github.dev', 'DIRECT'),
-                    ('GitHub registry', 'ghcr.io', 'DIRECT'),
-                    ('GitHub legacy S3', 'github-production-release-asset-2e65be.s3.amazonaws.com', 'DIRECT'),
-                    ('GitHub lookalike', 'notgithub.com', 'PROXY'),
-                    ('GitHub inside foreign domain', 'github.com.fixture-domain.com', 'PROXY'),
-                    ('Other S3 bucket', 'unrelated-fixture.s3.amazonaws.com', 'PROXY'),
+                    ('RU service', 'vk.com', 'DIRECT'),
+                    ('Yandex', 'yandex.ru', 'DIRECT'),
+                    ('Proxy exception before RU category', 'habr.com', 'PROXY'),
+                    ('Russian proxy exception', 'theins.ru', 'PROXY'),
+                    ('SU proxy exception', 'jut.su', 'PROXY'),
+                    ('Apple direct category', 'apple.com', 'DIRECT'),
+                    ('Twitch direct category', 'twitch.tv', 'DIRECT'),
+                    ('Private domain', 'localhost', 'DIRECT'),
+                    ('GitHub now follows the reference default', 'github.com', 'PROXY'),
+                    ('GitHub raw', 'raw.githubusercontent.com', 'PROXY'),
                     ('RU IP', '77.88.8.8', 'DIRECT'),
-                    ('RU IPv6', '2a02:6b8::1', 'DIRECT'),
-                    ('RU IP through DNS', 'geoip-only.fixture-domain.com', 'DIRECT'),
-                    ('LAN IPv4', '192.168.1.1', 'PROXY'),
-                    ('LAN IPv6', 'fd00::1', 'PROXY'),
-                    ('DNS ad sink IPv4', '0.0.0.0', 'BLOCK'),
-                    ('DNS ad sink IPv6', '::', 'BLOCK'),
+                    ('RU IPv6 literal', '2a02:6b8::1', 'DIRECT'),
+                    ('AsIs does not resolve a hostname for GeoIP', 'geoip-only.fixture-domain.com', 'PROXY'),
+                    ('LAN IPv4', '192.168.1.1', 'DIRECT'),
+                    ('LAN IPv6 literal', 'fd00::1', 'DIRECT'),
                     ('Foreign IP', '8.8.8.8', 'PROXY'),
-                    ('Foreign IPv6', '2001:4860:4860::8888', 'PROXY'),
                     ('Foreign domain', 'foreign.fixture-domain.com', 'PROXY'),
-                    ('AdGuard sink resolved before the IP catch-all', 'doubleclick.net', 'BLOCK')]
+                    ('Geosite ad block', 'doubleclick.net', 'BLOCK'),
+                    ('Windows telemetry block', 'vortex.data.microsoft.com', 'BLOCK')]
                 results = []
                 for label, host, expected in cases:
                     actual = request(host)
                     results.append({'case': label, 'destination': host,
                                     'expected': expected, 'actual': actual})
-                actual = request('8.8.8.8', b'GET / HTTP/1.1\r\nHost: routing-fixture.ru\r\n\r\n')
-                results.append({'case': 'Sniffed RU host at foreign IP',
-                                'expected': 'DIRECT', 'actual': actual})
+                actual = request('8.8.8.8', b'GET / HTTP/1.1\r\nHost: vk.com\r\n\r\n')
+                results.append({'case': 'Sniffed RU host', 'expected': 'DIRECT', 'actual': actual})
                 actual = request('8.8.8.8', b'GET / HTTP/1.1\r\nHost: raw.githubusercontent.com\r\n\r\n')
-                results.append({'case': 'Sniffed GitHub host at foreign IP',
-                                'expected': 'DIRECT', 'actual': actual})
-                results.append({'case': 'Original RU IP with foreign DNS answer',
-                                'expected': 'DIRECT',
-                                'actual': request('77.88.8.8', b'GET / HTTP/1.1\r\nHost: foreign.fixture-domain.com\r\n\r\n')})
-                # Exercise DNS interception with provider-side filtered answers.
-                with socket.create_connection(('127.0.0.1', port), timeout=5) as conn:
-                    conn.sendall(b'\x05\x01\x00')
-                    assert receive(conn, 2) == b'\x05\x00'
-                    conn.sendall(b'\x05\x03\x00\x01' + b'\x00' * 6)
-                    reply = receive(conn, 10)
-                    relay = (socket.inet_ntoa(reply[4:8]), struct.unpack('!H', reply[8:])[0])
-                    udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-                    udp.settimeout(5)
-                    for host, expected in [('example.com', '8.8.8.8'),
-                                           ('doubleclick.net', '0.0.0.0'),
-                                           ('ads.adfox.ru', '0.0.0.0')]:
-                        encoded = b''.join(bytes([len(label)]) + label.encode() for label in host.split('.'))
-                        query = (b'\x12\x34\x01\x00\x00\x01\x00\x00\x00\x00\x00\x00'
-                                 + encoded + b'\x00\x00\x01\x00\x01')
-                        udp.sendto(b'\x00\x00\x00\x01' + socket.inet_aton('9.9.9.9')
-                                   + struct.pack('!H', 53) + query, relay)
-                        response = udp.recv(4096)
-                        actual = socket.inet_ntoa(response[-4:])
-                        results.append({'case': 'Intercepted DNS: ' + host,
-                                        'expected': expected, 'actual': actual})
-                    udp.close()
-                    assert 'doubleclick.net' in dns_queries
-                    assert 'ads.adfox.ru' in dns_queries
-                assert 'geoip-only.fixture-domain.com' in dns_queries
+                results.append({'case': 'Sniffed GitHub host', 'expected': 'PROXY', 'actual': actual})
+                actual = request('8.8.8.8', b'\x13BitTorrent protocol' + b'\x00' * 48)
+                results.append({'case': 'BitTorrent direct', 'expected': 'DIRECT', 'actual': actual})
+                assert 'geoip-only.fixture-domain.com' not in dns_queries
                 print(json.dumps({'routing_rules_unchanged': True, 'loyalsoldier_categories_checked': True,
-                                  'DNS_interception_and_provider_filtered_answers': True,
+                                  'reference_AsIs_and_protocol_routes_checked': True,
                                   'results': results}, ensure_ascii=False))
                 assert all(r['actual'] == r['expected'] for r in results), 'Routing regression'
             except Exception:

@@ -15,7 +15,8 @@ import time
 import urllib.parse
 import urllib.request
 
-from incy import (ROOT, PROXY_PROTOCOLS, DIRECT_DOMAINS, DIRECT_IPS, atomic_write, build,
+from incy import (ROOT, PROXY_PROTOCOLS, BLOCK_DOMAINS, PROXY_DOMAINS, DIRECT_DOMAINS, DIRECT_IPS,
+                  atomic_write, build, proxy_tag,
                   serialized_config, subscription, xray_validate)
 from ip_reputation import CACHE_KEY, load_feed, assess_nodes, rate_ip, reputation_report
 from pool_quality import ProbeUnavailable, baseline, eligible_nodes, probe_nodes
@@ -146,10 +147,10 @@ def technology_report(eligible, selected, limit):
     for index, node in enumerate(selected, 1):
         group = groups[technology_key(node)]
         group['selected'] += 1
-        group['tags'].append('Автовыбор' if index == 1 else f'pool-{index:03d}')
+        group['tags'].append(proxy_tag(index - 1))
     return {'group_by': ['protocol', 'transport', 'security'], 'per_technology_limit': limit,
             'order': 'first eligible entries in upstream order',
-            'balancing': 'one shared leastPing pool', 'groups': list(groups.values())}
+            'balancing': 'one shared leastLoad pool', 'groups': list(groups.values())}
 
 
 def probe_exit(opener, timeout=4):
@@ -257,9 +258,12 @@ def main():
     eligible = eligible_nodes(checked)
     counts['https_failed'] = sum(not node['quality']['https']['ok'] for node in checked)
     counts['quic_failed_after_https'] = sum(node['quality']['https']['ok'] and
+                                           node['quality']['quic'].get('required', True) and
                                            not node['quality']['quic']['ok'] for node in checked)
+    counts['vision_quic_intentionally_disabled'] = sum(
+        node['quality']['quic'].get('required') is False for node in checked)
     if not eligible:
-        print('::notice::No candidate passed both HTTPS and HTTP/3; preserve published pool', flush=True)
+        print('::notice::No candidate passed the published transport policy; preserve published pool', flush=True)
         return False
     limit = settings['max_nodes_per_technology']
     selected = select_per_technology(eligible, limit)
@@ -275,18 +279,23 @@ def main():
         'selected_protocols': dict(Counter(node['outbound']['protocol'] for node in selected)),
         'pool_selection': 'first eligible entries per protocol/transport/security in upstream order; '
                           'exact duplicates removed; known listed entry/exit IPs excluded; '
-                          'fresh HTTPS and HTTP/3 UDP checks required',
+                          'fresh HTTPS required; HTTP/3 required except ordinary Vision UDP443 policy',
         'technology_selection': technology_report(eligible, selected, limit),
         'history_used': False, 'github_latency_ranking': False, 'country_filter': False,
-        'tcp_udp_quality_gate': True, 'file_transfer_check': False,
+        'tcp_udp_quality_gate': False, 'https_quality_gate': True,
+        'quic_quality_gate': 'required except ordinary Vision intentionally blocks UDP/443',
+        'file_transfer_check': False,
         'quality_checks': {
             'vantage': 'GitHub Actions runner; not a measurement from the client network',
             'https': 'TLS-verified HEAD over TCP through the actual outbound',
-            'quic': 'TLS-verified HTTP/3 HEAD over SOCKS5 UDP ASSOCIATE; no TCP fallback',
+            'quic': 'TLS-verified HTTP/3 HEAD over SOCKS5 UDP ASSOCIATE; no TCP fallback; '
+                    'ordinary Vision is explicitly skipped, not counted as a successful QUIC test',
             'settings': settings['quality'], 'direct_baseline': baseline_evidence,
-            'candidates_checked': len(checked), 'passed_both': len(eligible),
+            'candidates_checked': len(checked), 'passed_policy': len(eligible),
+            'passed_both': sum(node['quality']['https']['ok'] and node['quality']['quic']['ok']
+                               for node in checked),
             'history_used': False, 'latency_ranking': False,
-            'selected': [{'tag': 'Автовыбор' if index == 1 else f'pool-{index:03d}',
+            'selected': [{'tag': proxy_tag(index - 1),
                           **node['quality']} for index, node in enumerate(selected, 1)],
         },
         'pool_limit': {'per_technology': limit},
@@ -297,17 +306,27 @@ def main():
         'subscription_policy': {
             'clients': ['INCY'], 'format': 'full-xray-json-array-with-body-metadata',
             'native_routing_profile': False,
-            'dns_query_strategy': 'UseIP', 'ipv6_supported': True,
-            'traffic': 'RU domains/IPs and GitHub direct; other traffic uses the verified auto pool',
-            'dns_transport': {'provider': 'AdGuard public filtering DNS', 'all_names': 'doh-direct',
+            'dns_query_strategy': 'UseIPv4', 'ipv6_supported': False,
+            'traffic': 'reference domain/IP/protocol rules; AsIs; one shared leastLoad pool',
+            'dns_transport': {'provider': 'Yandex DoH, AdGuard filtering DoH and AdGuard UDP fallback',
+                              'all_names': 'Yandex is also a fallback for names outside its domain categories',
+                              'route': 'direct service tag; independent of the proxy pool',
                               'resolvers': [s['address'] for s in config['dns']['servers']],
                               'bootstrap_addresses': config['dns']['hosts'],
-                              'independent_provider_fallback': False,
-                              'plain_public_dns_fallback': False},
-            'direct_domains': list(DIRECT_DOMAINS), 'direct_ips': list(DIRECT_IPS), 'block_domains': [],
-            'ad_blocking': 'AdGuard DNS filtering; no local domain lists',
+                              'independent_provider_fallback': True,
+                              'plain_public_dns_fallback': True},
+            'direct_domains': list(DIRECT_DOMAINS), 'direct_ips': list(DIRECT_IPS),
+            'direct_protocols': ['bittorrent'], 'proxy_domains': list(PROXY_DOMAINS),
+            'block_domains': list(BLOCK_DOMAINS),
+            'ad_blocking': 'reference win-spy/category-ads geosite rules; AdGuard DNS when selected',
             'probe': settings['probe'], 'geodata_required': True,
-            'routing_domain_strategy': 'IPIfNonMatch',
+            'routing_domain_strategy': 'AsIs',
+            'balancer': config['routing']['balancers'][0],
+            'vision_udp443': 'ordinary Vision intercepts UDP/443 as in the reference',
+            'reference_adaptations': ['own upstream connection credentials, endpoints and transport paths',
+                                      'fallback is the first eligible own node; other node costs are 2',
+                                      'DNS service requests go direct to avoid a bootstrap dependency',
+                                      'local proxy listeners remain on 127.0.0.1'],
             'geodata_sha256': {name: hashlib.sha256((ROOT / '.runtime' / name).read_bytes()).hexdigest()
                                for name in ('geoip.dat', 'geosite.dat')},
             'client_geodata_verified': False,

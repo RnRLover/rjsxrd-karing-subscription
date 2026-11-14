@@ -14,9 +14,8 @@
   },
   "probe": {
     "destination": "https://www.gstatic.com/generate_204",
-    "interval": "1m",
-    "sampling": 1,
-    "timeout": "4s",
-    "httpMethod": "HEAD"
+    "interval": "5m",
+    "sampling": 2,
+    "timeout": "5s"
   }
 }

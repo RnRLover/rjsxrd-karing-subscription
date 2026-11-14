@@ -1,4 +1,4 @@
-"""Reproduce plain Vision's UDP/443 rejection and verify the published fix.
+"""Verify that the published ordinary Vision matches the supplied reference.
 
 Both Xray ends and the TCP/UDP echo targets are local. This checks core relay
 behavior, not HTTP/3 handshakes or the live providers' UDP availability.
@@ -104,7 +104,7 @@ def exercise(xray, directory, cert, key, tcp_port, udp_port, published):
                     payload = f'VISION UDP {target}'.encode()
                     udp.sendto(b'\x00\x00\x00\x01' + socket.inet_aton('127.0.0.1')
                                + struct.pack('!H', target) + payload, relay)
-                    if target == 443 and not published:
+                    if target == 443:
                         try:
                             udp.recvfrom(4096)
                         except socket.timeout:
@@ -159,7 +159,7 @@ def main(xray):
         finally:
             tcp.shutdown()
             udp.shutdown()
-    print(json.dumps({'baseline_blocks_udp443': True, 'published_relays_udp443': True,
+    print(json.dumps({'baseline_blocks_udp443': True, 'published_blocks_udp443_as_reference': True,
                       'published_relays_other_udp': True, 'published_relays_tcp': True,
                       'tls_verified': True}))
 

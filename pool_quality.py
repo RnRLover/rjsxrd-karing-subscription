@@ -25,7 +25,7 @@ from aioquic.quic.configuration import QuicConfiguration
 from aioquic.quic.connection import QuicConnection
 from aioquic.quic.events import ConnectionTerminated, HandshakeCompleted
 
-from incy import PROXY_PROTOCOLS, build, xray_validate
+from incy import PROXY_PROTOCOLS, build, vision_blocks_quic, xray_validate
 
 
 class ProbeError(ValueError):
@@ -301,8 +301,13 @@ def probe_nodes(nodes, xray, settings, usable, cafile=None):
                 def check(pair):
                     node, port = pair
                     tcp = attempt(https_head, usable['https'], port, settings['timeout_seconds'], settings['attempts'], cafile)
-                    udp = (attempt(quic_head, usable['quic'], port, settings['timeout_seconds'], settings['attempts'], cafile)
-                           if tcp['ok'] else {'ok': False, 'skipped': 'https_failed'})
+                    if not tcp['ok']:
+                        udp = {'ok': False, 'skipped': 'https_failed'}
+                    elif vision_blocks_quic(node):
+                        udp = {'ok': False, 'required': False,
+                               'skipped': 'ordinary_vision_intentionally_blocks_udp443'}
+                    else:
+                        udp = attempt(quic_head, usable['quic'], port, settings['timeout_seconds'], settings['attempts'], cafile)
                     return {**copy.deepcopy(node), 'quality': {'https': tcp, 'quic': udp}}
                 with ThreadPoolExecutor(max_workers=settings['workers']) as executor:
                     results = list(executor.map(check, zip(nodes, ports)))
@@ -322,5 +327,10 @@ def probe_nodes(nodes, xray, settings, usable, cafile=None):
 
 
 def eligible_nodes(nodes):
-    return [node for node in nodes if all(node.get('quality', {}).get(kind, {}).get('ok', False)
-                                         for kind in ('https', 'quic'))]
+    def eligible(node):
+        quality = node.get('quality', {})
+        quic = quality.get('quic', {})
+        intentional = (vision_blocks_quic(node) and quic.get('required') is False and
+                       quic.get('skipped') == 'ordinary_vision_intentionally_blocks_udp443')
+        return quality.get('https', {}).get('ok', False) and (quic.get('ok', False) or intentional)
+    return [node for node in nodes if eligible(node)]

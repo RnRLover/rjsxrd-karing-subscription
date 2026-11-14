@@ -1,4 +1,4 @@
-"""Exercise the DNS direct socket's production IPv4/IPv6 TCP fallback locally."""
+"""Exercise the reference IPv4 DNS/socket policy with a dual-address hostname."""
 import argparse
 import copy
 import json
@@ -36,14 +36,14 @@ def fixture(family, label):
 def main(xray):
     config = copy.deepcopy(load_configs(ROOT / 'subscription.json')[0])
     ipv4 = fixture(socket.AF_INET, b'IPv4')
-    ipv6 = fixture(socket.AF_INET6, b'IPv6')
     config['dns']['hosts'].update({
-        'ipv4-only.fixture-domain.ru': ['127.0.0.1', '::1'],
-        'ipv6-only.fixture-domain.ru': ['127.0.0.1', '::1']})
-    # Only the DNS transport goes directly in production. Send fixture requests
-    # through its real Freedom socket, preserving its DNS and Happy Eyeballs.
+        'ipv4-only.fixture-domain.ru': ['127.0.0.1', '::1']})
+    assert config['dns']['queryStrategy'] == 'UseIPv4'
+    assert next(o for o in config['outbounds'] if o['tag'] == 'direct')['settings']['domainStrategy'] == 'UseIPv4'
+    # Keep the production Freedom DNS/socket policy; replace only the fixture
+    # domain's route so a private test name does not depend on geosite contents.
     config['routing']['rules'].insert(0, {'type': 'field',
-        'domain': ['full:ipv4-only.fixture-domain.ru', 'full:ipv6-only.fixture-domain.ru'],
+        'domain': ['full:ipv4-only.fixture-domain.ru'],
         'outboundTag': 'direct'})
     config['burstObservatory']['subjectSelector'] = ['unused-test-subject']
     for inbound in config['inbounds']:
@@ -81,11 +81,9 @@ def main(xray):
                         conn.sendall(b'GET / HTTP/1.1\r\nHost: ' + encoded + b'\r\n\r\n')
                         return conn.recv(16)
                 assert request('ipv4-only.fixture-domain.ru', ipv4.getsockname()[1]) == b'IPv4'
-                # There is no IPv4 listener on the IPv6 fixture's port. The
-                # production IPv4-first Happy Eyeballs must try IPv6 next.
-                assert request('ipv6-only.fixture-domain.ru', ipv6.getsockname()[1]) == b'IPv6'
                 print(json.dumps({'direct_builtin_dns_used': True, 'IPv4_connected': True,
-                                  'IPv6_connected_after_IPv4_failure': True}))
+                                  'dual_address_name_uses_IPv4': True,
+                                  'system_IPv6_switch_not_modified': True}))
             except Exception:
                 log.flush()
                 print(Path(directory, 'core.log').read_text()[-5000:])
@@ -94,7 +92,6 @@ def main(xray):
                 process.terminate()
                 process.wait(timeout=5)
                 ipv4.close()
-                ipv6.close()
 
 
 if __name__ == '__main__':

@@ -1,4 +1,4 @@
-"""Exercise real leastPing selection and failover using local HTTP fixtures."""
+"""Exercise real leastLoad stability selection and failover in local Xray."""
 import copy
 import json
 import os
@@ -15,7 +15,7 @@ from incy import xray_validate, load_configs, PROXY_PROTOCOLS
 ROOT = Path(__file__).resolve().parent
 
 
-def fixture(label, delay):
+def fixture(label, delays):
     state = {'healthy': True, 'probes': 0}
     server = socket.socket()
     server.bind(('127.0.0.1', 0))
@@ -29,7 +29,7 @@ def fixture(label, delay):
                     data = conn.recv(4096)
                     if data.startswith((b'HEAD ', b'GET ')):
                         state['probes'] += 1
-                        time.sleep(delay)
+                        time.sleep(delays[(state['probes'] - 1) % len(delays)])
                         if state['healthy']:
                             conn.sendall(b'HTTP/1.1 204 No Content\r\nContent-Length: 0\r\nConnection: close\r\n\r\n')
                     elif data:
@@ -51,18 +51,18 @@ def main(xray):
         fixture_backup = copy.deepcopy(proxies[0])
         fixture_backup['tag'] = 'fixture-backup'
         proxies.append(fixture_backup)
-    fast, first = fixture(b'FAST', .01)
-    backup, second = fixture(b'BACKUP', .15)
+    fast, first = fixture(b'VARIABLE', [.01, .35])
+    backup, second = fixture(b'STABLE', [.15, .15])
     selected = [o['tag'] for o in proxies]
     config['outbounds'] = [o for o in config['outbounds'] if o['protocol'] not in PROXY_PROTOCOLS]
     for node, server in zip(proxies, (fast, backup)):
         config['outbounds'].append({'tag': node['tag'], 'protocol': 'freedom',
                                    'settings': {'redirect': f'127.0.0.1:{server.getsockname()[1]}'}})
     balancer = config['routing']['balancers'][0]
-    assert balancer['strategy'] == {'type': 'leastPing'}
+    assert balancer['strategy']['type'] == 'leastLoad'
     balancer['selector'] = selected
     config['burstObservatory'] = {'subjectSelector': selected, 'pingConfig': {
-        'destination': 'http://8.8.8.8/probe', 'interval': '10s', 'sampling': 1, 'timeout': '1s'}}
+        'destination': 'http://8.8.8.8/probe', 'interval': '10s', 'sampling': 2, 'timeout': '1s'}}
     config.pop('geodata', None)
     config['log'] = {'loglevel': 'info'}
     for inbound in config['inbounds']:
@@ -93,17 +93,17 @@ def main(xray):
                     if process.poll() is not None:
                         raise RuntimeError('Xray stopped')
                     try:
-                        if request() == label and first['probes'] and second['probes']:
+                        if request() == label and min(first['probes'], second['probes']) >= 2:
                             return
                     except OSError:
                         pass
                     time.sleep(.2)
                 raise AssertionError('Balancer did not select ' + label.decode())
             try:
-                wait_for(b'FAST', 15)
-                first['healthy'] = False
-                wait_for(b'BACKUP', 25)
-                print(json.dumps({'leastPing_selected_fast': True, 'failed_fast_switched_to_backup': True,
+                wait_for(b'STABLE', 40)
+                second['healthy'] = False
+                wait_for(b'VARIABLE', 35)
+                print(json.dumps({'leastLoad_selected_stable': True, 'failed_stable_switched_to_backup': True,
                                   'probe_counts': [first['probes'], second['probes']],
                                   'fixture_probe_interval': '10s',
                                   'production_probe_interval': original['burstObservatory']['pingConfig']['interval']}, ensure_ascii=False))

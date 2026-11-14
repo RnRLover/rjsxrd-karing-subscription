@@ -5,7 +5,8 @@ import unittest
 
 from generate import (collect_nodes, exclude_listed, parse_node, select_per_technology,
                       technology_report)
-from incy import (ADGUARD_DOH, ADGUARD_HOST, ADGUARD_IPS, DIRECT_DOMAINS, DIRECT_IPS,
+from incy import (ADGUARD_DOH, ADGUARD_HOST, ADGUARD_IPS, YANDEX_DOH,
+                  BLOCK_DOMAINS, PROXY_DOMAINS, DIRECT_DOMAINS, DIRECT_IPS,
                   PROXY_PROTOCOLS, build, load_configs,
                   serialized_config, subscription)
 
@@ -64,11 +65,11 @@ class SubscriptionTests(unittest.TestCase):
         config = build(selected)
         proxies = [o for o in config['outbounds'] if o['protocol'] in PROXY_PROTOCOLS]
         self.assertEqual(len(config['routing']['balancers']), 1)
-        self.assertEqual(config['routing']['balancers'][0]['selector'], [o['tag'] for o in proxies])
+        self.assertEqual(config['routing']['balancers'][0]['selector'], ['proxy-'])
         report = technology_report(eligible, selected, 3)
         self.assertEqual([g['selected'] for g in report['groups']], [3, 3, 1])
         self.assertEqual([g['eligible'] for g in report['groups']], [4, 4, 1])
-        self.assertEqual(report['groups'][0]['tags'], ['Автовыбор', 'pool-003', 'pool-005'])
+        self.assertEqual(report['groups'][0]['tags'], ['proxy-0', 'proxy-2', 'proxy-4'])
 
     def test_security_variants_have_separate_quotas_and_invalid_limits_fail(self):
         reality = [parse_node(URI.replace(':443?', f':{1000+i}?')) for i in range(4)]
@@ -88,38 +89,74 @@ class SubscriptionTests(unittest.TestCase):
         self.assertEqual([o['settings']['vnext'][0]['port'] for o in proxies], list(range(1000, 1400)))
         self.assertEqual(nodes, before)
         self.assertEqual(config['routing']['balancers'][0]['fallbackTag'], proxies[0]['tag'])
-        self.assertEqual(config['routing']['balancers'][0]['selector'], [o['tag'] for o in proxies])
-        self.assertEqual(config['burstObservatory']['pingConfig']['sampling'], 1)
-        self.assertEqual(config['burstObservatory']['pingConfig']['interval'], '1m')
+        self.assertEqual(config['routing']['balancers'][0]['selector'], ['proxy-'])
+        self.assertEqual(config['burstObservatory']['pingConfig']['sampling'], 2)
+        self.assertEqual(config['burstObservatory']['pingConfig']['interval'], '5m')
         serialized_config(config)
 
-    def test_ru_and_github_routes_are_inside_the_full_config_with_adguard(self):
+    def test_reference_policy_replaces_cloudflare_dns_and_retains_own_endpoints(self):
         config = build([parse_node(URI)])
         direct = [r for r in config['routing']['rules'] if r.get('outboundTag') == 'direct']
         self.assertTrue(any(r.get('domain') == list(DIRECT_DOMAINS) for r in direct))
         self.assertTrue(any(r.get('ip') == list(DIRECT_IPS) for r in direct))
-        self.assertEqual(config['routing']['domainStrategy'], 'IPIfNonMatch')
-        self.assertEqual(config['routing']['rules'][-1]['balancerTag'], 'auto')
-        self.assertEqual(config['dns']['queryStrategy'], 'UseIP')
-        self.assertEqual(config['dns']['servers'], [{'address': ADGUARD_DOH, 'tag': 'dns-remote'}])
+        self.assertEqual(config['routing']['domainStrategy'], 'AsIs')
+        self.assertEqual(config['routing']['rules'][-1]['balancerTag'], 'balancer')
+        self.assertEqual(config['dns']['queryStrategy'], 'UseIPv4')
+        self.assertEqual(config['dns']['servers'], [
+            {'address': YANDEX_DOH, 'domains': ['geosite:category-ru', 'geosite:category-gov-ru']},
+            {'address': ADGUARD_DOH, 'skipFallback': False},
+            {'address': ADGUARD_IPS[0], 'skipFallback': False}])
         self.assertEqual(config['dns']['hosts'], {ADGUARD_HOST: list(ADGUARD_IPS)})
-        for removed in ['cloudflare-dns.com', 'dns.google']:
+        for removed in ['1.1.1.1/dns-query', '1.0.0.1', 'cloudflare-dns.com', 'dns.google', 'geosite:github']:
             self.assertNotIn(removed, serialized_config(config))
         self.assertFalse(any(o['protocol'] == 'loopback' for o in config['outbounds']))
         self.assertNotIn('fakedns', config)
         direct_out = next(o for o in config['outbounds'] if o['tag'] == 'direct')
-        self.assertEqual(direct_out['streamSettings']['sockopt']['domainStrategy'], 'ForceIP')
+        self.assertEqual(direct_out['settings']['domainStrategy'], 'UseIPv4')
+        rules = config['routing']['rules']
+        self.assertEqual(rules[1]['domain'], list(BLOCK_DOMAINS))
+        self.assertEqual(rules[2]['protocol'], ['bittorrent'])
+        self.assertEqual(rules[3]['domain'], list(PROXY_DOMAINS))
+        self.assertFalse(any(o['protocol'] == 'dns' for o in config['outbounds']))
 
     def test_proxy_hostname_has_direct_bootstrap_and_hysteria_remains_in_pool(self):
         nodes = [parse_node(URI.replace('1.1.1.1', 'vpn.example')),
                  parse_node('hy2://secret@hy.example:443?sni=hy.example')]
         config = build(nodes)
         public_dns = [s for s in config['dns']['servers'] if s['address'] != 'localhost']
-        self.assertTrue(all(s['address'].startswith('https://') for s in public_dns))
-        self.assertTrue(all('domains' not in s for s in public_dns))
+        self.assertEqual(public_dns[-1]['address'], ADGUARD_IPS[0])
+        self.assertEqual(config['routing']['rules'][0]['inboundTag'], ['dns-remote'])
         self.assertEqual(config['dns']['hosts'][ADGUARD_HOST], list(ADGUARD_IPS))
-        self.assertEqual(len(config['routing']['balancers'][0]['selector']), 2)
+        self.assertEqual(config['routing']['balancers'][0]['selector'], ['proxy-'])
         self.assertTrue(any(o['protocol'] == 'hysteria' for o in config['outbounds']))
+
+    def test_fallback_and_costs_follow_the_actual_pool_without_stale_reference_tags(self):
+        nodes = [parse_node(URI.replace('1.1.1.1', f'node{i}.example')) for i in range(3)]
+        config = build(nodes)
+        b = config['routing']['balancers'][0]
+        self.assertEqual(b['strategy']['type'], 'leastLoad')
+        self.assertEqual(b['fallbackTag'], 'proxy-0')
+        self.assertEqual(b['strategy']['settings']['costs'], [
+            {'match': '^proxy-1$', 'regexp': True, 'value': 2},
+            {'match': '^proxy-2$', 'regexp': True, 'value': 2}])
+        self.assertEqual(build(nodes[:1])['routing']['balancers'][0]['strategy']['settings']['costs'], [])
+
+    def test_ordinary_vision_and_server_specific_transport_parameters_survive(self):
+        node = parse_node(URI + '&flow=xtls-rprx-vision')
+        node['outbound']['settings']['vnext'][0]['users'][0]['flow'] = 'xtls-rprx-vision-udp443'
+        before = copy.deepcopy(node)
+        ob = build([node])['outbounds'][0]
+        self.assertEqual(ob['settings']['vnext'][0]['users'][0]['flow'], 'xtls-rprx-vision')
+        self.assertEqual(ob['settings']['vnext'][0]['address'], '1.1.1.1')
+        self.assertEqual(ob['settings']['vnext'][0]['users'][0]['id'], UUID)
+        self.assertEqual(ob['streamSettings']['realitySettings']['publicKey'], 'A' * 43)
+        self.assertEqual(ob['streamSettings']['sockopt']['domainStrategy'], 'UseIPv4')
+        self.assertEqual(node, before)
+        xhttp = parse_node(URI.replace('type=tcp', 'type=xhttp&path=%2Fown-path&host=own.example'))
+        ob = build([xhttp])['outbounds'][0]
+        self.assertEqual(ob['streamSettings']['xhttpSettings']['path'], '/own-path')
+        self.assertEqual(ob['streamSettings']['xhttpSettings']['host'], 'own.example')
+        self.assertEqual(ob['streamSettings']['xhttpSettings']['mode'], 'stream-up')
 
     def test_delivery_keeps_one_full_config_without_routing_profile_commands(self):
         config = build([parse_node(URI)])

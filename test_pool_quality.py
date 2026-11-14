@@ -47,6 +47,19 @@ class QualityTests(unittest.TestCase):
             with self.assertRaises(ProbeUnavailable):
                 baseline(settings)
 
+    def test_intentional_vision_udp443_policy_is_not_reported_as_a_pass(self):
+        node = {'outbound': {'protocol': 'vless', 'settings': {'vnext': [{'users': [
+            {'flow': 'xtls-rprx-vision'}]}]}}, 'quality': {'https': {'ok': True},
+            'quic': {'ok': False, 'required': False,
+                     'skipped': 'ordinary_vision_intentionally_blocks_udp443'}}}
+        self.assertEqual(eligible_nodes([node]), [node])
+        other = copy.deepcopy(node)
+        other['outbound']['settings']['vnext'][0]['users'][0]['flow'] = ''
+        self.assertEqual(eligible_nodes([other]), [])
+        failed = copy.deepcopy(node)
+        failed['quality']['https']['ok'] = False
+        self.assertEqual(eligible_nodes([failed]), [])
+
     def test_probe_site_or_total_pool_failure_preserves_both_published_files(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
