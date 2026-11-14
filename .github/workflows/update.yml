@@ -49,7 +49,7 @@ jobs:
       - name: Check reference routing, ad blocking and protocol exceptions
         if: steps.build.outputs.ready == 'true'
         run: python check_subscription.py --xray .runtime/xray
-      - name: Check Yandex and AdGuard DNS priority, DoH and UDP fallback
+      - name: Check reference Yandex and Cloudflare DNS priority, routing and fallback
         if: steps.build.outputs.ready == 'true'
         run: python check_dns_transport.py --xray .runtime/xray
       - name: Check actual automatic selection and failover
