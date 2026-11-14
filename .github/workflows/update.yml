@@ -29,7 +29,7 @@ jobs:
         run: python -m unittest discover -v
       - name: Prepare official Xray
         run: python setup_xray.py
-      - name: Check actual HTTP3 admission, retries and TLS validation
+      - name: Check HTTPS and HTTP3 probes, retries and TLS validation
         run: python check_pool_quality.py --xray .runtime/xray
       - name: Restore IPsum dataset (no server measurements)
         uses: actions/cache/restore@v4
@@ -46,19 +46,19 @@ jobs:
         with:
           path: .runtime/reputation-cache.json
           key: ipsum-feed-v2-${{ github.run_id }}-${{ github.run_attempt }}
-      - name: Check RU and GitHub direct routing and DNS interception
+      - name: Check reference routing, ad blocking and protocol exceptions
         if: steps.build.outputs.ready == 'true'
         run: python check_subscription.py --xray .runtime/xray
-      - name: Check AdGuard DoH, DNS filtering and independence from proxies
+      - name: Check Yandex and AdGuard DNS priority, DoH and UDP fallback
         if: steps.build.outputs.ready == 'true'
         run: python check_dns_transport.py --xray .runtime/xray
       - name: Check actual automatic selection and failover
         if: steps.build.outputs.ready == 'true'
         run: python check_auto_selection.py --xray .runtime/xray
-      - name: Check IPv4 and IPv6 direct connections and fallback
+      - name: Check IPv4 DNS and direct connections
         if: steps.build.outputs.ready == 'true'
         run: python check_dual_stack.py --xray .runtime/xray
-      - name: Check Vision UDP 443 permission and TCP relay
+      - name: Check ordinary Vision UDP443 policy, other UDP and TCP
         if: steps.build.outputs.ready == 'true'
         run: python check_quic_transport.py --xray .runtime/xray
       - name: Publish validated files
