@@ -5,7 +5,7 @@ import unittest
 
 from generate import (collect_nodes, exclude_listed, parse_node, select_per_technology,
                       technology_report)
-from incy import (ADGUARD_DOH, ADGUARD_HOST, ADGUARD_IPS, YANDEX_DOH,
+from incy import (CLOUDFLARE_DOH, CLOUDFLARE_UDP, YANDEX_DOH,
                   BLOCK_DOMAINS, PROXY_DOMAINS, DIRECT_DOMAINS, DIRECT_IPS,
                   PROXY_PROTOCOLS, build, load_configs,
                   serialized_config, subscription)
@@ -94,7 +94,7 @@ class SubscriptionTests(unittest.TestCase):
         self.assertEqual(config['burstObservatory']['pingConfig']['interval'], '5m')
         serialized_config(config)
 
-    def test_reference_policy_replaces_cloudflare_dns_and_retains_own_endpoints(self):
+    def test_reference_policy_includes_the_exact_original_dns(self):
         config = build([parse_node(URI)])
         direct = [r for r in config['routing']['rules'] if r.get('outboundTag') == 'direct']
         self.assertTrue(any(r.get('domain') == list(DIRECT_DOMAINS) for r in direct))
@@ -104,29 +104,30 @@ class SubscriptionTests(unittest.TestCase):
         self.assertEqual(config['dns']['queryStrategy'], 'UseIPv4')
         self.assertEqual(config['dns']['servers'], [
             {'address': YANDEX_DOH, 'domains': ['geosite:category-ru', 'geosite:category-gov-ru']},
-            {'address': ADGUARD_DOH, 'skipFallback': False},
-            {'address': ADGUARD_IPS[0], 'skipFallback': False}])
-        self.assertEqual(config['dns']['hosts'], {ADGUARD_HOST: list(ADGUARD_IPS)})
-        for removed in ['1.1.1.1/dns-query', '1.0.0.1', 'cloudflare-dns.com', 'dns.google', 'geosite:github']:
+            {'address': CLOUDFLARE_DOH, 'skipFallback': False},
+            {'address': CLOUDFLARE_UDP, 'skipFallback': False}])
+        self.assertNotIn('hosts', config['dns'])
+        self.assertNotIn('tag', config['dns'])
+        for removed in ['adguard', '94.140.14.14', 'dns.google', 'geosite:github']:
             self.assertNotIn(removed, serialized_config(config))
         self.assertFalse(any(o['protocol'] == 'loopback' for o in config['outbounds']))
         self.assertNotIn('fakedns', config)
         direct_out = next(o for o in config['outbounds'] if o['tag'] == 'direct')
         self.assertEqual(direct_out['settings']['domainStrategy'], 'UseIPv4')
         rules = config['routing']['rules']
-        self.assertEqual(rules[1]['domain'], list(BLOCK_DOMAINS))
-        self.assertEqual(rules[2]['protocol'], ['bittorrent'])
-        self.assertEqual(rules[3]['domain'], list(PROXY_DOMAINS))
+        self.assertEqual(rules[0]['domain'], list(BLOCK_DOMAINS))
+        self.assertEqual(rules[1]['protocol'], ['bittorrent'])
+        self.assertEqual(rules[2]['domain'], list(PROXY_DOMAINS))
         self.assertFalse(any(o['protocol'] == 'dns' for o in config['outbounds']))
 
-    def test_proxy_hostname_has_direct_bootstrap_and_hysteria_remains_in_pool(self):
+    def test_reference_has_no_custom_dns_bootstrap_and_retains_hysteria(self):
         nodes = [parse_node(URI.replace('1.1.1.1', 'vpn.example')),
                  parse_node('hy2://secret@hy.example:443?sni=hy.example')]
         config = build(nodes)
         public_dns = [s for s in config['dns']['servers'] if s['address'] != 'localhost']
-        self.assertEqual(public_dns[-1]['address'], ADGUARD_IPS[0])
-        self.assertEqual(config['routing']['rules'][0]['inboundTag'], ['dns-remote'])
-        self.assertEqual(config['dns']['hosts'][ADGUARD_HOST], list(ADGUARD_IPS))
+        self.assertEqual(public_dns[-1]['address'], CLOUDFLARE_UDP)
+        self.assertFalse(any(r.get('inboundTag') == ['dns-remote'] for r in config['routing']['rules']))
+        self.assertNotIn('hosts', config['dns'])
         self.assertEqual(config['routing']['balancers'][0]['selector'], ['proxy-'])
         self.assertTrue(any(o['protocol'] == 'hysteria' for o in config['outbounds']))
 

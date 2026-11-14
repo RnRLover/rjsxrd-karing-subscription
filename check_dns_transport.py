@@ -1,4 +1,4 @@
-"""Check reference Yandex/AdGuard priority, DoH failover and UDP fallback.
+"""Check the exact reference DNS, production routes and Cloudflare failover.
 Only transport destinations are redirected. Upstream DoH URLs and tags stay intact.
 The temporary certificate is trusted only by the test process, never by clients.
 """
@@ -17,7 +17,7 @@ import tempfile
 import threading
 import time
 from check_subscription import receive
-from incy import ADGUARD_DOH, ADGUARD_HOST, ADGUARD_IPS, YANDEX_DOH, load_configs
+from incy import CLOUDFLARE_DOH, CLOUDFLARE_UDP, YANDEX_DOH, load_configs
 
 ROOT = Path(__file__).resolve().parent
 
@@ -44,26 +44,23 @@ def answer(data, ip):
 
 def main(xray):
     config = copy.deepcopy(load_configs(ROOT / 'subscription.json')[0])
-    # Emulate INCY's DNS-IP direct exception before every provider rule.
-    config['routing']['rules'].insert(0, {'type': 'field',
-        'ip': list(ADGUARD_IPS), 'outboundTag': 'direct'})
     # Keep this fixture independent of whether the upstream happens to publish
     # any hostname endpoints in this particular run.
     bootstrap = 'bootstrap.fixture-domain.com'
-    assert [server['address'] for server in config['dns']['servers']] == [YANDEX_DOH, ADGUARD_DOH, ADGUARD_IPS[0]]
-    assert config['dns']['hosts'] == {ADGUARD_HOST: list(ADGUARD_IPS)}
+    assert [server['address'] for server in config['dns']['servers']] == [YANDEX_DOH, CLOUDFLARE_DOH, CLOUDFLARE_UDP]
+    assert 'hosts' not in config['dns'] and 'tag' not in config['dns']
     # The reference leaves VPN DNS interception to INCY. Add a test-only DNS
     # gateway to exercise the exact production built-in DNS and service route.
     config['outbounds'].append({'tag': 'fixture-dns-out', 'protocol': 'dns'})
     config['routing']['rules'].insert(0, {'type': 'field', 'inboundTag': ['socks', 'http'],
         'port': '53', 'network': 'tcp,udp', 'outboundTag': 'fixture-dns-out'})
-    state = {'doh': [], 'direct': [], 'healthy': True, 'yandex_healthy': True, 'proxy_attempts': 0}
+    state = {'doh': [], 'plain': [], 'healthy': True, 'yandex_healthy': True}
     udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     def udp_worker():
         while True:
             try:
                 data, addr = udp.recvfrom(4096)
-                state['direct'].append(question(data)[0])
+                state['plain'].append(question(data)[0])
                 udp.sendto(answer(data, '7.7.7.7'), addr)
             except OSError:
                 return
@@ -73,7 +70,7 @@ def main(xray):
         subprocess.run(['openssl', 'req', '-x509', '-newkey', 'rsa:2048', '-nodes',
                         '-keyout', str(key), '-out', str(cert), '-days', '1',
                         '-subj', '/CN=DNS transport fixture',
-                        '-addext', 'subjectAltName=DNS:' + ADGUARD_HOST + ',IP:77.88.8.8',
+                        '-addext', 'subjectAltName=IP:1.1.1.1,IP:77.88.8.8',
                         '-addext', 'basicConstraints=critical,CA:TRUE'],
                        check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         class Handler(BaseRequestHandler):
@@ -104,11 +101,10 @@ def main(xray):
                             if not flags & 1:
                                 continue
                             request = bodies.pop(stream)
-                            provider = 'adguard' if conn.resolver_name == ADGUARD_HOST else 'yandex'
+                            provider = self.server.provider
                             name = question(request)[0]
                             state['doh'].append([provider, name])
-                            ip = ('77.88.8.8' if provider == 'yandex' else
-                                  '0.0.0.0' if name in ('doubleclick.net', 'ads.adfox.ru') else '9.9.9.9')
+                            ip = '77.88.8.8' if provider == 'yandex' else '9.9.9.9'
                             healthy = state['yandex_healthy'] if provider == 'yandex' else state['healthy']
                             payload = answer(request, ip) if healthy else b''
                             # HPACK static :status 200; literal :status 503.
@@ -117,36 +113,33 @@ def main(xray):
                 except (OSError, RuntimeError):
                     return
         https = ThreadingTCPServer(('127.0.0.1', 0), Handler)
-        https.daemon_threads = True
+        proxy_https = ThreadingTCPServer(('127.0.0.1', 0), Handler)
         tls = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
         tls.load_cert_chain(cert, key)
         tls.set_alpn_protocols(['h2'])
-        tls.set_servername_callback(lambda conn, name, context: setattr(conn, 'resolver_name', name))
-        https.socket = tls.wrap_socket(https.socket, server_side=True)
-        threading.Thread(target=https.serve_forever, daemon=True).start()
-        # The direct outbound keeps one redirect: TCP reaches trusted DoH,
-        # UDP on the same port is a trap for accidental plain DNS use.
-        udp.bind(('127.0.0.1', https.server_address[1]))
+        for server, provider in ((https, 'yandex'), (proxy_https, 'cloudflare')):
+            server.daemon_threads = True
+            server.provider = provider
+            server.socket = tls.wrap_socket(server.socket, server_side=True)
+            threading.Thread(target=server.serve_forever, daemon=True).start()
+        # Cloudflare's unencrypted fallback follows the same production proxy
+        # path as Cloudflare DoH. Both protocols use the proxy stand-in port.
+        udp.bind(('127.0.0.1', proxy_https.server_address[1]))
         threading.Thread(target=udp_worker, daemon=True).start()
-        class UnavailableProxy(BaseRequestHandler):
-            def handle(self):
-                state['proxy_attempts'] += 1
-        unavailable = ThreadingTCPServer(('127.0.0.1', 0), UnavailableProxy)
-        unavailable.daemon_threads = True
-        threading.Thread(target=unavailable.serve_forever, daemon=True).start()
         for outbound in config['outbounds']:
             if outbound['protocol'] in ('loopback', 'blackhole', 'dns'):
                 continue
             tag = outbound['tag']
-            dest_port = https.server_address[1] if tag == 'direct' else unavailable.server_address[1]
+            dest_port = https.server_address[1] if tag == 'direct' else proxy_https.server_address[1]
             outbound.clear()
             outbound.update(tag=tag, protocol='freedom',
                             settings={'redirect': f'127.0.0.1:{dest_port}'})
-        # Production tags and DoH URLs are retained without +local or insecure
-        # TLS options. Any mistaken proxy use fails and is recorded.
+        # Keep production DNS URLs and routing: Yandex reaches the direct TLS
+        # stand-in, Cloudflare reaches the proxy TLS/UDP stand-ins.
         config['burstObservatory']['subjectSelector'] = ['unused-test-subject']
         config.pop('geodata', None)
         for inbound in config['inbounds']:
+            inbound['listen'] = '127.0.0.1'
             with socket.socket() as held:
                 held.bind(('127.0.0.1', 0))
                 inbound['port'] = held.getsockname()[1]
@@ -188,24 +181,22 @@ def main(xray):
                         assert socket.inet_ntoa(query(bootstrap)[-4:]) == '9.9.9.9'
                         assert socket.inet_ntoa(query('vk.com')[-4:]) == '9.9.9.9'
                         for host in ('doubleclick.net', 'ads.adfox.ru'):
-                            assert socket.inet_ntoa(query(host)[-4:]) == '0.0.0.0'
-                            assert ['adguard', host] in state['doh'], state
+                            assert socket.inet_ntoa(query(host)[-4:]) == '9.9.9.9'
+                            assert ['cloudflare', host] in state['doh'], state
                         ipv6 = query('ipv6.fixture-domain.com', 28)
                         assert ipv6[6:8] == b'\x00\x00', 'IPv4 DNS policy must not return AAAA records'
-                        assert state['direct'] == [], state
-                        assert state['proxy_attempts'] == 0, state
+                        assert state['plain'] == [], state
                         state['healthy'] = False
                         assert socket.inet_ntoa(query('udp-fallback.fixture-domain.com')[-4:]) == '7.7.7.7'
-                        assert state['direct'] == ['udp-fallback.fixture-domain.com'], state
+                        assert state['plain'] == ['udp-fallback.fixture-domain.com'], state
                         state['healthy'] = True
                         assert socket.inet_ntoa(query('recovery.fixture-domain.com')[-4:]) == '9.9.9.9'
-                        assert state['proxy_attempts'] == 0, state
                 print(json.dumps({'Yandex_remains_first_including_non_RU_names': True,
-                                  'AdGuard_DoH_used_after_Yandex_failure': True,
-                                  'AdGuard_filtering_checked': True, 'TLS_verified': True,
+                                  'Cloudflare_DoH_used_after_Yandex_failure': True,
+                                  'Cloudflare_DNS_does_not_filter_ads': True, 'TLS_verified': True,
                                   'IPv4_DNS_policy_checked': True,
-                                  'AdGuard_plain_UDP_fallback_checked': True,
-                                  'DNS_service_independent_of_pool': True,
+                                  'Cloudflare_plain_UDP_fallback_checked': True,
+                                  'Yandex_direct_Cloudflare_via_pool': True,
                                   'fixture_only_DNS_gateway_not_published': True}))
             except Exception:
                 log.flush()
@@ -217,8 +208,8 @@ def main(xray):
                     process.wait(timeout=5)
                 https.shutdown()
                 https.server_close()
-                unavailable.shutdown()
-                unavailable.server_close()
+                proxy_https.shutdown()
+                proxy_https.server_close()
                 udp.close()
 
 

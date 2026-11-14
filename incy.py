@@ -9,12 +9,9 @@ import tempfile
 ROOT = Path(__file__).resolve().parent
 PROXY_PROTOCOLS = ('vless', 'vmess', 'trojan', 'shadowsocks', 'hysteria')
 MAX_CONFIG_UTF16 = 800_000
-# Published standard filtering endpoints, not the unfiltered or family service.
-# Fixed bootstrap addresses avoid asking another DNS provider for this hostname.
-ADGUARD_DOH = 'https://dns.adguard-dns.com/dns-query'
-ADGUARD_HOST = 'dns.adguard-dns.com'
-ADGUARD_IPS = ('94.140.14.14', '94.140.15.15')
 YANDEX_DOH = 'https://77.88.8.8/dns-query'
+CLOUDFLARE_DOH = 'https://1.1.1.1/dns-query'
+CLOUDFLARE_UDP = '1.0.0.1'
 BLOCK_DOMAINS = ('geosite:win-spy', 'geosite:category-ads')
 PROXY_DOMAINS = ('habr.com', '4pda.to', 'kemono.su', 'jut.su', 'kara.su',
                  'theins.ru', 'tvrain.ru', 'echo.msk.ru', 'the-village.ru',
@@ -110,8 +107,6 @@ def build(nodes, probe=None):
     tags = [outbound['tag'] for outbound in proxies]
     sniffing = {'enabled': True, 'destOverride': ['http', 'tls']}
     rules = [
-        # DNS must work even before the observatory has measured any proxies.
-        {'type': 'field', 'inboundTag': ['dns-remote'], 'outboundTag': 'direct'},
         {'type': 'field', 'domain': list(BLOCK_DOMAINS), 'outboundTag': 'block'},
         {'type': 'field', 'protocol': ['bittorrent'], 'outboundTag': 'direct'},
         {'type': 'field', 'domain': list(PROXY_DOMAINS), 'balancerTag': 'balancer'},
@@ -121,18 +116,16 @@ def build(nodes, probe=None):
     ]
     config = {
         'remarks': '🇪🇺 ⚡️ Автовыбор', 'log': {'loglevel': 'warning'},
-        'meta': {'serverDescription': 'INCY · IPv4 · leastLoad · Яндекс / AdGuard DNS'},
-        'dns': {'queryStrategy': 'UseIPv4', 'tag': 'dns-remote',
-                'hosts': {ADGUARD_HOST: list(ADGUARD_IPS)},
+        'dns': {'queryStrategy': 'UseIPv4',
                 'servers': [{'address': YANDEX_DOH,
                              'domains': ['geosite:category-ru', 'geosite:category-gov-ru']},
-                            {'address': ADGUARD_DOH, 'skipFallback': False},
-                            {'address': ADGUARD_IPS[0], 'skipFallback': False}]},
+                            {'address': CLOUDFLARE_DOH, 'skipFallback': False},
+                            {'address': CLOUDFLARE_UDP, 'skipFallback': False}]},
         'inbounds': [
-            {'tag': 'socks', 'listen': '127.0.0.1', 'port': 10808, 'protocol': 'socks',
+            {'tag': 'socks', 'port': 10808, 'protocol': 'socks',
              'settings': {'auth': 'noauth', 'udp': True, 'userLevel': 8},
              'sniffing': copy.deepcopy(sniffing)},
-            {'tag': 'http', 'listen': '127.0.0.1', 'port': 10809, 'protocol': 'http',
+            {'tag': 'http', 'port': 10809, 'protocol': 'http',
              'settings': {'userLevel': 8}, 'sniffing': copy.deepcopy(sniffing)},
         ],
         'outbounds': [

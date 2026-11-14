@@ -66,6 +66,7 @@ def main(xray):
     config.pop('geodata', None)
     config['log'] = {'loglevel': 'info'}
     for inbound in config['inbounds']:
+        inbound['listen'] = '127.0.0.1'
         with socket.socket() as held:
             held.bind(('127.0.0.1', 0))
             inbound['port'] = held.getsockname()[1]

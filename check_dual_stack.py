@@ -36,7 +36,7 @@ def fixture(family, label):
 def main(xray):
     config = copy.deepcopy(load_configs(ROOT / 'subscription.json')[0])
     ipv4 = fixture(socket.AF_INET, b'IPv4')
-    config['dns']['hosts'].update({
+    config['dns'].setdefault('hosts', {}).update({
         'ipv4-only.fixture-domain.ru': ['127.0.0.1', '::1']})
     assert config['dns']['queryStrategy'] == 'UseIPv4'
     assert next(o for o in config['outbounds'] if o['tag'] == 'direct')['settings']['domainStrategy'] == 'UseIPv4'
@@ -47,6 +47,7 @@ def main(xray):
         'outboundTag': 'direct'})
     config['burstObservatory']['subjectSelector'] = ['unused-test-subject']
     for inbound in config['inbounds']:
+        inbound['listen'] = '127.0.0.1'
         with socket.socket() as held:
             held.bind(('127.0.0.1', 0))
             inbound['port'] = held.getsockname()[1]

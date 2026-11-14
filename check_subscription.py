@@ -99,6 +99,7 @@ def check_profile(args):
         outbound.update(tag=tag, protocol='freedom',
                         settings={'redirect': f'127.0.0.1:{port}'})
     for inbound in config['inbounds']:
+        inbound['listen'] = '127.0.0.1'
         with socket.socket() as held:
             held.bind(('127.0.0.1', 0))
             inbound['port'] = held.getsockname()[1]

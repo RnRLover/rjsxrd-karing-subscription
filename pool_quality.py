@@ -266,7 +266,11 @@ def probe_nodes(nodes, xray, settings, usable, cafile=None):
     config = build(nodes)
     proxies = [outbound for outbound in config['outbounds'] if outbound['protocol'] in PROXY_PROTOCOLS]
     config.pop('burstObservatory')
-    config['routing'] = {'rules': [config['routing']['rules'][0]]}
+    # Admission isolates each outbound from the client routing policy. Its
+    # test-only DNS bootstrap must not recurse through a not-yet-running pool.
+    config['dns']['tag'] = 'quality-dns'
+    config['routing'] = {'rules': [{'type': 'field', 'inboundTag': ['quality-dns'],
+                                  'outboundTag': 'direct'}]}
     config['inbounds'], config['log'] = [], {'loglevel': 'none'}
     held, ports = [], []
     try:
