@@ -9,7 +9,7 @@ import tempfile
 ROOT = Path(__file__).resolve().parent
 PROXY_PROTOCOLS = ('vless', 'vmess', 'trojan', 'shadowsocks', 'hysteria')
 MAX_CONFIG_UTF16 = 800_000
-MAX_SUBSCRIPTION_UTF8 = 8_000_000
+MAX_SUBSCRIPTION_UTF8 = 32_000_000
 YANDEX_DOH = 'https://77.88.8.8/dns-query'
 CLOUDFLARE_DOH = 'https://1.1.1.1/dns-query'
 CLOUDFLARE_UDP = '1.0.0.1'
@@ -94,7 +94,7 @@ def proxy_outbound(node, tag):
             congestion='bbr', debug=False)
     if network == 'xhttp':
         xhttp = stream.setdefault('xhttpSettings', {})
-        xhttp['mode'] = 'stream-up'
+        xhttp.setdefault('mode', 'auto')
         xhttp.setdefault('extra', {}).update(xPaddingBytes='100-1000', xmux={
             'cMaxReuseTimes': 0, 'hKeepAlivePeriod': 0, 'hMaxRequestTimes': '600-900',
             'hMaxReusableSecs': '1800-3000', 'maxConcurrency': '16-32', 'maxConnections': 0})

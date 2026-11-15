@@ -1,7 +1,7 @@
 """Current-run HTTPS and HTTP/3 admission checks through real Xray outbounds.
 
 HTTP/3 uses SOCKS5 UDP ASSOCIATE. There is no TCP fallback in the QUIC probe,
-no test-file download, and no persisted latency history or quality ranking.
+no test-file download, and all stability/latency measurements belong to this run.
 """
 from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
@@ -13,6 +13,7 @@ import json
 from pathlib import Path
 import socket
 import ssl
+import statistics
 import struct
 import subprocess
 import tempfile
@@ -223,6 +224,40 @@ def attempt(probe, endpoints, proxy_port, timeout, attempts, cafile=None):
     return {'ok': False, 'attempts': calls, 'errors': dict(errors), 'last_error': last_error}
 
 
+def sample_https(endpoints, proxy_port, settings, cafile=None):
+    trials = settings.get('https_trials', 6)
+    minimum = settings.get('https_min_successes', 5)
+    maximum = settings.get('max_median_ms', 1500)
+    if (type(trials) is not int or not 1 <= trials <= 12 or type(minimum) is not int or
+            not 1 <= minimum <= trials or not 0 < maximum <= 15000 or not endpoints):
+        raise ValueError('invalid HTTPS admission series')
+    samples, times, by_target, errors = [], [], {}, Counter()
+    certificate_error = False
+    for index in range(trials):
+        endpoint = endpoints[index % len(endpoints)]
+        start = time.monotonic()
+        try:
+            https_head(endpoint, proxy_port=proxy_port, timeout=settings['timeout_seconds'], cafile=cafile)
+            elapsed = (time.monotonic() - start) * 1000
+            times.append(elapsed)
+            by_target.setdefault(endpoint.url, []).append(elapsed)
+            samples.append({'target': endpoint.url, 'ok': True, 'ms': round(elapsed, 2)})
+        except (OSError, ValueError) as error:
+            kind = type(error).__name__
+            errors[kind] += 1
+            certificate_error |= isinstance(error, ssl.SSLCertVerificationError)
+            samples.append({'target': endpoint.url, 'ok': False, 'error': kind})
+        if certificate_error or len(times) + trials - index - 1 < minimum:
+            break
+    median = statistics.median(times) if times else None
+    deviations = [abs(value - statistics.median(values)) for values in by_target.values() for value in values]
+    return {'ok': len(times) >= minimum and median <= maximum and not certificate_error,
+            'attempts': len(samples), 'trials': trials, 'successes': len(times),
+            'success_rate': len(times) / trials, 'median_ms': round(median, 2) if median is not None else None,
+            'jitter_ms': round(statistics.median(deviations), 2) if deviations else None,
+            'certificate_error': certificate_error, 'errors': dict(errors), 'samples': samples}
+
+
 def baseline(settings):
     timeout, attempts, workers = (settings[k] for k in ('timeout_seconds', 'attempts', 'workers'))
     if (type(attempts) is not int or not 1 <= attempts <= 3 or
@@ -244,7 +279,8 @@ def baseline(settings):
             endpoints.append(Endpoint(url, parsed.hostname, path + ('?' + parsed.query if parsed.query else ''), ip))
         except OSError:
             unresolved.append(url)
-    tasks = [(kind, probe, endpoint) for kind, probe in [('https', https_head), ('quic', quic_head)]
+    kinds = [('https', https_head)] + ([('quic', quic_head)] if settings.get('require_quic', True) else [])
+    tasks = [(kind, probe, endpoint) for kind, probe in kinds
              for endpoint in endpoints]
     def check(task):
         kind, probe, endpoint = task
@@ -255,7 +291,7 @@ def baseline(settings):
               for kind in ('https', 'quic')}
     evidence = {'targets': [{'protocol': kind, 'url': endpoint.url, **result}
                             for kind, endpoint, result in results], 'unresolved': unresolved}
-    if not all(usable.values()):
+    if len(usable['https']) < 2 or (settings.get('require_quic', True) and not usable['quic']):
         raise ProbeUnavailable('direct HTTPS/HTTP3 baseline unavailable; preserve published pool')
     return usable, evidence
 
@@ -316,7 +352,7 @@ def _probe_batch(nodes, xray, settings, usable, cafile=None):
                         time.sleep(.05)
                 def check(pair):
                     node, port = pair
-                    tcp = attempt(https_head, usable['https'], port, settings['timeout_seconds'], settings['attempts'], cafile)
+                    tcp = sample_https(usable['https'], port, settings, cafile)
                     if not tcp['ok']:
                         udp = {'ok': False, 'skipped': 'https_failed'}
                     elif vision_blocks_quic(node):

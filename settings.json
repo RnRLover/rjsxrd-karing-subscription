@@ -2,7 +2,12 @@
   "subscription_url": "https://raw.githubusercontent.com/whoahaow/rjsxrd/main/githubmirror/bypass/bypass-all.txt",
   "catalog": {
     "auto_max_nodes": 64,
-    "max_nodes_per_profile": 50
+    "max_nodes_per_profile": 5,
+    "auto_max_per_exit": 2
+  },
+  "build": {
+    "shard_nodes": 500,
+    "max_shards": 32
   },
   "reputation_workers": 24,
   "reputation_timeout_seconds": 4,
@@ -10,6 +15,10 @@
     "workers": 24,
     "timeout_seconds": 4,
     "attempts": 2,
+    "https_trials": 6,
+    "https_min_successes": 5,
+    "max_median_ms": 1500,
+    "allowed_protocols": ["vless", "hysteria"],
     "targets": [
       "https://www.google.com/generate_204",
       "https://speed.cloudflare.com/__down?bytes=0"

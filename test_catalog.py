@@ -65,7 +65,8 @@ class CatalogTests(unittest.TestCase):
     def test_large_groups_are_partitioned_without_truncation_or_source_reordering(self):
         nodes = [node(i) for i in range(123)]
         configs, report = build_catalog(nodes, OPTIONS)
-        self.assertEqual([p['nodes'] for p in report['profiles']], [1, 50, 50, 23])
+        self.assertEqual([p['nodes'] for p in report['profiles']], [3, 50, 50, 23])
+        self.assertEqual(report['profiles'][0]['node_indices'], [0, 50, 100])
         self.assertEqual([p['part'] for p in report['profiles'][1:]], [1, 2, 3])
         self.assert_coverage(nodes, configs, report)
         for config in configs[1:]:

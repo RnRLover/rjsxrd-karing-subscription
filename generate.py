@@ -10,13 +10,14 @@ import os
 from pathlib import Path
 import socket
 import subprocess
+import sys
 import tempfile
 import time
 import urllib.parse
 import urllib.request
 
 from incy import (ROOT, PROXY_PROTOCOLS, BLOCK_DOMAINS, PROXY_DOMAINS, DIRECT_DOMAINS, DIRECT_IPS,
-                  atomic_write,
+                  atomic_write, proxy_outbound, vision_blocks_quic,
                   serialized_config, subscription, xray_validate)
 from ip_reputation import CACHE_KEY, load_feed, assess_nodes, rate_ip, reputation_report
 from pool_quality import PROBE_BATCH_SIZE, ProbeUnavailable, baseline, eligible_nodes, probe_nodes
@@ -25,7 +26,7 @@ from rjsxrd_helpers import query_parameters
 from catalog import build_catalog
 
 
-def fetch(url, limit=8_000_000):
+def fetch(url, limit=64_000_000):
     for attempt in range(3):
         try:
             request = urllib.request.Request(url, headers={'User-Agent': 'rjsxrd-incy-subscription/2'})
@@ -67,7 +68,7 @@ def parse_node(line):
 
 
 def collect_nodes(text):
-    nodes, seen, counts = [], set(), Counter()
+    nodes, seen, counts = [], {}, Counter()
     for raw in text.splitlines():
         line = raw.strip()
         if not line or line.startswith('#'):
@@ -80,36 +81,54 @@ def collect_nodes(text):
         if node is None:
             counts['unsupported_or_malformed'] += 1
             continue
+        # Compare what Xray will actually receive, after common client options.
+        node['outbound'] = proxy_outbound(node, 'candidate')
+        node['labels'] = [node['label']]
+        node['source_order'] = counts['source_nodes'] - 1
         key = json.dumps(node['outbound'], sort_keys=True, separators=(',', ':'))
         if key in seen:
             counts['duplicate'] += 1
+            previous = nodes[seen[key]]
+            if node['label'] not in previous['labels']:
+                previous['labels'].append(node['label'])
             continue
-        seen.add(key)
+        seen[key] = len(nodes)
         nodes.append(node)
     return nodes, counts
 
 
 def compatible_nodes(nodes, xray, counts):
-    """Only test JSON/core compatibility. This does not connect to the nodes."""
-    def check(node):
+    """Validate bounded batches; bisect a rejected batch to isolate bad nodes."""
+    def check(batch):
         try:
-            xray_validate(xray, {'outbounds': [node['outbound']]})
-            return node
+            xray_validate(xray, {'outbounds': [dict(node['outbound'], tag=f'check-{i}')
+                                                for i, node in enumerate(batch)]})
+            return batch
         except ValueError:
-            return None
-    with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
-        result = list(executor.map(check, nodes))
-    counts['core_incompatible'] += sum(node is None for node in result)
-    return [node for node in result if node is not None]
+            if len(batch) == 1:
+                return []
+            middle = len(batch) // 2
+            return check(batch[:middle]) + check(batch[middle:])
+    batches = [nodes[start:start + PROBE_BATCH_SIZE] for start in range(0, len(nodes), PROBE_BATCH_SIZE)]
+    with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
+        result = [node for batch in executor.map(check, batches) for node in batch]
+    counts['core_incompatible'] += len(nodes) - len(result)
+    return result
 
 
-def entry_ips(host):
+def entry_ips(host, timeout=3):
     try:
         return [str(ipaddress.ip_address(host))]
     except ValueError:
         try:
-            return sorted({info[4][0] for info in socket.getaddrinfo(host, None, type=socket.SOCK_STREAM)})
-        except OSError:
+            # getaddrinfo has no cancellable per-call deadline. Isolate DNS so
+            # thousands of unresponsive names cannot hold the whole executor.
+            code = ('import json,socket,sys;print(json.dumps(sorted({i[4][0] for i in '
+                    'socket.getaddrinfo(sys.argv[1],None,type=socket.SOCK_STREAM)})))')
+            result = subprocess.run([sys.executable, '-c', code, host], capture_output=True,
+                                    text=True, timeout=timeout, check=True)
+            return json.loads(result.stdout)
+        except (OSError, ValueError, subprocess.SubprocessError):
             return []
 
 
@@ -193,40 +212,8 @@ def _probe_exit_batch(nodes, xray, workers=24, timeout=4):
                 process.wait(timeout=5)
 
 
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--xray', required=True)
-    args = parser.parse_args()
-    settings = json.loads((ROOT / 'settings.json').read_bytes())
-    try:
-        usable_targets, baseline_evidence = baseline(settings['quality'])
-    except ProbeUnavailable as error:
-        print('::notice::' + str(error), flush=True)
-        return False
-    original = fetch(settings['subscription_url']).decode('utf-8-sig')
-    nodes, counts = collect_nodes(original)
-    nodes = compatible_nodes(nodes, args.xray, counts)
-    cache_path = ROOT / '.runtime' / 'reputation-cache.json'
-    cache = json.loads(cache_path.read_bytes()) if cache_path.exists() else {}
-    feed, feed_source = load_feed(cache, lambda url: fetch(url).decode('utf-8-sig'), int(time.time()))
-    atomic_write(cache_path, json.dumps({CACHE_KEY: feed}) + '\n')
-    with concurrent.futures.ThreadPoolExecutor(max_workers=24) as executor:
-        addresses = list(executor.map(entry_ips, [node['host'] for node in nodes]))
-    for node, ips in zip(nodes, addresses):
-        node['entry_reputation'] = [dict(ip=ip, **rate_ip(ip, feed)) for ip in ips]
-    retained = exclude_listed(nodes)
-    counts['listed_entry'] = len(nodes) - len(retained)
-    print(json.dumps({'source': dict(counts), 'exit_reputation_candidates': len(retained)}), flush=True)
-    measured = probe_exits(retained, args.xray, settings['reputation_workers'],
-                           settings['reputation_timeout_seconds'])
-    rated = assess_nodes(measured, feed)
-    non_listed = exclude_listed(rated)
-    counts['listed_exit'] = len(rated) - len(non_listed)
-    try:
-        checked = probe_nodes(non_listed, args.xray, settings['quality'], usable_targets)
-    except ProbeUnavailable as error:
-        print('::notice::' + str(error), flush=True)
-        return False
+def publish_checked(checked, rated, settings, counts, source_sha, feed, feed_source,
+                    baseline_evidence, xray, build_metadata=None):
     eligible = eligible_nodes(checked)
     counts['https_failed'] = sum(not node['quality']['https']['ok'] for node in checked)
     counts['quic_failed_after_https'] = sum(node['quality']['https']['ok'] and
@@ -241,20 +228,19 @@ def main():
     configs, catalog = build_catalog(selected, settings['catalog'], settings['probe'])
     # Every profile is self-contained and checked, not only the default auto.
     with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
-        list(executor.map(lambda config: xray_validate(args.xray, config), configs))
+        list(executor.map(lambda config: xray_validate(xray, config), configs))
     body = subscription(configs)
     config = configs[0]
     report = {
         'generated_at_utc': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
-        'source': settings['subscription_url'], 'source_sha256': hashlib.sha256(original.encode()).hexdigest(),
+        'source': settings['subscription_url'], 'source_sha256': source_sha,
         'counts': dict(counts), 'selected': len(selected), 'xray_validated': True,
         'selected_protocols': dict(Counter(node['outbound']['protocol'] for node in selected)),
-        'pool_selection': 'all eligible entries in dynamic country/technology profiles; bounded global '
-                          'auto uses first group representatives, round-robin across technologies; '
-                          'exact duplicates removed; known listed entry/exit IPs excluded; '
-                          'fresh HTTPS required; HTTP/3 required except ordinary Vision UDP443 policy',
+        'pool_selection': 'all admitted unique connections in completed country/technology mini-pools; '
+                          'allowlist candidates first, then current-run HTTPS stability/latency; '
+                          'global auto is selected from mini-pool leaders with exit diversity',
         'catalog': catalog,
-        'history_used': False, 'github_latency_ranking': False, 'country_filter': False,
+        'history_used': False, 'github_latency_ranking': True, 'country_filter': False,
         'tcp_udp_quality_gate': False, 'https_quality_gate': True,
         'quic_quality_gate': 'required except ordinary Vision intentionally blocks UDP/443',
         'file_transfer_check': False,
@@ -267,11 +253,16 @@ def main():
             'candidates_checked': len(checked), 'passed_policy': len(eligible),
             'passed_both': sum(node['quality']['https']['ok'] and node['quality']['quic']['ok']
                                for node in checked),
-            'history_used': False, 'latency_ranking': False,
+            'history_used': False, 'latency_ranking': True,
             'selected': [{'node_index': index, **node['quality']}
                          for index, node in enumerate(selected)],
         },
         'pool_limit': {'catalog_per_technology': None, **settings['catalog']},
+        'allowlist': {'candidate_nodes': sum(n.get('allowlist', {}).get('priority', 0) > 0 for n in selected),
+                      'explicit_label_nodes': sum(n.get('allowlist', {}).get('explicit_label', False) for n in selected),
+                      'restricted_network_verified': False,
+                      'evidence': [{'node_index': i, **n.get('allowlist', {})} for i, n in enumerate(selected)]},
+        'build': build_metadata or {},
         'unknown_exit_retained': sum(node.get('exit_ip') is None for node in selected),
         'exit_discovery_errors': dict(Counter(node['exit_discovery_error'] for node in selected
                                               if node.get('exit_discovery_error'))),
@@ -297,9 +288,11 @@ def main():
             'balancer': config['routing']['balancers'][0],
             'vision_udp443': 'ordinary Vision intercepts UDP/443 as in the reference',
             'reference_adaptations': ['own upstream connection credentials, endpoints and transport paths',
-                                     'dynamic upstream country/technology groups; bounded global auto',
+                                     'five-node country/technology mini-pools; allowlist candidates first; '
+                                     'bounded global auto from completed mini-pool leaders',
                                      'global auto expected 1 and costs 1/2; grouped pools expected 4 '
-                                     'with reference baselines and equal costs; first own node fallback'],
+                                     'with reference baselines and equal costs; first ranked node fallback',
+                                     'preserve each upstream XHTTP mode instead of forcing stream-up'],
             'geodata_sha256': {name: hashlib.sha256((ROOT / '.runtime' / name).read_bytes()).hexdigest()
                                for name in ('geoip.dat', 'geosite.dat')},
             'client_geodata_verified': False,
@@ -314,8 +307,30 @@ def main():
                       'countries': len(catalog['countries']), 'technologies': len(catalog['technologies']),
                       'profiles': len(configs), 'auto_nodes': catalog['auto_nodes'],
                       'unknown_exit_retained': report['unknown_exit_retained'],
-                      'upstream_order_preserved': True}), flush=True)
+                      'source_order_used_for_ties': True}), flush=True)
     return True
+
+
+def main():
+    from pipeline import prepare, probe_shard, assemble, run_all
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--xray', required=True)
+    parser.add_argument('--stage', choices=['all', 'prepare', 'probe', 'assemble'], default='all')
+    parser.add_argument('--work', type=Path, default=ROOT / '.runtime' / 'build')
+    parser.add_argument('--shard', type=int, default=0)
+    args = parser.parse_args()
+    if args.stage == 'prepare':
+        result = prepare(args.work, args.xray)
+        if output := os.environ.get('GITHUB_OUTPUT'):
+            with open(output, 'a') as handle:
+                handle.write('matrix=' + json.dumps(result['matrix'], separators=(',', ':')) + '\n')
+        return result['ready']
+    if args.stage == 'probe':
+        probe_shard(args.work, args.shard, args.xray)
+        return True
+    if args.stage == 'assemble':
+        return assemble(args.work, args.xray)
+    return run_all(args.work, args.xray)
 
 
 if __name__ == '__main__':

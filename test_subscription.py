@@ -122,7 +122,10 @@ class SubscriptionTests(unittest.TestCase):
         ob = build([xhttp])['outbounds'][0]
         self.assertEqual(ob['streamSettings']['xhttpSettings']['path'], '/own-path')
         self.assertEqual(ob['streamSettings']['xhttpSettings']['host'], 'own.example')
-        self.assertEqual(ob['streamSettings']['xhttpSettings']['mode'], 'stream-up')
+        self.assertEqual(ob['streamSettings']['xhttpSettings']['mode'], 'auto')
+        for mode in ('stream-one', 'stream-up', 'packet-up'):
+            own = parse_node(URI.replace('type=tcp', f'type=xhttp&mode={mode}'))
+            self.assertEqual(build([own])['outbounds'][0]['streamSettings']['xhttpSettings']['mode'], mode)
 
     def test_delivery_keeps_one_full_config_without_routing_profile_commands(self):
         config = build([parse_node(URI)])
