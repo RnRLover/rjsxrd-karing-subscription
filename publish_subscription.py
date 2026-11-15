@@ -16,6 +16,7 @@ def report_signature(data):
             'quality_settings': report.get('quality_checks', {}).get('settings'),
             'selection': reputation.get('selection_priority'),
             'policy': report.get('subscription_policy'),
+            'catalog': report.get('catalog'),
             'counts': report.get('counts')}
 
 

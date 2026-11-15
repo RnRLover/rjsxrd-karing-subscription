@@ -1,4 +1,4 @@
-"""Publish the first eligible upstream nodes from each technology for INCY."""
+"""Publish a dynamic country/technology catalog of eligible rjsxrd nodes for INCY."""
 import argparse
 from collections import Counter
 import concurrent.futures
@@ -16,12 +16,13 @@ import urllib.parse
 import urllib.request
 
 from incy import (ROOT, PROXY_PROTOCOLS, BLOCK_DOMAINS, PROXY_DOMAINS, DIRECT_DOMAINS, DIRECT_IPS,
-                  atomic_write, build, proxy_tag,
+                  atomic_write,
                   serialized_config, subscription, xray_validate)
 from ip_reputation import CACHE_KEY, load_feed, assess_nodes, rate_ip, reputation_report
-from pool_quality import ProbeUnavailable, baseline, eligible_nodes, probe_nodes
+from pool_quality import PROBE_BATCH_SIZE, ProbeUnavailable, baseline, eligible_nodes, probe_nodes
 from rjsxrd_parser import parse_url
 from rjsxrd_helpers import query_parameters
+from catalog import build_catalog
 
 
 def fetch(url, limit=8_000_000):
@@ -118,41 +119,6 @@ def exclude_listed(nodes):
             and not any(record['status'] == 'listed' for record in node.get('entry_reputation', []))]
 
 
-def technology_key(node):
-    outbound = node['outbound']
-    stream = outbound.get('streamSettings', {})
-    transport = stream.get('network', 'tcp').lower()
-    transport = {'raw': 'tcp', 'websocket': 'ws', 'splithttp': 'xhttp'}.get(transport, transport)
-    return (outbound['protocol'], transport, stream.get('security', 'none').lower())
-
-
-def select_per_technology(nodes, limit):
-    """Take each technology's first eligible entries without reordering the pool."""
-    if type(limit) is not int or limit < 1:
-        raise ValueError('max_nodes_per_technology must be a positive integer')
-    selected, used = [], Counter()
-    for node in nodes:
-        key = technology_key(node)
-        if used[key] < limit:
-            selected.append(node)
-            used[key] += 1
-    return selected
-
-
-def technology_report(eligible, selected, limit):
-    available = Counter(technology_key(node) for node in eligible)
-    groups = {key: {'protocol': key[0], 'transport': key[1], 'security': key[2],
-                    'eligible': count, 'selected': 0, 'tags': []}
-              for key, count in available.items()}
-    for index, node in enumerate(selected, 1):
-        group = groups[technology_key(node)]
-        group['selected'] += 1
-        group['tags'].append(proxy_tag(index - 1))
-    return {'group_by': ['protocol', 'transport', 'security'], 'per_technology_limit': limit,
-            'order': 'first eligible entries in upstream order',
-            'balancing': 'one shared leastLoad pool', 'groups': list(groups.values())}
-
-
 def probe_exit(opener, timeout=4):
     # This single small request discovers the public exit for the blacklist.
     # Its latency and success are never membership or ranking criteria.
@@ -164,8 +130,14 @@ def probe_exit(opener, timeout=4):
 
 
 def probe_exits(nodes, xray, workers=24, timeout=4):
-    if not nodes:
-        return []
+    results = []
+    for start in range(0, len(nodes), PROBE_BATCH_SIZE):
+        results.extend(_probe_exit_batch(nodes[start:start + PROBE_BATCH_SIZE],
+                                         xray, workers, timeout))
+    return results
+
+
+def _probe_exit_batch(nodes, xray, workers=24, timeout=4):
     held, ports = [], []
     for _ in nodes:
         sock = socket.socket()
@@ -265,22 +237,23 @@ def main():
     if not eligible:
         print('::notice::No candidate passed the published transport policy; preserve published pool', flush=True)
         return False
-    limit = settings['max_nodes_per_technology']
-    selected = select_per_technology(eligible, limit)
-    counts['over_technology_limit'] = len(eligible) - len(selected)
-    if not selected:
-        raise ValueError('no non-listed candidates; keep published subscription')
-    config = build(selected, probe=settings['probe'])
-    xray_validate(args.xray, config)
+    selected = eligible
+    configs, catalog = build_catalog(selected, settings['catalog'], settings['probe'])
+    # Every profile is self-contained and checked, not only the default auto.
+    with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
+        list(executor.map(lambda config: xray_validate(args.xray, config), configs))
+    body = subscription(configs)
+    config = configs[0]
     report = {
         'generated_at_utc': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
         'source': settings['subscription_url'], 'source_sha256': hashlib.sha256(original.encode()).hexdigest(),
         'counts': dict(counts), 'selected': len(selected), 'xray_validated': True,
         'selected_protocols': dict(Counter(node['outbound']['protocol'] for node in selected)),
-        'pool_selection': 'first eligible entries per protocol/transport/security in upstream order; '
+        'pool_selection': 'all eligible entries in dynamic country/technology profiles; bounded global '
+                          'auto uses first group representatives, round-robin across technologies; '
                           'exact duplicates removed; known listed entry/exit IPs excluded; '
                           'fresh HTTPS required; HTTP/3 required except ordinary Vision UDP443 policy',
-        'technology_selection': technology_report(eligible, selected, limit),
+        'catalog': catalog,
         'history_used': False, 'github_latency_ranking': False, 'country_filter': False,
         'tcp_udp_quality_gate': False, 'https_quality_gate': True,
         'quic_quality_gate': 'required except ordinary Vision intentionally blocks UDP/443',
@@ -295,10 +268,10 @@ def main():
             'passed_both': sum(node['quality']['https']['ok'] and node['quality']['quic']['ok']
                                for node in checked),
             'history_used': False, 'latency_ranking': False,
-            'selected': [{'tag': proxy_tag(index - 1),
-                          **node['quality']} for index, node in enumerate(selected, 1)],
+            'selected': [{'node_index': index, **node['quality']}
+                         for index, node in enumerate(selected)],
         },
-        'pool_limit': {'per_technology': limit},
+        'pool_limit': {'catalog_per_technology': None, **settings['catalog']},
         'unknown_exit_retained': sum(node.get('exit_ip') is None for node in selected),
         'exit_discovery_errors': dict(Counter(node['exit_discovery_error'] for node in selected
                                               if node.get('exit_discovery_error'))),
@@ -307,7 +280,7 @@ def main():
             'clients': ['INCY'], 'format': 'full-xray-json-array-with-body-metadata',
             'native_routing_profile': False,
             'dns_query_strategy': 'UseIPv4', 'ipv6_supported': False,
-            'traffic': 'reference domain/IP/protocol rules; AsIs; one shared leastLoad pool',
+            'traffic': 'reference domain/IP/protocol rules; AsIs; independent leastLoad per profile',
             'dns_transport': {'provider': 'Yandex DoH, Cloudflare DoH and Cloudflare UDP fallback',
                               'all_names': 'Yandex is also a fallback for names outside its domain categories',
                               'route': 'reference routing; Yandex IP direct, Cloudflare IPs use the pool',
@@ -324,19 +297,22 @@ def main():
             'balancer': config['routing']['balancers'][0],
             'vision_udp443': 'ordinary Vision intercepts UDP/443 as in the reference',
             'reference_adaptations': ['own upstream connection credentials, endpoints and transport paths',
-                                      'fallback is the first eligible own node; other node costs are 2'],
+                                     'dynamic upstream country/technology groups; bounded global auto',
+                                     'global auto expected 1 and costs 1/2; grouped pools expected 4 '
+                                     'with reference baselines and equal costs; first own node fallback'],
             'geodata_sha256': {name: hashlib.sha256((ROOT / '.runtime' / name).read_bytes()).hexdigest()
                                for name in ('geoip.dat', 'geosite.dat')},
             'client_geodata_verified': False,
         },
         'config_utf8_bytes': len(serialized_config(config).encode()),
         'config_utf16_bytes': len(serialized_config(config).encode('utf-16-le')),
+        'subscription_utf8_bytes': len(body.encode()),
     }
-    atomic_write(ROOT / 'subscription.json', subscription(config))
+    atomic_write(ROOT / 'subscription.json', body)
     atomic_write(ROOT / 'report.json', json.dumps(report, ensure_ascii=False, indent=2) + '\n')
     print(json.dumps({'selected': len(selected), 'protocols': report['selected_protocols'],
-                      'technologies': len(report['technology_selection']['groups']),
-                      'max_nodes_per_technology': limit,
+                      'countries': len(catalog['countries']), 'technologies': len(catalog['technologies']),
+                      'profiles': len(configs), 'auto_nodes': catalog['auto_nodes'],
                       'unknown_exit_retained': report['unknown_exit_retained'],
                       'upstream_order_preserved': True}), flush=True)
     return True

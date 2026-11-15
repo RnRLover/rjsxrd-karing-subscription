@@ -9,6 +9,7 @@ import tempfile
 ROOT = Path(__file__).resolve().parent
 PROXY_PROTOCOLS = ('vless', 'vmess', 'trojan', 'shadowsocks', 'hysteria')
 MAX_CONFIG_UTF16 = 800_000
+MAX_SUBSCRIPTION_UTF8 = 8_000_000
 YANDEX_DOH = 'https://77.88.8.8/dns-query'
 CLOUDFLARE_DOH = 'https://1.1.1.1/dns-query'
 CLOUDFLARE_UDP = '1.0.0.1'
@@ -100,7 +101,7 @@ def proxy_outbound(node, tag):
     return outbound
 
 
-def build(nodes, probe=None):
+def build(nodes, probe=None, *, remarks='🇪🇺 ⚡️ Автовыбор', balancer_settings=None):
     if not nodes:
         raise ValueError('no supported non-listed candidates; keep published subscription')
     proxies = [proxy_outbound(node, proxy_tag(index)) for index, node in enumerate(nodes)]
@@ -115,7 +116,7 @@ def build(nodes, probe=None):
         {'type': 'field', 'network': 'tcp,udp', 'balancerTag': 'balancer'},
     ]
     config = {
-        'remarks': '🇪🇺 ⚡️ Автовыбор', 'log': {'loglevel': 'warning'},
+        'remarks': remarks, 'log': {'loglevel': 'warning'},
         'dns': {'queryStrategy': 'UseIPv4',
                 'servers': [{'address': YANDEX_DOH,
                              'domains': ['geosite:category-ru', 'geosite:category-gov-ru']},
@@ -145,14 +146,23 @@ def build(nodes, probe=None):
         'policy': {'system': {'statsOutboundDownlink': True, 'statsOutboundUplink': True}},
         'stats': {},
     }
+    if balancer_settings is not None:
+        config['routing']['balancers'][0]['strategy']['settings'] = copy.deepcopy(balancer_settings)
     serialized_config(config)
     return config
 
 
 def subscription(config):
     """Keep the existing URL without installing or activating routing profiles."""
-    return (serialized_config([config]) + '\n'
-            + '#profile-title: rjsxrd · INCY\n')
+    configs = config if isinstance(config, list) else [config]
+    if not configs:
+        raise ValueError('empty subscription; keep published subscription')
+    # The per-profile runtime budget is separate from the catalog download.
+    text = '[' + ','.join(serialized_config(profile) for profile in configs) + ']'
+    body = text + '\n#profile-title: rjsxrd · INCY\n'
+    if len(body.encode()) > MAX_SUBSCRIPTION_UTF8:
+        raise ValueError('catalog exceeds the subscription download budget')
+    return body
 
 
 def load_configs(path):

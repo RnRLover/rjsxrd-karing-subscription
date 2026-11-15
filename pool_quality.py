@@ -260,9 +260,21 @@ def baseline(settings):
     return usable, evidence
 
 
+PROBE_BATCH_SIZE = 128
+
+
 def probe_nodes(nodes, xray, settings, usable, cafile=None):
     if not nodes:
         raise ProbeUnavailable('no candidates for quality checks; preserve published pool')
+    results = []
+    for start in range(0, len(nodes), PROBE_BATCH_SIZE):
+        results.extend(_probe_batch(nodes[start:start + PROBE_BATCH_SIZE], xray,
+                                    settings, usable, cafile))
+    return results
+
+
+def _probe_batch(nodes, xray, settings, usable, cafile=None):
+    # A growing catalog must not become one oversized admission configuration.
     config = build(nodes)
     proxies = [outbound for outbound in config['outbounds'] if outbound['protocol'] in PROXY_PROTOCOLS]
     config.pop('burstObservatory')

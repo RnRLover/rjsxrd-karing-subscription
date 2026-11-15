@@ -9,10 +9,29 @@ import unittest
 from unittest.mock import patch
 
 import generate
-from pool_quality import Endpoint, ProbeUnavailable, attempt, baseline, eligible_nodes
+from pool_quality import Endpoint, ProbeUnavailable, attempt, baseline, eligible_nodes, probe_nodes
 
 
 class QualityTests(unittest.TestCase):
+    def test_growing_pool_checks_use_bounded_batches_without_dropping_the_tail(self):
+        nodes = [{'index': i} for i in range(400)]
+        for function, target in [(probe_nodes, 'pool_quality._probe_batch'),
+                                 (generate.probe_exits, 'generate._probe_exit_batch')]:
+            sizes = []
+            def batch(members, *args):
+                sizes.append(len(members))
+                return members
+            with self.subTest(function=function.__name__), patch(target, side_effect=batch):
+                if function is probe_nodes:
+                    results = function(nodes, 'unused', {}, {})
+                else:
+                    results = function(nodes, 'unused')
+            self.assertEqual(sizes, [128, 128, 128, 16])
+            self.assertEqual(results, nodes)
+        with patch('pool_quality._probe_batch', side_effect=[nodes[:128], ProbeUnavailable('batch failed')]):
+            with self.assertRaises(ProbeUnavailable):
+                probe_nodes(nodes, 'unused', {}, {})
+
     def test_alternate_target_and_retry_can_recover_without_dropping_node(self):
         endpoints = [Endpoint('https://a.example/', 'a.example', '/', '192.0.2.1'),
                      Endpoint('https://b.example/', 'b.example', '/', '192.0.2.2')]
@@ -26,7 +45,7 @@ class QualityTests(unittest.TestCase):
         self.assertEqual(calls, ['a.example', 'b.example', 'a.example'])
         self.assertEqual(result['attempts'], 3)
 
-    def test_gate_precedes_technology_quota_and_preserves_source_order(self):
+    def test_gate_keeps_every_passing_node_in_source_order(self):
         nodes = []
         for index, flags in enumerate([(True, False), (True, True), (False, True),
                                         (True, True), (True, True), (True, True)]):
@@ -34,8 +53,7 @@ class QualityTests(unittest.TestCase):
                           'quality': {kind: {'ok': flag} for kind, flag in zip(('https', 'quic'), flags)}})
         before = copy.deepcopy(nodes)
         eligible = eligible_nodes(nodes)
-        selected = generate.select_per_technology(eligible, 3)
-        self.assertEqual([node['host'] for node in selected], ['1', '3', '4'])
+        self.assertEqual([node['host'] for node in eligible], ['1', '3', '4', '5'])
         self.assertEqual(nodes, before)
         self.assertEqual(eligible_nodes([{'quality': {'https': {'ok': True}}}]), [])
 
@@ -88,6 +106,43 @@ class QualityTests(unittest.TestCase):
                     self.assertFalse(generate.main())
                 for name in ('subscription.json', 'report.json'):
                     self.assertEqual((root / name).read_text(), 'unchanged')
+
+    def test_invalid_later_profile_preserves_the_entire_published_catalog(self):
+        nodes = [generate.parse_node(
+            f'vless://123e4567-e89b-12d3-a456-426614174000@node{i}.example:443'
+            f'?security=tls&sni=example.com#OUT: {country}')
+            for i, country in enumerate(['DE', 'NL'])]
+        for node in nodes:
+            node.update(reputation={'status': 'unknown'}, quality={
+                'https': {'ok': True}, 'quic': {'ok': True}})
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            settings = {'quality': {}, 'subscription_url': 'https://fixture.example/',
+                        'reputation_workers': 1, 'reputation_timeout_seconds': 1,
+                        'catalog': {'auto_max_nodes': 64, 'max_nodes_per_profile': 50}, 'probe': {}}
+            (root / 'settings.json').write_text(json.dumps(settings))
+            for name in ('subscription.json', 'report.json'):
+                (root / name).write_text('unchanged')
+            def validate(xray, config):
+                if config['remarks'].startswith('🇳🇱'):
+                    raise ValueError('invalid later profile')
+            with patch.object(generate, 'ROOT', root), \
+                    patch('sys.argv', ['generate.py', '--xray', 'unused']), \
+                    patch('generate.baseline', return_value=({}, {})), \
+                    patch('generate.fetch', return_value=b'fixture'), \
+                    patch('generate.collect_nodes', return_value=(nodes, Counter())), \
+                    patch('generate.compatible_nodes', side_effect=lambda nodes, *_: nodes), \
+                    patch('generate.load_feed', return_value=({}, 'fixture')), \
+                    patch('generate.entry_ips', return_value=[]), \
+                    patch('generate.probe_exits', return_value=nodes), \
+                    patch('generate.assess_nodes', return_value=nodes), \
+                    patch('generate.probe_nodes', return_value=nodes), \
+                    patch('generate.xray_validate', side_effect=validate), \
+                    redirect_stdout(io.StringIO()):
+                with self.assertRaisesRegex(ValueError, 'invalid later profile'):
+                    generate.main()
+            for name in ('subscription.json', 'report.json'):
+                self.assertEqual((root / name).read_text(), 'unchanged')
 
 
 if __name__ == '__main__':

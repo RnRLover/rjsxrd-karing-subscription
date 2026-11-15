@@ -203,8 +203,16 @@ def main():
     parser.add_argument('--profile-index', type=int, default=None)
     args = parser.parse_args()
     content = load_configs(ROOT / args.config)
-    indices = ([args.profile_index] if args.profile_index is not None else
-               range(len(content)) if isinstance(content, list) else [0])
+    # Routing/DNS/inbounds are a shared template. Assert that for every profile,
+    # then exercise its routes once rather than run hundreds of identical local
+    # network fixtures. generate.py validates every full profile with Xray.
+    first = content[0]
+    for config in content:
+        for key in ('dns', 'inbounds', 'burstObservatory', 'policy'):
+            assert config[key] == first[key], 'inconsistent profile policy: ' + key
+        assert config['routing']['rules'] == first['routing']['rules']
+        assert config['routing']['domainStrategy'] == first['routing']['domainStrategy']
+    indices = [args.profile_index if args.profile_index is not None else 0]
     for index in indices:
         print('Checking profile', index, flush=True)
         check_profile(argparse.Namespace(xray=args.xray, config=args.config, profile_index=index))
