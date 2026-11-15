@@ -17,6 +17,7 @@ import urllib.parse
 import urllib.request
 
 from incy import (ROOT, PROXY_PROTOCOLS, BLOCK_DOMAINS, PROXY_DOMAINS, DIRECT_DOMAINS, DIRECT_IPS,
+                  GITHUB_DIRECT_DOMAINS,
                   atomic_write, proxy_outbound, vision_blocks_quic,
                   serialized_config, subscription, xray_validate)
 from ip_reputation import CACHE_KEY, load_feed, assess_nodes, rate_ip, reputation_report
@@ -271,7 +272,8 @@ def publish_checked(checked, rated, settings, counts, source_sha, feed, feed_sou
             'clients': ['INCY'], 'format': 'full-xray-json-array-with-body-metadata',
             'native_routing_profile': False,
             'dns_query_strategy': 'UseIPv4', 'ipv6_supported': False,
-            'traffic': 'reference domain/IP/protocol rules; AsIs; independent leastLoad per profile',
+            'traffic': 'priority GitHub direct rule, then reference domain/IP/protocol rules; '
+                       'AsIs; independent leastLoad per profile',
             'dns_transport': {'provider': 'Yandex DoH, Cloudflare DoH and Cloudflare UDP fallback',
                               'all_names': 'Yandex is also a fallback for names outside its domain categories',
                               'route': 'reference routing; Yandex IP direct, Cloudflare IPs use the pool',
@@ -279,7 +281,8 @@ def publish_checked(checked, rated, settings, counts, source_sha, feed, feed_sou
                               'bootstrap_addresses': config['dns'].get('hosts', {}),
                               'independent_provider_fallback': True,
                               'plain_public_dns_fallback': True},
-            'direct_domains': list(DIRECT_DOMAINS), 'direct_ips': list(DIRECT_IPS),
+            'direct_domains': list(GITHUB_DIRECT_DOMAINS + DIRECT_DOMAINS), 'direct_ips': list(DIRECT_IPS),
+            'github_direct_domains': list(GITHUB_DIRECT_DOMAINS),
             'direct_protocols': ['bittorrent'], 'proxy_domains': list(PROXY_DOMAINS),
             'block_domains': list(BLOCK_DOMAINS),
             'ad_blocking': 'reference win-spy/category-ads geosite rules; no filtering DNS provider',
@@ -288,6 +291,7 @@ def publish_checked(checked, rated, settings, counts, source_sha, feed, feed_sou
             'balancer': config['routing']['balancers'][0],
             'vision_udp443': 'ordinary Vision intercepts UDP/443 as in the reference',
             'reference_adaptations': ['own upstream connection credentials, endpoints and transport paths',
+                                     'GitHub category, subdomains and download hosts go direct before other rules',
                                      'five-node country/technology mini-pools; allowlist candidates first; '
                                      'bounded global auto from completed mini-pool leaders',
                                      'global auto expected 1 and costs 1/2; grouped pools expected 4 '

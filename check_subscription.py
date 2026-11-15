@@ -157,8 +157,19 @@ def check_profile(args):
                     ('Apple direct category', 'apple.com', 'DIRECT'),
                     ('Twitch direct category', 'twitch.tv', 'DIRECT'),
                     ('Private domain', 'localhost', 'DIRECT'),
-                    ('GitHub now follows the reference default', 'github.com', 'PROXY'),
-                    ('GitHub raw', 'raw.githubusercontent.com', 'PROXY'),
+                    ('GitHub', 'github.com', 'DIRECT'),
+                    ('GitHub API', 'api.github.com', 'DIRECT'),
+                    ('GitHub raw', 'raw.githubusercontent.com', 'DIRECT'),
+                    ('GitHub release assets', 'release-assets.githubusercontent.com', 'DIRECT'),
+                    ('GitHub objects', 'objects.githubusercontent.com', 'DIRECT'),
+                    ('GitHub assets', 'github.githubassets.com', 'DIRECT'),
+                    ('GitHub Pages', 'user.github.io', 'DIRECT'),
+                    ('GitHub container registry', 'ghcr.io', 'DIRECT'),
+                    ('GitHub category S3 download host', 'github-production-release-asset-2e65be.s3.amazonaws.com', 'DIRECT'),
+                    ('GitHub direct priority over telemetry block', 'collector.github.com', 'DIRECT'),
+                    ('Unrelated S3 host', 'unrelated.s3.amazonaws.com', 'PROXY'),
+                    ('GitHub lookalike suffix', 'github.com.evil.fixture-domain.com', 'PROXY'),
+                    ('GitHub lookalike prefix', 'notgithub.com', 'PROXY'),
                     ('RU IP', '77.88.8.8', 'DIRECT'),
                     ('RU IPv6 literal', '2a02:6b8::1', 'DIRECT'),
                     ('AsIs does not resolve a hostname for GeoIP', 'geoip-only.fixture-domain.com', 'PROXY'),
@@ -176,7 +187,7 @@ def check_profile(args):
                 actual = request('8.8.8.8', b'GET / HTTP/1.1\r\nHost: vk.com\r\n\r\n')
                 results.append({'case': 'Sniffed RU host', 'expected': 'DIRECT', 'actual': actual})
                 actual = request('8.8.8.8', b'GET / HTTP/1.1\r\nHost: raw.githubusercontent.com\r\n\r\n')
-                results.append({'case': 'Sniffed GitHub host', 'expected': 'PROXY', 'actual': actual})
+                results.append({'case': 'Sniffed GitHub host', 'expected': 'DIRECT', 'actual': actual})
                 actual = request('8.8.8.8', b'\x13BitTorrent protocol' + b'\x00' * 48)
                 results.append({'case': 'BitTorrent direct', 'expected': 'DIRECT', 'actual': actual})
                 assert 'geoip-only.fixture-domain.com' not in dns_queries

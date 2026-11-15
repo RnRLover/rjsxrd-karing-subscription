@@ -13,6 +13,10 @@ MAX_SUBSCRIPTION_UTF8 = 32_000_000
 YANDEX_DOH = 'https://77.88.8.8/dns-query'
 CLOUDFLARE_DOH = 'https://1.1.1.1/dns-query'
 CLOUDFLARE_UDP = '1.0.0.1'
+GITHUB_DIRECT_DOMAINS = ('geosite:github', 'domain:github.com',
+                         'domain:githubusercontent.com', 'domain:githubassets.com',
+                         'domain:github.io', 'domain:github.dev',
+                         'domain:githubapp.com', 'domain:ghcr.io')
 BLOCK_DOMAINS = ('geosite:win-spy', 'geosite:category-ads')
 PROXY_DOMAINS = ('habr.com', '4pda.to', 'kemono.su', 'jut.su', 'kara.su',
                  'theins.ru', 'tvrain.ru', 'echo.msk.ru', 'the-village.ru',
@@ -108,6 +112,7 @@ def build(nodes, probe=None, *, remarks='🇪🇺 ⚡️ Автовыбор', ba
     tags = [outbound['tag'] for outbound in proxies]
     sniffing = {'enabled': True, 'destOverride': ['http', 'tls']}
     rules = [
+        {'type': 'field', 'domain': list(GITHUB_DIRECT_DOMAINS), 'outboundTag': 'direct'},
         {'type': 'field', 'domain': list(BLOCK_DOMAINS), 'outboundTag': 'block'},
         {'type': 'field', 'protocol': ['bittorrent'], 'outboundTag': 'direct'},
         {'type': 'field', 'domain': list(PROXY_DOMAINS), 'balancerTag': 'balancer'},

@@ -5,7 +5,7 @@ import unittest
 
 from generate import collect_nodes, exclude_listed, parse_node
 from incy import (CLOUDFLARE_DOH, CLOUDFLARE_UDP, YANDEX_DOH,
-                  BLOCK_DOMAINS, PROXY_DOMAINS, DIRECT_DOMAINS, DIRECT_IPS,
+                  BLOCK_DOMAINS, PROXY_DOMAINS, DIRECT_DOMAINS, DIRECT_IPS, GITHUB_DIRECT_DOMAINS,
                   PROXY_PROTOCOLS, build, load_configs,
                   serialized_config, subscription)
 
@@ -73,16 +73,18 @@ class SubscriptionTests(unittest.TestCase):
             {'address': CLOUDFLARE_UDP, 'skipFallback': False}])
         self.assertNotIn('hosts', config['dns'])
         self.assertNotIn('tag', config['dns'])
-        for removed in ['adguard', '94.140.14.14', 'dns.google', 'geosite:github']:
+        for removed in ['adguard', '94.140.14.14', 'dns.google']:
             self.assertNotIn(removed, serialized_config(config))
         self.assertFalse(any(o['protocol'] == 'loopback' for o in config['outbounds']))
         self.assertNotIn('fakedns', config)
         direct_out = next(o for o in config['outbounds'] if o['tag'] == 'direct')
         self.assertEqual(direct_out['settings']['domainStrategy'], 'UseIPv4')
         rules = config['routing']['rules']
-        self.assertEqual(rules[0]['domain'], list(BLOCK_DOMAINS))
-        self.assertEqual(rules[1]['protocol'], ['bittorrent'])
-        self.assertEqual(rules[2]['domain'], list(PROXY_DOMAINS))
+        self.assertEqual(rules[0], {'type': 'field', 'domain': list(GITHUB_DIRECT_DOMAINS),
+                                   'outboundTag': 'direct'})
+        self.assertEqual(rules[1]['domain'], list(BLOCK_DOMAINS))
+        self.assertEqual(rules[2]['protocol'], ['bittorrent'])
+        self.assertEqual(rules[3]['domain'], list(PROXY_DOMAINS))
         self.assertFalse(any(o['protocol'] == 'dns' for o in config['outbounds']))
 
     def test_reference_has_no_custom_dns_bootstrap_and_retains_hysteria(self):

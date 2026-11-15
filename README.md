@@ -32,6 +32,7 @@ https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads
 
 | Назначение | Маршрут |
 |---|---|
+| GitHub: `geosite:github`, основные домены и CDN с поддоменами | Напрямую |
 | `geosite:win-spy`, `geosite:category-ads` | Блокировать |
 | BitTorrent | Напрямую |
 | Habr, 4PDA, перечисленные в образце `.ru`/`.su`-исключения | Через пул |
@@ -41,7 +42,9 @@ https://raw.githubusercontent.com/RnRLover/rjsxrd-karing-subscription/refs/heads
 
 Список прокси-исключений: `habr.com`, `4pda.to`, `kemono.su`, `jut.su`, `kara.su`, `theins.ru`, `tvrain.ru`, `echo.msk.ru`, `the-village.ru`, `snob.ru`, `novayagazeta.ru`, `moscowtimes.ru`. Синтаксис доменов сохранён из образца.
 
-Используется `AsIs`: домены специально не разрешаются ради GeoIP. Прежние дополнительные правила `.ru`/`.su`/`.рф`, прямой категории GitHub и блокировки нулевых DNS-адресов удалены. GitHub теперь следует обычным правилам образца и обычно идёт через пул. SOCKS/HTTP-входы и отсутствие явного `listen` сохранены из образца, порты 10808/10809; sniffing включает HTTP и TLS без QUIC и без `routeOnly`.
+GitHub направляется напрямую первым правилом во всех полных профилях. Используется категория `geosite:github` из Loyalsoldier; дополнительно явно указаны домены `github.com`, `githubusercontent.com`, `githubassets.com`, `github.io`, `github.dev`, `githubapp.com` и `ghcr.io` вместе с поддоменами. Это покрывает сайт, API, Raw, Pages, контейнерный реестр и скачивание релизов. Общие домены Amazon S3 и Azure целиком в прямой маршрут не добавляются. Правило действует и на доменное имя, полученное sniffing.
+
+Используется `AsIs`: домены специально не разрешаются ради GeoIP. Дополнительных правил `.ru`/`.su`/`.рф` и блокировки нулевых DNS-адресов нет. SOCKS/HTTP-входы и отсутствие явного `listen` сохранены из образца, порты 10808/10809; sniffing включает HTTP и TLS без QUIC и без `routeOnly`.
 
 ## Автовыбор и транспорты
 
