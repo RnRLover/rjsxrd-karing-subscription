@@ -2,7 +2,7 @@ name: Update subscription
 on:
   workflow_dispatch:
   schedule:
-    - cron: '7,22,37,52 * * * *'
+    - cron: '17 */2 * * *'
   push:
     paths:
       - '*.py'
@@ -10,46 +10,130 @@ on:
       - 'settings.json'
       - '.github/workflows/update.yml'
 permissions:
-  contents: write
+  contents: read
 concurrency:
   group: update-subscription
   cancel-in-progress: false
 jobs:
-  update:
+  prepare:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
+    outputs:
+      ready: ${{ steps.prepare.outputs.ready }}
+      matrix: ${{ steps.prepare.outputs.matrix }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Install pinned HTTP3 probe dependency
-        run: python -m pip install -r requirements.txt
-      - name: Tests
+      - run: python -m pip install -r requirements.txt
+      - name: Unit and one-to-ten-thousand catalog tests
         run: python -m unittest discover -v
       - name: Prepare official Xray
         run: python setup_xray.py
-      - name: Check HTTPS and HTTP3 probes, retries and TLS validation
+      - name: Verify real HTTP3, TLS and admission fixtures
         run: python check_pool_quality.py --xray .runtime/xray
-      - name: Restore IPsum dataset (no server measurements)
-        uses: actions/cache/restore@v4
+      - name: Freeze the verified core and geodata for every shard
+        run: tar -czf .runtime/runtime.tar.gz -C .runtime xray geoip.dat geosite.dat
+      - uses: actions/upload-artifact@v7
+        with:
+          name: verified-runtime
+          path: .runtime/runtime.tar.gz
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 1
+      - uses: actions/cache/restore@v4
         with:
           path: .runtime/reputation-cache.json
           key: ipsum-feed-v2-${{ github.run_id }}-${{ github.run_attempt }}
           restore-keys: ipsum-feed-v2-
-      - name: Build INCY pool in upstream order (known listed IPs excluded)
-        id: build
-        run: python -u generate.py --xray .runtime/xray
-      - name: Save IPsum dataset (no server measurements)
+      - name: Normalize, deduplicate and partition the current source
+        id: prepare
+        run: python -u generate.py --stage prepare --xray .runtime/xray
+      - uses: actions/cache/save@v4
         if: always()
-        uses: actions/cache/save@v4
         with:
           path: .runtime/reputation-cache.json
           key: ipsum-feed-v2-${{ github.run_id }}-${{ github.run_attempt }}
-      - name: Check reference routing, ad blocking and protocol exceptions
+      - uses: actions/upload-artifact@v7
+        if: steps.prepare.outputs.ready == 'true'
+        with:
+          name: build-input
+          path: .runtime/build/input/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 1
+  probe:
+    needs: prepare
+    if: needs.prepare.outputs.ready == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix: ${{ fromJSON(needs.prepare.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -r requirements.txt
+      - uses: actions/download-artifact@v8
+        with:
+          name: build-input
+          path: .runtime/build/input/
+      - uses: actions/download-artifact@v8
+        with:
+          name: verified-runtime
+          path: .runtime/
+      - name: Restore the exact verified core and geodata
+        run: tar -xzf .runtime/runtime.tar.gz -C .runtime
+      - name: Check current HTTPS stability and UDP policy for this shard
+        env:
+          SHARD_INDEX: ${{ matrix.shard }}
+        run: python -u generate.py --stage probe --shard "$SHARD_INDEX" --xray .runtime/xray
+      - uses: actions/upload-artifact@v7
+        with:
+          name: checked-${{ matrix.shard }}
+          path: .runtime/build/results/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 1
+  assemble:
+    needs: [prepare, probe]
+    if: needs.prepare.outputs.ready == 'true' && needs.probe.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -r requirements.txt
+      - uses: actions/download-artifact@v8
+        with:
+          name: build-input
+          path: .runtime/build/input/
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: checked-*
+          path: .runtime/build/results/
+          merge-multiple: true
+      - uses: actions/download-artifact@v8
+        with:
+          name: verified-runtime
+          path: .runtime/
+      - name: Restore the exact verified core and geodata
+        run: tar -xzf .runtime/runtime.tar.gz -C .runtime
+      - name: Require complete results and build mini-pools before global auto
+        id: build
+        run: python -u generate.py --stage assemble --xray .runtime/xray
+      - name: Check common routing, ad blocking and protocol exceptions
         if: steps.build.outputs.ready == 'true'
         run: python check_subscription.py --xray .runtime/xray
-      - name: Check reference Yandex and Cloudflare DNS priority, routing and fallback
+      - name: Check reference DNS priority, routing and fallback
         if: steps.build.outputs.ready == 'true'
         run: python check_dns_transport.py --xray .runtime/xray
       - name: Check actual automatic selection and failover
@@ -61,6 +145,6 @@ jobs:
       - name: Check ordinary Vision UDP443 policy, other UDP and TCP
         if: steps.build.outputs.ready == 'true'
         run: python check_quic_transport.py --xray .runtime/xray
-      - name: Publish validated files
+      - name: Publish the fully validated subscription atomically in git
         if: steps.build.outputs.ready == 'true'
         run: python publish_subscription.py
