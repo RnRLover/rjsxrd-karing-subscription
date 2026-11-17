@@ -1,9 +1,9 @@
-"""Build a fresh, bounded INCY catalog from upstream country/technology labels."""
-from collections import Counter, defaultdict
-from itertools import zip_longest
+"""Group admitted nodes by country with allowlist and current-quality priority."""
+from collections import Counter
 import re
 
-from incy import build, serialized_config
+import incy
+from incy import ConfigSizeError, build, serialized_config
 
 FLAG = re.compile('[\U0001f1e6-\U0001f1ff]{2}')
 EXIT_CODE = re.compile(r'\b(?:OUT|EXIT)\s*[:=]\s*([A-Z]{2})\b', re.I)
@@ -41,15 +41,6 @@ def technology_key(node):
     return (outbound['protocol'], transport, stream.get('security', 'none').lower())
 
 
-def technology_name(key):
-    protocol, transport, security = key
-    if protocol == 'hysteria' and transport == 'hysteria':
-        return 'Hysteria2'
-    names = {'grpc': 'gRPC', 'ws': 'WebSocket', 'httpupgrade': 'HTTPUpgrade',
-             'reality': 'Reality', 'none': 'без TLS'}
-    return ' · '.join(names.get(part, part.upper()) for part in key)
-
-
 def country_name(code):
     if code is None:
         return '🌐 Страна не указана'
@@ -64,54 +55,85 @@ def positive_limit(options, name):
     return value
 
 
-def rank(node):
+def rank(node, source_position):
     quality = node.get('quality', {}).get('https', {})
     delay = quality.get('median_ms')
     return (-node.get('allowlist', {}).get('priority', 0),
             -quality.get('success_rate', 1), delay if delay is not None else float('inf'),
-            quality.get('jitter_ms') or 0, node.get('source_order', 0))
+            quality.get('jitter_ms') or 0, source_position)
+
+
+def country_profiles(nodes, indices, country, probe):
+    """Keep a country whole unless its full configuration exceeds the byte budget."""
+    title = country_name(country)
+    def make(members, name):
+        return build([nodes[i] for i in members], probe, remarks=name,
+                     balancer_settings={'baselines': ['400ms', '800ms'], 'expected': 4,
+                                        'maxRTT': '1500ms', 'tolerance': .2})
+    try:
+        return [(make(indices, title), indices)]
+    except ConfigSizeError:
+        pass
+    # Reserve enough title space for every possible part number. Only a size
+    # failure may trigger partitioning; other build errors preserve publication.
+    reserved_title = title + f' · {len(indices)}'
+    parts, start = [], 0
+    while start < len(indices):
+        low, high, best = 1, len(indices) - start, None
+        while low <= high:
+            count = (low + high) // 2
+            members = indices[start:start + count]
+            try:
+                config = make(members, reserved_title)
+            except ConfigSizeError:
+                high = count - 1
+            else:
+                best = (config, members)
+                low = count + 1
+        if best is None:
+            raise ConfigSizeError('one country node exceeds the full configuration budget')
+        parts.append(best)
+        start += len(best[1])
+    for part, (config, _) in enumerate(parts, 1):
+        config['remarks'] = title + f' · {part}'
+        serialized_config(config)
+    return parts
 
 
 def build_catalog(nodes, options, probe=None):
-    """Every admitted node appears once in country/technology profiles.
+    """Every admitted node appears once in a country pool with mixed transports.
 
-    Rank within country/technology mini-pools, then select their leaders.
-    Allowlist evidence wins within the admitted quality tier. Technology
-    diversity and shared exits bound the compact global selection.
+    Rank nodes by allowlist evidence and current quality, with upstream ties.
+    Countries follow their best node; auto takes that first representative.
     """
     if not nodes:
         raise ValueError('empty catalog; keep published subscription')
     auto_limit = positive_limit(options, 'auto_max_nodes')
-    profile_limit = positive_limit(options, 'max_nodes_per_profile')
-    groups = defaultdict(list)
+    positions = {}
     for index, node in enumerate(nodes):
-        groups[(country_key(node), technology_key(node))].append(index)
+        order = node.get('source_order', index)
+        if type(order) is not int or order < 0:
+            raise ValueError('source_order must be a non-negative integer')
+        positions[index] = order + 1
+    ordered = sorted(range(len(nodes)), key=lambda index: (positions[index], index))
+    groups = {}
+    for index in ordered:
+        groups.setdefault(country_key(nodes[index]), []).append(index)
+    for indices in groups.values():
+        indices.sort(key=lambda index: (rank(nodes[index], positions[index]), index))
+    groups = dict(sorted(groups.items(), key=lambda item:
+                         (rank(nodes[item[1][0]], positions[item[1][0]]), item[1][0])))
     configs, profiles = [], []
-    for (country, technology), indices in sorted(
-            groups.items(), key=lambda item: (item[0][0] is None, item[0][0] or '', item[0][1])):
-        indices.sort(key=lambda index: rank(nodes[index]))
-        parts = (len(indices) + profile_limit - 1) // profile_limit
-        for part, start in enumerate(range(0, len(indices), profile_limit), 1):
-            members = indices[start:start + profile_limit]
-            title = country_name(country) + ' · ' + technology_name(technology)
-            if parts > 1:
-                title += f' · {part}'
-            configs.append(build([nodes[i] for i in members], probe, remarks=title,
-                                 balancer_settings={'baselines': ['400ms', '800ms'],
-                                                    'expected': 4, 'maxRTT': '1500ms',
-                                                    'tolerance': .2}))
-            profiles.append({'kind': 'country-technology', 'country': country,
-                             'technology': list(technology), 'part': part,
-                             'node_indices': members})
-    # Select from completed mini-pools, including every partition of a large group.
-    leaders = [profile['node_indices'][0] for profile in profiles]
-    leaders.sort(key=lambda index: (rank(nodes[index]), index))
-    priority_groups = defaultdict(lambda: defaultdict(list))
-    for index in leaders:
-        priority_groups[nodes[index].get('allowlist', {}).get('priority', 0)][technology_key(nodes[index])].append(index)
-    leaders = [index for priority in sorted(priority_groups, reverse=True)
-               for row in zip_longest(*priority_groups[priority].values())
-               for index in sorted((i for i in row if i is not None), key=lambda i: (rank(nodes[i]), i))]
+    for country, indices in groups.items():
+        parts = country_profiles(nodes, indices, country, probe)
+        for part, (config, members) in enumerate(parts, 1):
+            configs.append(config)
+            profiles.append({'kind': 'country', 'country': country, 'technology': None,
+                             'technologies': [list(key) for key in dict.fromkeys(technology_key(nodes[i]) for i in members)],
+                             'part': part, 'parts': len(parts), 'node_indices': members,
+                             'country_leader_source_position': positions[indices[0]]})
+    # A split country still has just one representative in the global auto pool.
+    leaders = [indices[0] for indices in groups.values()]
     auto_indices, risks, risk_technologies = [], Counter(), set()
     exit_limit = options.get('auto_max_per_exit', 2)
     if type(exit_limit) is not int or exit_limit < 1:
@@ -127,24 +149,28 @@ def build_catalog(nodes, options, probe=None):
         risk_technologies.add(pair)
         if len(auto_indices) == auto_limit:
             break
-    auto_indices.sort(key=lambda index: (rank(nodes[index]), index))
     configs.insert(0, build([nodes[i] for i in auto_indices], probe, remarks='⚡ Автовыбор'))
     profiles.insert(0, {'kind': 'auto', 'country': None, 'technology': None,
-                        'part': 1, 'node_indices': auto_indices})
+                        'part': 1, 'parts': 1, 'node_indices': auto_indices})
     for index, (config, profile) in enumerate(zip(configs, profiles)):
         profile.update(index=index, name=config['remarks'], nodes=len(profile['node_indices']),
-                       config_utf8_bytes=len(serialized_config(config).encode()))
-    countries = Counter(country_key(node) for node in nodes)
+                       config_utf8_bytes=len(serialized_config(config).encode()),
+                       source_positions=[positions[i] for i in profile['node_indices']],
+                       first_source_position=positions[profile['node_indices'][0]])
     return configs, {
-        'group_by': ['upstream_country_label', 'protocol', 'transport', 'security'],
+        'group_by': ['upstream_country_label'],
         'country_source': 'explicit OUT/EXIT code, unique flag, or repeated source country code; '
                           'ambiguous/missing labels retained as unknown; not verified geolocation',
-        'countries': sorted(code for code in countries if code is not None),
-        'unknown_country_nodes': countries[None],
-        'technologies': [list(key) for key in sorted({technology_key(n) for n in nodes})],
+        'countries': [code for code in groups if code is not None],
+        'unknown_country_nodes': len(groups.get(None, [])),
+        'technologies': [list(key) for key in dict.fromkeys(technology_key(nodes[i]) for i in ordered)],
         'unique_nodes': len(nodes), 'auto_nodes': len(auto_indices),
-        'auto_max_nodes': auto_limit, 'max_nodes_per_profile': profile_limit,
+        'auto_max_nodes': auto_limit, 'max_nodes_per_profile': None,
+        'max_config_utf16_bytes': incy.MAX_CONFIG_UTF16,
+        'country_partitioning': 'only when the full country exceeds the configuration byte budget',
         'representatives_from_completed_pools': True,
-        'ordering': 'allowlist candidates, current success rate, median response time, jitter, source tie',
+        'ordering': 'allowlist candidates, current success rate, median response time, jitter, upstream tie; '
+                    'countries by their best node',
+        'auto_selection': 'one best representative per country in country priority order, with shared-exit safeguards',
         'catalog_nodes_omitted': 0, 'profiles': profiles,
     }

@@ -26,6 +26,10 @@ DIRECT_DOMAINS = ('geosite:private', 'geosite:apple', 'geosite:twitch',
 DIRECT_IPS = ('geoip:ru', 'geoip:private')
 
 
+class ConfigSizeError(ValueError):
+    """A full profile exceeds our runtime publication budget."""
+
+
 def proxy_tag(index):
     return f'proxy-{index}'
 
@@ -44,7 +48,7 @@ def serialized_config(config):
     # Keep every candidate. Refuse an oversized publication instead of silently
     # removing the tail of the pool. This is a guard, not an IPC measurement.
     if len(text.encode('utf-16-le')) > MAX_CONFIG_UTF16:
-        raise ValueError('full configuration exceeds the publication size budget')
+        raise ConfigSizeError('full configuration exceeds the publication size budget')
     return text
 
 

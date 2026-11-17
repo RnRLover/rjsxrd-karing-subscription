@@ -2,7 +2,6 @@
   "subscription_url": "https://raw.githubusercontent.com/whoahaow/rjsxrd/main/githubmirror/bypass/bypass-all.txt",
   "catalog": {
     "auto_max_nodes": 64,
-    "max_nodes_per_profile": 5,
     "auto_max_per_exit": 2
   },
   "build": {

@@ -92,7 +92,7 @@ def reputation_report(nodes, selected, feed, source):
         'score_formula': 'max(0, 100 - 20 * IPsum blacklist occurrence count)',
         'selection_priority': 'exclude listed addresses; retain unknown coverage; '
                               'no reputation score ranking; allowlist evidence and current HTTPS quality '
-                              'order admitted nodes within catalog groups',
+                              'order admitted nodes within countries, with upstream ties',
         'meaning': 'No listing in this feed is not a positive whitelist or proof of Gemini access.',
         'candidates': dict(Counter(n['reputation']['status'] for n in nodes)),
         'selected': dict(Counter(n['reputation']['status'] for n in selected)),

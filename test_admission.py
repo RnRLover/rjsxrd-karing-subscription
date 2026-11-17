@@ -50,10 +50,12 @@ class AdmissionTests(unittest.TestCase):
         nodes[4]['label'] = 'OUT: DE White List'
         nodes[4]['quality']['https']['median_ms'] = 300
         annotate(nodes, {'available': False})
-        configs, report = build_catalog(nodes, {**OPTIONS, 'max_nodes_per_profile': 5})
+        configs, report = build_catalog(nodes, OPTIONS)
         self.assertEqual(report['profiles'][1]['node_indices'][0], 4)
         self.assertEqual(report['profiles'][0]['node_indices'][0], 4)
-        self.assertEqual(set(report['profiles'][0]['node_indices']), {4, 5})
+        self.assertEqual(report['profiles'][0]['node_indices'], [4])
+        self.assertEqual(len(configs), 2)
+        self.assertEqual(set(report['profiles'][1]['node_indices']), set(range(7)))
         self.assertEqual(configs[1]['routing']['balancers'][0]['fallbackTag'], 'proxy-0')
 
     def test_evidence_matches_label_boundaries_and_is_not_a_mobile_verification(self):

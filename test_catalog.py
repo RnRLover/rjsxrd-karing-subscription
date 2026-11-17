@@ -9,9 +9,9 @@ from unittest.mock import patch
 
 from catalog import build_catalog, country_key
 from generate import parse_node
-from incy import load_configs, proxy_outbound, subscription
+from incy import load_configs, proxy_outbound, serialized_config, subscription
 
-OPTIONS = {'auto_max_nodes': 64, 'max_nodes_per_profile': 50}
+OPTIONS = {'auto_max_nodes': 64, 'auto_max_per_exit': 2}
 COUNTRIES = ('DE NL FI FR ES SE GB PL KZ AT TR US CZ LT AM AE BY SG BG BE CH LV EE MD IN '
              'RO NO IT AL AU CA CN HK IR JP KR RU SK UA GE AZ BR AR MX NZ ZA IS PT IE IL').split()
 UUID = '123e4567-e89b-12d3-a456-426614174000'
@@ -39,7 +39,10 @@ class CatalogTests(unittest.TestCase):
                         for j, i in enumerate(profile['node_indices'])]
             self.assertEqual(proxies(config), expected)  # Credentials/paths stay with their server.
             if profile['kind'] != 'auto':
-                self.assertLessEqual(len(expected), OPTIONS['max_nodes_per_profile'])
+                self.assertEqual(profile['kind'], 'country')
+                self.assertIsNone(profile['technology'])
+                self.assertLessEqual(len(serialized_config(config).encode('utf-16-le')),
+                                     report['max_config_utf16_bytes'])
             balancer = config['routing']['balancers'][0]
             self.assertIn(balancer['fallbackTag'], {out['tag'] for out in expected})
             self.assertEqual(balancer['selector'], ['proxy-'])
@@ -55,31 +58,73 @@ class CatalogTests(unittest.TestCase):
                 (code, network, replica) for code in countries for network in networks for replica in range(5))]
             before = copy.deepcopy(nodes)
             configs, report = build_catalog(nodes, OPTIONS)
-            self.assertEqual(report['countries'], sorted(countries))
+            self.assertEqual(report['countries'], list(countries))
             self.assertEqual({key[1] for key in report['technologies']}, set(networks))
-            self.assertEqual(len(configs), 1 + len(countries) * len(networks))
+            self.assertEqual(len(configs), 1 + len(countries))
             self.assert_coverage(nodes, configs, report)
             self.assertEqual(nodes, before)
             self.assertEqual(build_catalog(nodes, OPTIONS), (configs, report))
 
-    def test_large_groups_are_partitioned_without_truncation_or_source_reordering(self):
+    def test_country_has_no_five_or_fifty_node_quota(self):
         nodes = [node(i) for i in range(123)]
         configs, report = build_catalog(nodes, OPTIONS)
-        self.assertEqual([p['nodes'] for p in report['profiles']], [3, 50, 50, 23])
-        self.assertEqual(report['profiles'][0]['node_indices'], [0, 50, 100])
-        self.assertEqual([p['part'] for p in report['profiles'][1:]], [1, 2, 3])
+        self.assertEqual([p['nodes'] for p in report['profiles']], [1, 123])
+        self.assertEqual(report['profiles'][0]['node_indices'], [0])
+        self.assertEqual(report['profiles'][1]['node_indices'], list(range(123)))
         self.assert_coverage(nodes, configs, report)
         for config in configs[1:]:
             self.assertEqual(config['routing']['balancers'][0]['strategy']['settings'], {
                 'baselines': ['400ms', '800ms'], 'expected': 4, 'maxRTT': '1500ms', 'tolerance': .2})
 
-    def test_late_technologies_get_representatives_before_early_technology_fills_auto(self):
+    def test_mixed_protocols_share_the_same_country_profile(self):
         nodes = [node(i, code) for i, code in enumerate(COUNTRIES)]
         hy = parse_node('hy2://secret@hy.example:443?sni=hy.example#OUT: NL')
         grpc = node(100, 'DE', 'grpc')
         configs, report = build_catalog(nodes + [hy, grpc], {**OPTIONS, 'auto_max_nodes': 4})
-        self.assertEqual(report['profiles'][0]['node_indices'], [0, 1, len(nodes), len(nodes) + 1])
-        self.assertEqual([o['protocol'] for o in proxies(configs[0])], ['vless', 'vless', 'hysteria', 'vless'])
+        self.assertEqual(report['profiles'][0]['node_indices'], [0, 1, 2, 3])
+        countries = {p['country']: p for p in report['profiles'][1:]}
+        self.assertEqual(countries['DE']['node_indices'], [0, len(nodes) + 1])
+        self.assertEqual(countries['NL']['node_indices'], [1, len(nodes)])
+        self.assertEqual(len(configs), 1 + len(COUNTRIES))
+        self.assert_coverage(nodes + [hy, grpc], configs, report)
+
+    def test_allowlist_and_ping_rank_nodes_and_countries_before_upstream_ties(self):
+        nodes = [node(0, 'US'), node(1, 'DE', 'ws'), node(2, 'US', 'grpc'),
+                 node(3, 'FR'), node(4, 'DE')]
+        for index, n in enumerate(nodes):
+            n['source_order'] = index * 10
+            n['quality'] = {'https': {'success_rate': 1, 'median_ms': [300, 100, 200, 20, 50][index],
+                                    'jitter_ms': 1}}
+            n['allowlist'] = {'priority': 4 if index in (1, 2, 4) else 0}
+        configs, report = build_catalog(nodes, OPTIONS)
+        self.assertEqual(report['countries'], ['DE', 'US', 'FR'])
+        self.assertEqual([p['node_indices'] for p in report['profiles']], [[4, 2, 3], [4, 1], [2, 0], [3]])
+        self.assertEqual([p['country_leader_source_position'] for p in report['profiles'][1:]], [41, 21, 31])
+        self.assert_coverage(nodes, configs, report)
+
+    def test_equal_priority_uses_original_source_positions_even_if_input_is_shuffled(self):
+        nodes = [node(0, 'DE'), node(1, 'FR'), node(2, 'DE', 'grpc'), node(3, 'FR', 'ws')]
+        for n, order in zip(nodes, (9, 0, 1, 5)):
+            n['source_order'] = order
+        configs, report = build_catalog(nodes, OPTIONS)
+        self.assertEqual(report['countries'], ['FR', 'DE'])
+        self.assertEqual([p['node_indices'] for p in report['profiles']], [[1, 2], [1, 3], [2, 0]])
+        self.assertEqual([p['source_positions'] for p in report['profiles'][1:]], [[1, 6], [2, 10]])
+        self.assert_coverage(nodes, configs, report)
+
+    def test_only_byte_budget_splits_a_country_and_auto_still_uses_one_leader(self):
+        nodes = [node(i, 'DE', 'grpc' if i % 2 else 'tcp') for i in range(123)]
+        with patch('incy.MAX_CONFIG_UTF16', 48_000):
+            configs, report = build_catalog(nodes, OPTIONS)
+            self.assertGreater(len(configs), 2)
+            self.assertEqual(report['profiles'][0]['node_indices'], [0])
+            self.assertEqual([i for p in report['profiles'][1:] for i in p['node_indices']], list(range(123)))
+            self.assertTrue(all(p['country'] == 'DE' for p in report['profiles'][1:]))
+            self.assertEqual([p['part'] for p in report['profiles'][1:]], list(range(1, len(configs))))
+            self.assert_coverage(nodes, configs, report)
+        with patch('incy.MAX_CONFIG_UTF16', 1):
+            with self.assertRaisesRegex(ValueError, 'one country node'):
+                build_catalog(nodes[:1], OPTIONS)
 
     def test_source_country_is_conservative_and_understands_explicit_exit(self):
         labels = {'🇷🇺 Russia (сервер) | 🇮🇹 Italy (выход)': None,

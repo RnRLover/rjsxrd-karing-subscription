@@ -119,7 +119,7 @@ class QualityTests(unittest.TestCase):
             root = Path(directory)
             settings = {'quality': {}, 'subscription_url': 'https://fixture.example/',
                         'reputation_workers': 1, 'reputation_timeout_seconds': 1,
-                        'catalog': {'auto_max_nodes': 64, 'max_nodes_per_profile': 50}, 'probe': {}}
+                        'catalog': {'auto_max_nodes': 64, 'auto_max_per_exit': 2}, 'probe': {}}
             (root / 'settings.json').write_text(json.dumps(settings))
             for name in ('subscription.json', 'report.json'):
                 (root / name).write_text('unchanged')

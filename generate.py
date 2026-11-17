@@ -1,4 +1,4 @@
-"""Publish a dynamic country/technology catalog of eligible rjsxrd nodes for INCY."""
+"""Publish a country catalog with allowlist and current-quality priority."""
 import argparse
 from collections import Counter
 import concurrent.futures
@@ -237,9 +237,9 @@ def publish_checked(checked, rated, settings, counts, source_sha, feed, feed_sou
         'source': settings['subscription_url'], 'source_sha256': source_sha,
         'counts': dict(counts), 'selected': len(selected), 'xray_validated': True,
         'selected_protocols': dict(Counter(node['outbound']['protocol'] for node in selected)),
-        'pool_selection': 'all admitted unique connections in completed country/technology mini-pools; '
-                          'allowlist candidates first, then current-run HTTPS stability/latency; '
-                          'global auto is selected from mini-pool leaders with exit diversity',
+        'pool_selection': 'all admitted unique connections grouped by country; '
+                          'allowlist candidates and current HTTPS quality first, upstream order for ties; '
+                          'countries follow their best node; auto takes one country leader with exit diversity',
         'catalog': catalog,
         'history_used': False, 'github_latency_ranking': True, 'country_filter': False,
         'tcp_udp_quality_gate': False, 'https_quality_gate': True,
@@ -258,10 +258,10 @@ def publish_checked(checked, rated, settings, counts, source_sha, feed, feed_sou
             'selected': [{'node_index': index, **node['quality']}
                          for index, node in enumerate(selected)],
         },
-        'pool_limit': {'catalog_per_technology': None, **settings['catalog']},
+        'pool_limit': {'catalog_per_country': None, **settings['catalog']},
         'allowlist': {'candidate_nodes': sum(n.get('allowlist', {}).get('priority', 0) > 0 for n in selected),
                       'explicit_label_nodes': sum(n.get('allowlist', {}).get('explicit_label', False) for n in selected),
-                      'restricted_network_verified': False,
+                      'restricted_network_verified': False, 'used_for_ordering': True,
                       'evidence': [{'node_index': i, **n.get('allowlist', {})} for i, n in enumerate(selected)]},
         'build': build_metadata or {},
         'unknown_exit_retained': sum(node.get('exit_ip') is None for node in selected),
@@ -292,8 +292,8 @@ def publish_checked(checked, rated, settings, counts, source_sha, feed, feed_sou
             'vision_udp443': 'ordinary Vision intercepts UDP/443 as in the reference',
             'reference_adaptations': ['own upstream connection credentials, endpoints and transport paths',
                                      'GitHub category, subdomains and download hosts go direct before other rules',
-                                     'five-node country/technology mini-pools; allowlist candidates first; '
-                                     'bounded global auto from completed mini-pool leaders',
+                                     'mixed-technology country pools; allowlist and current quality priority; '
+                                     'upstream ties; global auto from the best server of each completed country',
                                      'global auto expected 1 and costs 1/2; grouped pools expected 4 '
                                      'with reference baselines and equal costs; first ranked node fallback',
                                      'preserve each upstream XHTTP mode instead of forcing stream-up'],

@@ -74,13 +74,16 @@ class PipelineTests(unittest.TestCase):
                     report = json.loads((root / 'report.json').read_text())
                     self.assertEqual(report['selected'], count)
                     self.assertEqual(sum(len(c['outbounds']) - 2 for c in configs[1:]), count)
-                    self.assertTrue(all(len(c['outbounds']) - 2 <= 5 for c in configs[1:]))
+                    self.assertEqual(len(configs), 1 + min(count, 50))
+                    self.assertEqual(report['catalog']['group_by'], ['upstream_country_label'])
+                    self.assertEqual(report['catalog']['profiles'][0]['node_indices'], list(range(min(count, 50))))
+                    self.assertTrue(all(p['kind'] == 'country' for p in report['catalog']['profiles'][1:]))
                     self.assertLessEqual(len(configs[0]['outbounds']) - 2, 64)
                     self.assertTrue(report['build']['complete'])
                     self.assertFalse(report['history_used'])
                     self.assertEqual(report['catalog']['catalog_nodes_omitted'], 0)
                     if count == 10_000:
-                        self.assertGreater((root / 'subscription.json').stat().st_size, 8_000_000)
+                        self.assertGreater((root / 'subscription.json').stat().st_size, 800_000)
 
     def test_missing_stale_tampered_and_deferred_shards_preserve_previous_files(self):
         for failure in ('missing', 'stale', 'tampered', 'lost_accounting', 'deferred'):
