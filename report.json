@@ -1,41 +1,50 @@
 {
-  "generated_at_utc": "2026-11-17T15:58:05Z",
+  "generated_at_utc": "2026-11-17T18:12:45Z",
   "source": "https://raw.githubusercontent.com/whoahaow/rjsxrd/main/githubmirror/bypass/bypass-all.txt",
-  "source_sha256": "ff7a327a37a2a48feca92f0409ef67af88fa06f6de161857cfbd0516622fa24e",
+  "source_sha256": "207814147a5bd30d6b547a366ffc49f4e010bc0fce7f0c9ab31562a0a2cdad4c",
   "counts": {
-    "source_nodes": 231,
-    "duplicate": 70,
-    "outside_quality_policy": 32,
+    "source_nodes": 276,
+    "duplicate": 84,
+    "outside_quality_policy": 24,
     "core_incompatible": 0,
-    "listed_entry": 1,
-    "https_failed": 96,
-    "quic_failed_after_https": 4,
-    "vision_quic_intentionally_disabled": 13
+    "listed_entry": 2,
+    "https_failed": 119,
+    "quic_failed_after_https": 6,
+    "vision_quic_intentionally_disabled": 22
   },
-  "selected": 28,
+  "selected": 41,
   "xray_validated": true,
   "selected_protocols": {
-    "vless": 28
+    "vless": 41
   },
-  "pool_selection": "all admitted unique connections grouped by country; allowlist candidates and current HTTPS quality first, upstream order for ties; countries follow their best node; auto takes one country leader with exit diversity",
+  "pool_selection": "all admitted unique connections grouped by country; current HTTPS quality first, upstream order for ties; countries follow their best node; auto takes one country leader with exit diversity",
   "catalog": {
     "group_by": [
       "upstream_country_label"
     ],
     "country_source": "explicit OUT/EXIT code, unique flag, or repeated source country code; ambiguous/missing labels retained as unknown; not verified geolocation",
     "countries": [
-      "GB",
-      "DE",
+      "SE",
       "US",
       "TR",
+      "GB",
+      "LY",
+      "HK",
+      "DE",
+      "PL",
       "NL",
-      "SG",
-      "ES",
-      "JP",
-      "RU"
+      "LT",
+      "FI",
+      "RU",
+      "SG"
     ],
-    "unknown_country_nodes": 9,
+    "unknown_country_nodes": 6,
     "technologies": [
+      [
+        "vless",
+        "tcp",
+        "tls"
+      ],
       [
         "vless",
         "tcp",
@@ -43,7 +52,12 @@
       ],
       [
         "vless",
-        "tcp",
+        "xhttp",
+        "tls"
+      ],
+      [
+        "vless",
+        "grpc",
         "tls"
       ],
       [
@@ -53,28 +67,23 @@
       ],
       [
         "vless",
-        "ws",
-        "tls"
-      ],
-      [
-        "vless",
         "grpc",
         "reality"
       ],
       [
         "vless",
-        "grpc",
+        "ws",
         "tls"
       ]
     ],
-    "unique_nodes": 28,
-    "auto_nodes": 10,
+    "unique_nodes": 41,
+    "auto_nodes": 14,
     "auto_max_nodes": 64,
     "max_nodes_per_profile": null,
     "max_config_utf16_bytes": 800000,
     "country_partitioning": "only when the full country exceeds the configuration byte budget",
     "representatives_from_completed_pools": true,
-    "ordering": "allowlist candidates, current success rate, median response time, jitter, upstream tie; countries by their best node",
+    "ordering": "current success rate, median response time, jitter, upstream tie; countries by their best node",
     "auto_selection": "one best representative per country in country priority order, with shared-exit safeguards",
     "catalog_nodes_omitted": 0,
     "profiles": [
@@ -85,174 +94,84 @@
         "part": 1,
         "parts": 1,
         "node_indices": [
-          7,
-          17,
-          3,
-          9,
+          11,
+          15,
           6,
+          12,
+          4,
+          40,
+          35,
+          32,
+          14,
           1,
-          16,
-          20,
-          10,
-          0
+          7,
+          24,
+          13,
+          25
         ],
         "index": 0,
         "name": "⚡ Автовыбор",
-        "nodes": 10,
-        "config_utf8_bytes": 8340,
+        "nodes": 14,
+        "config_utf8_bytes": 10953,
         "source_positions": [
-          62,
-          152,
+          46,
+          59,
           30,
-          96,
-          56,
-          19,
-          143,
-          171,
-          103,
-          8
-        ],
-        "first_source_position": 62
-      },
-      {
-        "kind": "country",
-        "country": "GB",
-        "technology": null,
-        "technologies": [
-          [
-            "vless",
-            "tcp",
-            "reality"
-          ],
-          [
-            "vless",
-            "ws",
-            "tls"
-          ]
-        ],
-        "part": 1,
-        "parts": 1,
-        "node_indices": [
-          7,
-          8
-        ],
-        "country_leader_source_position": 62,
-        "index": 1,
-        "name": "🇬🇧 GB",
-        "nodes": 2,
-        "config_utf8_bytes": 3115,
-        "source_positions": [
-          62,
-          92
-        ],
-        "first_source_position": 62
-      },
-      {
-        "kind": "country",
-        "country": null,
-        "technology": null,
-        "technologies": [
-          [
-            "vless",
-            "tcp",
-            "reality"
-          ],
-          [
-            "vless",
-            "grpc",
-            "tls"
-          ],
-          [
-            "vless",
-            "tcp",
-            "tls"
-          ],
-          [
-            "vless",
-            "grpc",
-            "reality"
-          ],
-          [
-            "vless",
-            "ws",
-            "tls"
-          ],
-          [
-            "vless",
-            "xhttp",
-            "reality"
-          ]
-        ],
-        "part": 1,
-        "parts": 1,
-        "node_indices": [
-          17,
-          13,
-          15,
-          26,
-          14,
-          2,
-          5,
-          23,
-          19
-        ],
-        "country_leader_source_position": 152,
-        "index": 2,
-        "name": "🌐 Страна не указана",
-        "nodes": 9,
-        "config_utf8_bytes": 7083,
-        "source_positions": [
-          152,
-          126,
-          132,
-          226,
-          128,
-          26,
-          52,
-          188,
-          170
-        ],
-        "first_source_position": 152
-      },
-      {
-        "kind": "country",
-        "country": "DE",
-        "technology": null,
-        "technologies": [
-          [
-            "vless",
-            "xhttp",
-            "reality"
-          ],
-          [
-            "vless",
-            "ws",
-            "tls"
-          ],
-          [
-            "vless",
-            "tcp",
-            "reality"
-          ]
-        ],
-        "part": 1,
-        "parts": 1,
-        "node_indices": [
-          3,
-          4,
-          25
-        ],
-        "country_leader_source_position": 30,
-        "index": 3,
-        "name": "🇩🇪 DE",
-        "nodes": 3,
-        "config_utf8_bytes": 3886,
-        "source_positions": [
-          30,
+          47,
+          28,
+          274,
+          187,
+          170,
+          57,
+          9,
           41,
-          225
+          121,
+          51,
+          124
         ],
-        "first_source_position": 30
+        "first_source_position": 46
+      },
+      {
+        "kind": "country",
+        "country": "SE",
+        "technology": null,
+        "technologies": [
+          [
+            "vless",
+            "xhttp",
+            "reality"
+          ],
+          [
+            "vless",
+            "tcp",
+            "tls"
+          ],
+          [
+            "vless",
+            "ws",
+            "tls"
+          ]
+        ],
+        "part": 1,
+        "parts": 1,
+        "node_indices": [
+          11,
+          23,
+          0,
+          26
+        ],
+        "country_leader_source_position": 46,
+        "index": 1,
+        "name": "🇸🇪 SE",
+        "nodes": 4,
+        "config_utf8_bytes": 4608,
+        "source_positions": [
+          46,
+          117,
+          6,
+          125
+        ],
+        "first_source_position": 46
       },
       {
         "kind": "country",
@@ -268,21 +187,65 @@
         "part": 1,
         "parts": 1,
         "node_indices": [
-          9,
-          22,
-          21
+          15,
+          29
         ],
-        "country_leader_source_position": 96,
-        "index": 4,
+        "country_leader_source_position": 59,
+        "index": 2,
         "name": "🇺🇸 US",
-        "nodes": 3,
-        "config_utf8_bytes": 3830,
+        "nodes": 2,
+        "config_utf8_bytes": 3175,
         "source_positions": [
-          96,
-          185,
-          184
+          59,
+          156
         ],
-        "first_source_position": 96
+        "first_source_position": 59
+      },
+      {
+        "kind": "country",
+        "country": null,
+        "technology": null,
+        "technologies": [
+          [
+            "vless",
+            "grpc",
+            "tls"
+          ],
+          [
+            "vless",
+            "tcp",
+            "reality"
+          ],
+          [
+            "vless",
+            "xhttp",
+            "reality"
+          ]
+        ],
+        "part": 1,
+        "parts": 1,
+        "node_indices": [
+          6,
+          22,
+          5,
+          16,
+          8,
+          39
+        ],
+        "country_leader_source_position": 30,
+        "index": 3,
+        "name": "🌐 Страна не указана",
+        "nodes": 6,
+        "config_utf8_bytes": 5589,
+        "source_positions": [
+          30,
+          112,
+          29,
+          74,
+          43,
+          258
+        ],
+        "first_source_position": 30
       },
       {
         "kind": "country",
@@ -293,32 +256,44 @@
             "vless",
             "grpc",
             "reality"
+          ],
+          [
+            "vless",
+            "tcp",
+            "reality"
           ]
         ],
         "part": 1,
         "parts": 1,
         "node_indices": [
-          6
+          12,
+          30
         ],
-        "country_leader_source_position": 56,
-        "index": 5,
+        "country_leader_source_position": 47,
+        "index": 4,
         "name": "🇹🇷 TR",
-        "nodes": 1,
-        "config_utf8_bytes": 2661,
+        "nodes": 2,
+        "config_utf8_bytes": 3206,
         "source_positions": [
-          56
+          47,
+          167
         ],
-        "first_source_position": 56
+        "first_source_position": 47
       },
       {
         "kind": "country",
-        "country": "NL",
+        "country": "GB",
         "technology": null,
         "technologies": [
           [
             "vless",
-            "tcp",
+            "xhttp",
             "tls"
+          ],
+          [
+            "vless",
+            "tcp",
+            "reality"
           ],
           [
             "vless",
@@ -329,55 +304,239 @@
         "part": 1,
         "parts": 1,
         "node_indices": [
-          1,
+          4,
           27,
-          18
+          36
         ],
-        "country_leader_source_position": 19,
-        "index": 6,
-        "name": "🇳🇱 NL",
+        "country_leader_source_position": 28,
+        "index": 5,
+        "name": "🇬🇧 GB",
         "nodes": 3,
-        "config_utf8_bytes": 3599,
+        "config_utf8_bytes": 3906,
         "source_positions": [
-          19,
-          227,
-          155
+          28,
+          134,
+          189
         ],
-        "first_source_position": 19
+        "first_source_position": 28
       },
       {
         "kind": "country",
-        "country": "SG",
+        "country": "LY",
         "technology": null,
         "technologies": [
           [
             "vless",
-            "ws",
+            "grpc",
+            "reality"
+          ]
+        ],
+        "part": 1,
+        "parts": 1,
+        "node_indices": [
+          40
+        ],
+        "country_leader_source_position": 274,
+        "index": 6,
+        "name": "🇱🇾 LY",
+        "nodes": 1,
+        "config_utf8_bytes": 2678,
+        "source_positions": [
+          274
+        ],
+        "first_source_position": 274
+      },
+      {
+        "kind": "country",
+        "country": "HK",
+        "technology": null,
+        "technologies": [
+          [
+            "vless",
+            "tcp",
             "tls"
           ]
         ],
         "part": 1,
         "parts": 1,
         "node_indices": [
-          16,
-          11,
-          12
+          35
         ],
-        "country_leader_source_position": 143,
+        "country_leader_source_position": 187,
         "index": 7,
-        "name": "🇸🇬 SG",
-        "nodes": 3,
-        "config_utf8_bytes": 3540,
+        "name": "🇭🇰 HK",
+        "nodes": 1,
+        "config_utf8_bytes": 2558,
         "source_positions": [
-          143,
-          114,
-          119
+          187
         ],
-        "first_source_position": 143
+        "first_source_position": 187
       },
       {
         "kind": "country",
-        "country": "ES",
+        "country": "DE",
+        "technology": null,
+        "technologies": [
+          [
+            "vless",
+            "tcp",
+            "reality"
+          ],
+          [
+            "vless",
+            "tcp",
+            "tls"
+          ],
+          [
+            "vless",
+            "xhttp",
+            "reality"
+          ],
+          [
+            "vless",
+            "grpc",
+            "tls"
+          ]
+        ],
+        "part": 1,
+        "parts": 1,
+        "node_indices": [
+          32,
+          28,
+          2,
+          17,
+          9,
+          19,
+          34,
+          10,
+          33,
+          38,
+          3
+        ],
+        "country_leader_source_position": 170,
+        "index": 8,
+        "name": "🇩🇪 DE",
+        "nodes": 11,
+        "config_utf8_bytes": 8083,
+        "source_positions": [
+          170,
+          151,
+          21,
+          79,
+          44,
+          92,
+          182,
+          45,
+          174,
+          219,
+          25
+        ],
+        "first_source_position": 170
+      },
+      {
+        "kind": "country",
+        "country": "PL",
+        "technology": null,
+        "technologies": [
+          [
+            "vless",
+            "xhttp",
+            "reality"
+          ],
+          [
+            "vless",
+            "tcp",
+            "tls"
+          ]
+        ],
+        "part": 1,
+        "parts": 1,
+        "node_indices": [
+          14,
+          21
+        ],
+        "country_leader_source_position": 57,
+        "index": 9,
+        "name": "🇵🇱 PL",
+        "nodes": 2,
+        "config_utf8_bytes": 3342,
+        "source_positions": [
+          57,
+          110
+        ],
+        "first_source_position": 57
+      },
+      {
+        "kind": "country",
+        "country": "NL",
+        "technology": null,
+        "technologies": [
+          [
+            "vless",
+            "tcp",
+            "reality"
+          ],
+          [
+            "vless",
+            "tcp",
+            "tls"
+          ],
+          [
+            "vless",
+            "xhttp",
+            "reality"
+          ]
+        ],
+        "part": 1,
+        "parts": 1,
+        "node_indices": [
+          1,
+          20,
+          18,
+          31
+        ],
+        "country_leader_source_position": 9,
+        "index": 10,
+        "name": "🇳🇱 NL",
+        "nodes": 4,
+        "config_utf8_bytes": 4667,
+        "source_positions": [
+          9,
+          107,
+          80,
+          169
+        ],
+        "first_source_position": 9
+      },
+      {
+        "kind": "country",
+        "country": "LT",
+        "technology": null,
+        "technologies": [
+          [
+            "vless",
+            "tcp",
+            "reality"
+          ]
+        ],
+        "part": 1,
+        "parts": 1,
+        "node_indices": [
+          7
+        ],
+        "country_leader_source_position": 41,
+        "index": 11,
+        "name": "🇱🇹 LT",
+        "nodes": 1,
+        "config_utf8_bytes": 2648,
+        "source_positions": [
+          41
+        ],
+        "first_source_position": 41
+      },
+      {
+        "kind": "country",
+        "country": "FI",
         "technology": null,
         "technologies": [
           [
@@ -389,43 +548,19 @@
         "part": 1,
         "parts": 1,
         "node_indices": [
-          20
+          24,
+          37
         ],
-        "country_leader_source_position": 171,
-        "index": 8,
-        "name": "🇪🇸 ES",
-        "nodes": 1,
-        "config_utf8_bytes": 2871,
+        "country_leader_source_position": 121,
+        "index": 12,
+        "name": "🇫🇮 FI",
+        "nodes": 2,
+        "config_utf8_bytes": 3673,
         "source_positions": [
-          171
+          121,
+          200
         ],
-        "first_source_position": 171
-      },
-      {
-        "kind": "country",
-        "country": "JP",
-        "technology": null,
-        "technologies": [
-          [
-            "vless",
-            "tcp",
-            "reality"
-          ]
-        ],
-        "part": 1,
-        "parts": 1,
-        "node_indices": [
-          10
-        ],
-        "country_leader_source_position": 103,
-        "index": 9,
-        "name": "🇯🇵 JP",
-        "nodes": 1,
-        "config_utf8_bytes": 2661,
-        "source_positions": [
-          103
-        ],
-        "first_source_position": 103
+        "first_source_position": 121
       },
       {
         "kind": "country",
@@ -434,6 +569,32 @@
         "technologies": [
           [
             "vless",
+            "grpc",
+            "tls"
+          ]
+        ],
+        "part": 1,
+        "parts": 1,
+        "node_indices": [
+          13
+        ],
+        "country_leader_source_position": 51,
+        "index": 13,
+        "name": "🇷🇺 RU",
+        "nodes": 1,
+        "config_utf8_bytes": 2594,
+        "source_positions": [
+          51
+        ],
+        "first_source_position": 51
+      },
+      {
+        "kind": "country",
+        "country": "SG",
+        "technology": null,
+        "technologies": [
+          [
+            "vless",
             "tcp",
             "reality"
           ]
@@ -441,19 +602,17 @@
         "part": 1,
         "parts": 1,
         "node_indices": [
-          0,
-          24
+          25
         ],
-        "country_leader_source_position": 8,
-        "index": 10,
-        "name": "🇷🇺 RU",
-        "nodes": 2,
-        "config_utf8_bytes": 3217,
+        "country_leader_source_position": 124,
+        "index": 14,
+        "name": "🇸🇬 SG",
+        "nodes": 1,
+        "config_utf8_bytes": 2656,
         "source_positions": [
-          8,
-          189
+          124
         ],
-        "first_source_position": 8
+        "first_source_position": 124
       }
     ]
   },
@@ -525,9 +684,9 @@
         "unresolved": []
       }
     ],
-    "candidates_checked": 128,
-    "passed_policy": 28,
-    "passed_both": 15,
+    "candidates_checked": 166,
+    "passed_policy": 41,
+    "passed_both": 19,
     "history_used": false,
     "latency_ranking": true,
     "selected": [
@@ -537,44 +696,42 @@
           "ok": true,
           "attempts": 6,
           "trials": 6,
-          "successes": 5,
-          "success_rate": 0.8333333333333334,
-          "median_ms": 895.52,
-          "jitter_ms": 344.76,
+          "successes": 6,
+          "success_rate": 1.0,
+          "median_ms": 799.92,
+          "jitter_ms": 4.33,
           "certificate_error": false,
-          "errors": {
-            "TimeoutError": 1
-          },
+          "errors": {},
           "samples": [
             {
               "target": "https://www.google.com/generate_204",
-              "ok": false,
-              "error": "TimeoutError"
+              "ok": true,
+              "ms": 789.8
             },
             {
               "target": "https://speed.cloudflare.com/__down?bytes=0",
               "ok": true,
-              "ms": 751.73
+              "ms": 809.14
             },
             {
               "target": "https://www.google.com/generate_204",
               "ok": true,
-              "ms": 1791.17
+              "ms": 790.69
             },
             {
               "target": "https://speed.cloudflare.com/__down?bytes=0",
               "ok": true,
-              "ms": 1105.26
+              "ms": 838.43
             },
             {
               "target": "https://www.google.com/generate_204",
               "ok": true,
-              "ms": 895.52
+              "ms": 782.03
             },
             {
               "target": "https://speed.cloudflare.com/__down?bytes=0",
               "ok": true,
-              "ms": 760.5
+              "ms": 882.02
             }
           ]
         },
@@ -592,40 +749,40 @@
           "trials": 6,
           "successes": 6,
           "success_rate": 1.0,
-          "median_ms": 416.93,
-          "jitter_ms": 9.6,
+          "median_ms": 721.56,
+          "jitter_ms": 16.34,
           "certificate_error": false,
           "errors": {},
           "samples": [
             {
               "target": "https://www.google.com/generate_204",
               "ok": true,
-              "ms": 415.8
+              "ms": 749.59
             },
             {
               "target": "https://speed.cloudflare.com/__down?bytes=0",
               "ok": true,
-              "ms": 418.06
+              "ms": 700.92
             },
             {
               "target": "https://www.google.com/generate_204",
               "ok": true,
-              "ms": 354.66
+              "ms": 816.63
             },
             {
               "target": "https://speed.cloudflare.com/__down?bytes=0",
               "ok": true,
-              "ms": 413.32
+              "ms": 733.6
             },
             {
               "target": "https://www.google.com/generate_204",
               "ok": true,
-              "ms": 1376.91
+              "ms": 640.67
             },
             {
               "target": "https://speed.cloudflare.com/__down?bytes=0",
               "ok": true,
-              "ms": 432.52
+              "ms": 709.53
             }
           ]
         },
@@ -643,40 +800,40 @@
           "trials": 6,
           "successes": 6,
           "success_rate": 1.0,
-          "median_ms": 420.37,
-          "jitter_ms": 8.3,
+          "median_ms": 720.64,
+          "jitter_ms": 7.54,
           "certificate_error": false,
           "errors": {},
           "samples": [
             {
               "target": "https://www.google.com/generate_204",
               "ok": true,
-              "ms": 388.2
+              "ms": 676.22
             },
             {
               "target": "https://speed.cloudflare.com/__down?bytes=0",
               "ok": true,
-              "ms": 418.28
+              "ms": 805.64
             },
             {
               "target": "https://www.google.com/generate_204",
               "ok": true,
-              "ms": 402.77
+              "ms": 731.91
             },
             {
               "target": "https://speed.cloudflare.com/__down?bytes=0",
               "ok": true,
-              "ms": 434.88
+              "ms": 709.37
             },
             {
               "target": "https://www.google.com/generate_204",
               "ok": true,
-              "ms": 428.1
+              "ms": 739.99
             },
             {
               "target": "https://speed.cloudflare.com/__down?bytes=0",
               "ok": true,
-              "ms": 422.46
+              "ms": 702.38
             }
           ]
         },
@@ -692,50 +849,51 @@
           "ok": true,
           "attempts": 6,
           "trials": 6,
-          "successes": 6,
-          "success_rate": 1.0,
-          "median_ms": 260.76,
-          "jitter_ms": 11.45,
+          "successes": 5,
+          "success_rate": 0.8333333333333334,
+          "median_ms": 783.5,
+          "jitter_ms": 891.33,
           "certificate_error": false,
-          "errors": {},
+          "errors": {
+            "TimeoutError": 1
+          },
           "samples": [
             {
               "target": "https://www.google.com/generate_204",
               "ok": true,
-              "ms": 864.93
+              "ms": 640.95
             },
             {
               "target": "https://speed.cloudflare.com/__down?bytes=0",
               "ok": true,
-              "ms": 263.63
+              "ms": 1674.83
             },
             {
               "target": "https://www.google.com/generate_204",
               "ok": true,
-              "ms": 227.25
+              "ms": 2914.08
             },
             {
               "target": "https://speed.cloudflare.com/__down?bytes=0",
               "ok": true,
-              "ms": 257.88
+              "ms": 783.5
             },
             {
               "target": "https://www.google.com/generate_204",
-              "ok": true,
-              "ms": 210.1
+              "ok": false,
+              "error": "TimeoutError"
             },
             {
               "target": "https://speed.cloudflare.com/__down?bytes=0",
               "ok": true,
-              "ms": 294.31
+              "ms": 761.61
             }
           ]
         },
         "quic": {
-          "ok": true,
-          "target": "https://www.google.com/generate_204",
-          "attempts": 1,
-          "errors": {}
+          "ok": false,
+          "required": false,
+          "skipped": "ordinary_vision_intentionally_blocks_udp443"
         }
       },
       {
@@ -746,40 +904,40 @@
           "trials": 6,
           "successes": 6,
           "success_rate": 1.0,
-          "median_ms": 541.7,
-          "jitter_ms": 12.24,
+          "median_ms": 684.59,
+          "jitter_ms": 186.91,
           "certificate_error": false,
           "errors": {},
           "samples": [
             {
               "target": "https://www.google.com/generate_204",
               "ok": true,
-              "ms": 548.23
+              "ms": 1361.26
             },
             {
               "target": "https://speed.cloudflare.com/__down?bytes=0",
               "ok": true,
-              "ms": 576.61
+              "ms": 968.92
             },
             {
               "target": "https://www.google.com/generate_204",
               "ok": true,
-              "ms": 505.67
+              "ms": 399.21
             },
             {
               "target": "https://speed.cloudflare.com/__down?bytes=0",
               "ok": true,
-              "ms": 535.17
+              "ms": 595.11
             },
             {
               "target": "https://www.google.com/generate_204",
               "ok": true,
-              "ms": 534.61
+              "ms": 773.57
             },
             {
               "target": "https://speed.cloudflare.com/__down?bytes=0",
               "ok": true,
-              "ms": 565.75
+              "ms": 595.62
             }
           ]
         },
@@ -798,48 +956,47 @@
           "trials": 6,
           "successes": 6,
           "success_rate": 1.0,
-          "median_ms": 1126.96,
-          "jitter_ms": 263.23,
+          "median_ms": 567.84,
+          "jitter_ms": 1.75,
           "certificate_error": false,
           "errors": {},
           "samples": [
             {
               "target": "https://www.google.com/generate_204",
               "ok": true,
-              "ms": 1834.87
+              "ms": 543.07
             },
             {
               "target": "https://speed.cloudflare.com/__down?bytes=0",
               "ok": true,
-              "ms": 844.21
+              "ms": 594.13
             },
             {
               "target": "https://www.google.com/generate_204",
               "ok": true,
-              "ms": 1594.51
+              "ms": 560.77
             },
             {
               "target": "https://speed.cloudflare.com/__down?bytes=0",
               "ok": true,
-              "ms": 558.12
+              "ms": 574.91
             },
             {
               "target": "https://www.google.com/generate_204",
               "ok": true,
-              "ms": 949.86
+              "ms": 557.79
             },
             {
               "target": "https://speed.cloudflare.com/__down?bytes=0",
               "ok": true,
-              "ms": 1304.07
+              "ms": 575.43
             }
           ]
         },
         "quic": {
-          "ok": true,
-          "target": "https://www.google.com/generate_204",
-          "attempts": 1,
-          "errors": {}
+          "ok": false,
+          "required": false,
+          "skipped": "ordinary_vision_intentionally_blocks_udp443"
         }
       },
       {
@@ -850,40 +1007,40 @@
           "trials": 6,
           "successes": 6,
           "success_rate": 1.0,
-          "median_ms": 321.84,
-          "jitter_ms": 11.67,
+          "median_ms": 419.5,
+          "jitter_ms": 4.54,
           "certificate_error": false,
           "errors": {},
           "samples": [
             {
               "target": "https://www.google.com/generate_204",
               "ok": true,
-              "ms": 759.39
+              "ms": 894.48
             },
             {
               "target": "https://speed.cloudflare.com/__down?bytes=0",
               "ok": true,
-              "ms": 289.29
+              "ms": 431.72
             },
             {
               "target": "https://www.google.com/generate_204",
               "ok": true,
-              "ms": 332.76
+              "ms": 371.48
             },
             {
               "target": "https://speed.cloudflare.com/__down?bytes=0",
               "ok": true,
-              "ms": 311.52
+              "ms": 438.94
             },
             {
               "target": "https://www.google.com/generate_204",
               "ok": true,
-              "ms": 320.79
+              "ms": 373.33
             },
             {
               "target": "https://speed.cloudflare.com/__down?bytes=0",
               "ok": true,
-              "ms": 322.9
+              "ms": 407.27
             }
           ]
         },
@@ -900,95 +1057,42 @@
           "ok": true,
           "attempts": 6,
           "trials": 6,
-          "successes": 5,
-          "success_rate": 0.8333333333333334,
-          "median_ms": 580.96,
-          "jitter_ms": 151.7,
-          "certificate_error": false,
-          "errors": {
-            "TimeoutError": 1
-          },
-          "samples": [
-            {
-              "target": "https://www.google.com/generate_204",
-              "ok": false,
-              "error": "TimeoutError"
-            },
-            {
-              "target": "https://speed.cloudflare.com/__down?bytes=0",
-              "ok": true,
-              "ms": 1480.62
-            },
-            {
-              "target": "https://www.google.com/generate_204",
-              "ok": true,
-              "ms": 412.56
-            },
-            {
-              "target": "https://speed.cloudflare.com/__down?bytes=0",
-              "ok": true,
-              "ms": 580.96
-            },
-            {
-              "target": "https://www.google.com/generate_204",
-              "ok": true,
-              "ms": 715.96
-            },
-            {
-              "target": "https://speed.cloudflare.com/__down?bytes=0",
-              "ok": true,
-              "ms": 569.13
-            }
-          ]
-        },
-        "quic": {
-          "ok": false,
-          "required": false,
-          "skipped": "ordinary_vision_intentionally_blocks_udp443"
-        }
-      },
-      {
-        "node_index": 8,
-        "https": {
-          "ok": true,
-          "attempts": 6,
-          "trials": 6,
           "successes": 6,
           "success_rate": 1.0,
-          "median_ms": 439.87,
-          "jitter_ms": 4.58,
+          "median_ms": 734.84,
+          "jitter_ms": 3.59,
           "certificate_error": false,
           "errors": {},
           "samples": [
             {
               "target": "https://www.google.com/generate_204",
               "ok": true,
-              "ms": 420.32
+              "ms": 755.34
             },
             {
               "target": "https://speed.cloudflare.com/__down?bytes=0",
               "ok": true,
-              "ms": 459.42
+              "ms": 734.74
             },
             {
               "target": "https://www.google.com/generate_204",
               "ok": true,
-              "ms": 411.16
+              "ms": 720.94
             },
             {
               "target": "https://speed.cloudflare.com/__down?bytes=0",
               "ok": true,
-              "ms": 574.68
+              "ms": 734.93
             },
             {
               "target": "https://www.google.com/generate_204",
               "ok": true,
-              "ms": 414.05
+              "ms": 788.0
             },
             {
               "target": "https://speed.cloudflare.com/__down?bytes=0",
               "ok": true,
-              "ms": 665.2
+              "ms": 727.75
             }
           ]
         },
@@ -1000,6 +1104,57 @@
         }
       },
       {
+        "node_index": 8,
+        "https": {
+          "ok": true,
+          "attempts": 6,
+          "trials": 6,
+          "successes": 6,
+          "success_rate": 1.0,
+          "median_ms": 584.24,
+          "jitter_ms": 6.73,
+          "certificate_error": false,
+          "errors": {},
+          "samples": [
+            {
+              "target": "https://www.google.com/generate_204",
+              "ok": true,
+              "ms": 560.11
+            },
+            {
+              "target": "https://speed.cloudflare.com/__down?bytes=0",
+              "ok": true,
+              "ms": 572.79
+            },
+            {
+              "target": "https://www.google.com/generate_204",
+              "ok": true,
+              "ms": 695.1
+            },
+            {
+              "target": "https://speed.cloudflare.com/__down?bytes=0",
+              "ok": true,
+              "ms": 595.7
+            },
+            {
+              "target": "https://www.google.com/generate_204",
+              "ok": true,
+              "ms": 560.12
+            },
+            {
+              "target": "https://speed.cloudflare.com/__down?bytes=0",
+              "ok": true,
+              "ms": 609.14
+            }
+          ]
+        },
+        "quic": {
+          "ok": false,
+          "required": false,
+          "skipped": "ordinary_vision_intentionally_blocks_udp443"
+        }
+      },
+      {
         "node_index": 9,
         "https": {
           "ok": true,
@@ -1007,40 +1162,40 @@
           "trials": 6,
           "successes": 6,
           "success_rate": 1.0,
-          "median_ms": 314.56,
-          "jitter_ms": 5.67,
+          "median_ms": 749.01,
+          "jitter_ms": 43.12,
           "certificate_error": false,
           "errors": {},
           "samples": [
             {
               "target": "https://www.google.com/generate_204",
               "ok": true,
-              "ms": 384.37
+              "ms": 1814.12
             },
             {
               "target": "https://speed.cloudflare.com/__down?bytes=0",
               "ok": true,
-              "ms": 323.72
+              "ms": 746.8
             },
             {
               "target": "https://www.google.com/generate_204",
               "ok": true,
-              "ms": 270.9
+              "ms": 751.23
             },
             {
               "target": "https://speed.cloudflare.com/__down?bytes=0",
               "ok": true,
-              "ms": 305.39
+              "ms": 708.25
             },
             {
               "target": "https://www.google.com/generate_204",
               "ok": true,
-              "ms": 270.02
+              "ms": 703.54
             },
             {
               "target": "https://speed.cloudflare.com/__down?bytes=0",
               "ok": true,
-              "ms": 334.17
+              "ms": 842.16
             }
           ]
         },
@@ -1058,47 +1213,48 @@
           "trials": 6,
           "successes": 6,
           "success_rate": 1.0,
-          "median_ms": 1273.44,
-          "jitter_ms": 312.87,
+          "median_ms": 866.32,
+          "jitter_ms": 15.15,
           "certificate_error": false,
           "errors": {},
           "samples": [
             {
               "target": "https://www.google.com/generate_204",
               "ok": true,
-              "ms": 3159.08
+              "ms": 1559.16
             },
             {
               "target": "https://speed.cloudflare.com/__down?bytes=0",
               "ok": true,
-              "ms": 1096.46
+              "ms": 823.96
             },
             {
               "target": "https://www.google.com/generate_204",
               "ok": true,
-              "ms": 1362.65
+              "ms": 845.87
             },
             {
               "target": "https://speed.cloudflare.com/__down?bytes=0",
               "ok": true,
-              "ms": 1184.24
+              "ms": 869.79
             },
             {
               "target": "https://www.google.com/generate_204",
               "ok": true,
-              "ms": 824.69
+              "ms": 862.85
             },
             {
               "target": "https://speed.cloudflare.com/__down?bytes=0",
               "ok": true,
-              "ms": 1817.63
+              "ms": 883.1
             }
           ]
         },
         "quic": {
-          "ok": false,
-          "required": false,
-          "skipped": "ordinary_vision_intentionally_blocks_udp443"
+          "ok": true,
+          "target": "https://www.google.com/generate_204",
+          "attempts": 1,
+          "errors": {}
         }
       },
       {
@@ -1107,44 +1263,42 @@
           "ok": true,
           "attempts": 6,
           "trials": 6,
-          "successes": 5,
-          "success_rate": 0.8333333333333334,
-          "median_ms": 1361.67,
-          "jitter_ms": 28.42,
+          "successes": 6,
+          "success_rate": 1.0,
+          "median_ms": 367.97,
+          "jitter_ms": 6.48,
           "certificate_error": false,
-          "errors": {
-            "TimeoutError": 1
-          },
+          "errors": {},
           "samples": [
             {
               "target": "https://www.google.com/generate_204",
               "ok": true,
-              "ms": 1304.83
+              "ms": 1343.88
             },
             {
               "target": "https://speed.cloudflare.com/__down?bytes=0",
               "ok": true,
-              "ms": 1349.07
-            },
-            {
-              "target": "https://www.google.com/generate_204",
-              "ok": false,
-              "error": "TimeoutError"
-            },
-            {
-              "target": "https://speed.cloudflare.com/__down?bytes=0",
-              "ok": true,
-              "ms": 2210.27
+              "ms": 369.43
             },
             {
               "target": "https://www.google.com/generate_204",
               "ok": true,
-              "ms": 1361.67
+              "ms": 361.75
             },
             {
               "target": "https://speed.cloudflare.com/__down?bytes=0",
               "ok": true,
-              "ms": 1399.82
+              "ms": 384.75
+            },
+            {
+              "target": "https://www.google.com/generate_204",
+              "ok": true,
+              "ms": 366.52
+            },
+            {
+              "target": "https://speed.cloudflare.com/__down?bytes=0",
+              "ok": true,
+              "ms": 361.24
             }
           ]
         },
@@ -1161,44 +1315,42 @@
           "ok": true,
           "attempts": 6,
           "trials": 6,
-          "successes": 5,
-          "success_rate": 0.8333333333333334,
-          "median_ms": 1363.5,
-          "jitter_ms": 82.91,
+          "successes": 6,
+          "success_rate": 1.0,
+          "median_ms": 673.18,
+          "jitter_ms": 26.29,
           "certificate_error": false,
-          "errors": {
-            "TimeoutError": 1
-          },
+          "errors": {},
           "samples": [
             {
               "target": "https://www.google.com/generate_204",
               "ok": true,
-              "ms": 1308.83
+              "ms": 2841.72
             },
             {
               "target": "https://speed.cloudflare.com/__down?bytes=0",
               "ok": true,
-              "ms": 1529.32
+              "ms": 661.93
             },
             {
               "target": "https://www.google.com/generate_204",
               "ok": true,
-              "ms": 1288.51
+              "ms": 684.44
             },
             {
               "target": "https://speed.cloudflare.com/__down?bytes=0",
               "ok": true,
-              "ms": 1363.5
+              "ms": 637.42
             },
             {
               "target": "https://www.google.com/generate_204",
               "ok": true,
-              "ms": 1492.49
+              "ms": 656.37
             },
             {
               "target": "https://speed.cloudflare.com/__down?bytes=0",
-              "ok": false,
-              "error": "TimeoutError"
+              "ok": true,
+              "ms": 870.81
             }
           ]
         },
@@ -1217,40 +1369,40 @@
           "trials": 6,
           "successes": 6,
           "success_rate": 1.0,
-          "median_ms": 256.45,
-          "jitter_ms": 1.31,
+          "median_ms": 881.27,
+          "jitter_ms": 56.18,
           "certificate_error": false,
           "errors": {},
           "samples": [
             {
               "target": "https://www.google.com/generate_204",
               "ok": true,
-              "ms": 571.8
+              "ms": 1418.49
             },
             {
               "target": "https://speed.cloudflare.com/__down?bytes=0",
               "ok": true,
-              "ms": 253.07
+              "ms": 612.23
             },
             {
               "target": "https://www.google.com/generate_204",
               "ok": true,
-              "ms": 245.0
+              "ms": 919.45
             },
             {
               "target": "https://speed.cloudflare.com/__down?bytes=0",
               "ok": true,
-              "ms": 259.83
+              "ms": 579.55
             },
             {
               "target": "https://www.google.com/generate_204",
               "ok": true,
-              "ms": 242.48
+              "ms": 999.13
             },
             {
               "target": "https://speed.cloudflare.com/__down?bytes=0",
               "ok": true,
-              "ms": 259.93
+              "ms": 843.08
             }
           ]
         },
@@ -1269,47 +1421,48 @@
           "trials": 6,
           "successes": 6,
           "success_rate": 1.0,
-          "median_ms": 418.04,
-          "jitter_ms": 4.66,
+          "median_ms": 714.44,
+          "jitter_ms": 204.53,
           "certificate_error": false,
           "errors": {},
           "samples": [
             {
               "target": "https://www.google.com/generate_204",
               "ok": true,
-              "ms": 384.05
+              "ms": 837.17
             },
             {
               "target": "https://speed.cloudflare.com/__down?bytes=0",
               "ok": true,
-              "ms": 490.31
+              "ms": 1132.2
             },
             {
               "target": "https://www.google.com/generate_204",
               "ok": true,
-              "ms": 382.32
+              "ms": 622.54
             },
             {
               "target": "https://speed.cloudflare.com/__down?bytes=0",
               "ok": true,
-              "ms": 444.43
+              "ms": 806.34
             },
             {
               "target": "https://www.google.com/generate_204",
               "ok": true,
-              "ms": 391.64
+              "ms": 428.12
             },
             {
               "target": "https://speed.cloudflare.com/__down?bytes=0",
               "ok": true,
-              "ms": 473.92
+              "ms": 453.34
             }
           ]
         },
         "quic": {
-          "ok": false,
-          "required": false,
-          "skipped": "ordinary_vision_intentionally_blocks_udp443"
+          "ok": true,
+          "target": "https://www.google.com/generate_204",
+          "attempts": 1,
+          "errors": {}
         }
       },
       {
@@ -1320,40 +1473,40 @@
           "trials": 6,
           "successes": 6,
           "success_rate": 1.0,
-          "median_ms": 403.02,
-          "jitter_ms": 3.29,
+          "median_ms": 371.66,
+          "jitter_ms": 50.82,
           "certificate_error": false,
           "errors": {},
           "samples": [
             {
               "target": "https://www.google.com/generate_204",
               "ok": true,
-              "ms": 382.2
+              "ms": 2200.55
             },
             {
               "target": "https://speed.cloudflare.com/__down?bytes=0",
               "ok": true,
-              "ms": 423.44
+              "ms": 413.14
             },
             {
               "target": "https://www.google.com/generate_204",
               "ok": true,
-              "ms": 386.57
+              "ms": 495.82
             },
             {
               "target": "https://speed.cloudflare.com/__down?bytes=0",
               "ok": true,
-              "ms": 417.26
+              "ms": 330.19
             },
             {
               "target": "https://www.google.com/generate_204",
               "ok": true,
-              "ms": 388.78
+              "ms": 247.1
             },
             {
               "target": "https://speed.cloudflare.com/__down?bytes=0",
               "ok": true,
-              "ms": 462.98
+              "ms": 311.51
             }
           ]
         },
@@ -1371,48 +1524,47 @@
           "trials": 6,
           "successes": 6,
           "success_rate": 1.0,
-          "median_ms": 1180.62,
-          "jitter_ms": 117.22,
+          "median_ms": 579.79,
+          "jitter_ms": 4.77,
           "certificate_error": false,
           "errors": {},
           "samples": [
             {
               "target": "https://www.google.com/generate_204",
               "ok": true,
-              "ms": 911.38
+              "ms": 560.89
             },
             {
               "target": "https://speed.cloudflare.com/__down?bytes=0",
               "ok": true,
-              "ms": 1167.32
+              "ms": 598.68
             },
             {
               "target": "https://www.google.com/generate_204",
               "ok": true,
-              "ms": 1119.23
+              "ms": 551.36
             },
             {
               "target": "https://speed.cloudflare.com/__down?bytes=0",
               "ok": true,
-              "ms": 1836.95
+              "ms": 674.18
             },
             {
               "target": "https://www.google.com/generate_204",
               "ok": true,
-              "ms": 1686.58
+              "ms": 558.56
             },
             {
               "target": "https://speed.cloudflare.com/__down?bytes=0",
               "ok": true,
-              "ms": 1193.92
+              "ms": 608.01
             }
           ]
         },
         "quic": {
-          "ok": true,
-          "target": "https://www.google.com/generate_204",
-          "attempts": 1,
-          "errors": {}
+          "ok": false,
+          "required": false,
+          "skipped": "ordinary_vision_intentionally_blocks_udp443"
         }
       },
       {
@@ -1423,40 +1575,40 @@
           "trials": 6,
           "successes": 6,
           "success_rate": 1.0,
-          "median_ms": 243.93,
-          "jitter_ms": 63.32,
+          "median_ms": 726.65,
+          "jitter_ms": 30.25,
           "certificate_error": false,
           "errors": {},
           "samples": [
             {
               "target": "https://www.google.com/generate_204",
               "ok": true,
-              "ms": 166.31
+              "ms": 1890.01
             },
             {
               "target": "https://speed.cloudflare.com/__down?bytes=0",
               "ok": true,
-              "ms": 271.14
+              "ms": 746.75
             },
             {
               "target": "https://www.google.com/generate_204",
               "ok": true,
-              "ms": 216.71
+              "ms": 665.1
             },
             {
               "target": "https://speed.cloudflare.com/__down?bytes=0",
               "ok": true,
-              "ms": 376.0
+              "ms": 706.56
             },
             {
               "target": "https://www.google.com/generate_204",
               "ok": true,
-              "ms": 426.35
+              "ms": 685.4
             },
             {
               "target": "https://speed.cloudflare.com/__down?bytes=0",
               "ok": true,
-              "ms": 194.89
+              "ms": 886.64
             }
           ]
         },
@@ -1474,40 +1626,40 @@
           "trials": 6,
           "successes": 6,
           "success_rate": 1.0,
-          "median_ms": 1406.56,
-          "jitter_ms": 184.49,
+          "median_ms": 1417.46,
+          "jitter_ms": 67.49,
           "certificate_error": false,
           "errors": {},
           "samples": [
             {
               "target": "https://www.google.com/generate_204",
               "ok": true,
-              "ms": 2315.69
+              "ms": 2909.8
             },
             {
               "target": "https://speed.cloudflare.com/__down?bytes=0",
               "ok": true,
-              "ms": 1156.53
+              "ms": 1054.01
             },
             {
               "target": "https://www.google.com/generate_204",
               "ok": true,
-              "ms": 1447.1
+              "ms": 1589.64
             },
             {
               "target": "https://speed.cloudflare.com/__down?bytes=0",
               "ok": true,
-              "ms": 1525.51
+              "ms": 996.98
             },
             {
               "target": "https://www.google.com/generate_204",
               "ok": true,
-              "ms": 1208.49
+              "ms": 1667.58
             },
             {
               "target": "https://speed.cloudflare.com/__down?bytes=0",
               "ok": true,
-              "ms": 1366.01
+              "ms": 1245.28
             }
           ]
         },
@@ -1526,48 +1678,47 @@
           "trials": 6,
           "successes": 6,
           "success_rate": 1.0,
-          "median_ms": 1461.24,
-          "jitter_ms": 154.46,
+          "median_ms": 773.86,
+          "jitter_ms": 45.53,
           "certificate_error": false,
           "errors": {},
           "samples": [
             {
               "target": "https://www.google.com/generate_204",
               "ok": true,
-              "ms": 2692.25
+              "ms": 762.35
             },
             {
               "target": "https://speed.cloudflare.com/__down?bytes=0",
               "ok": true,
-              "ms": 1580.96
+              "ms": 706.56
             },
             {
               "target": "https://www.google.com/generate_204",
               "ok": true,
-              "ms": 1208.43
+              "ms": 662.06
             },
             {
               "target": "https://speed.cloudflare.com/__down?bytes=0",
               "ok": true,
-              "ms": 1341.51
+              "ms": 794.85
             },
             {
               "target": "https://www.google.com/generate_204",
               "ok": true,
-              "ms": 1277.92
+              "ms": 785.37
             },
             {
               "target": "https://speed.cloudflare.com/__down?bytes=0",
               "ok": true,
-              "ms": 2554.73
+              "ms": 862.9
             }
           ]
         },
         "quic": {
-          "ok": true,
-          "target": "https://www.google.com/generate_204",
-          "attempts": 1,
-          "errors": {}
+          "ok": false,
+          "required": false,
+          "skipped": "ordinary_vision_intentionally_blocks_udp443"
         }
       },
       {
@@ -1578,48 +1729,47 @@
           "trials": 6,
           "successes": 6,
           "success_rate": 1.0,
-          "median_ms": 1264.08,
-          "jitter_ms": 123.91,
+          "median_ms": 1220.01,
+          "jitter_ms": 219.76,
           "certificate_error": false,
           "errors": {},
           "samples": [
             {
               "target": "https://www.google.com/generate_204",
               "ok": true,
-              "ms": 1534.01
+              "ms": 624.13
             },
             {
               "target": "https://speed.cloudflare.com/__down?bytes=0",
               "ok": true,
-              "ms": 1206.52
+              "ms": 636.58
             },
             {
               "target": "https://www.google.com/generate_204",
               "ok": true,
-              "ms": 1172.2
+              "ms": 1620.0
             },
             {
               "target": "https://speed.cloudflare.com/__down?bytes=0",
               "ok": true,
-              "ms": 1108.14
+              "ms": 1223.6
             },
             {
               "target": "https://www.google.com/generate_204",
               "ok": true,
-              "ms": 1321.65
+              "ms": 1216.41
             },
             {
               "target": "https://speed.cloudflare.com/__down?bytes=0",
               "ok": true,
-              "ms": 1905.13
+              "ms": 1259.54
             }
           ]
         },
         "quic": {
-          "ok": true,
-          "target": "https://www.google.com/generate_204",
-          "attempts": 1,
-          "errors": {}
+          "ok": false,
+          "required": false,
+          "skipped": "ordinary_vision_intentionally_blocks_udp443"
         }
       },
       {
@@ -1630,40 +1780,40 @@
           "trials": 6,
           "successes": 6,
           "success_rate": 1.0,
-          "median_ms": 1008.71,
-          "jitter_ms": 21.34,
+          "median_ms": 734.97,
+          "jitter_ms": 8.86,
           "certificate_error": false,
           "errors": {},
           "samples": [
             {
               "target": "https://www.google.com/generate_204",
               "ok": true,
-              "ms": 1015.52
+              "ms": 724.7
             },
             {
               "target": "https://speed.cloudflare.com/__down?bytes=0",
               "ok": true,
-              "ms": 1001.91
+              "ms": 745.25
             },
             {
               "target": "https://www.google.com/generate_204",
               "ok": true,
-              "ms": 950.52
+              "ms": 706.97
             },
             {
               "target": "https://speed.cloudflare.com/__down?bytes=0",
               "ok": true,
-              "ms": 1076.79
+              "ms": 1221.19
             },
             {
               "target": "https://www.google.com/generate_204",
               "ok": true,
-              "ms": 958.6
+              "ms": 712.51
             },
             {
               "target": "https://speed.cloudflare.com/__down?bytes=0",
               "ok": true,
-              "ms": 1042.19
+              "ms": 1742.51
             }
           ]
         },
@@ -1681,48 +1831,47 @@
           "trials": 6,
           "successes": 6,
           "success_rate": 1.0,
-          "median_ms": 442.25,
-          "jitter_ms": 3.87,
+          "median_ms": 562.0,
+          "jitter_ms": 3.15,
           "certificate_error": false,
           "errors": {},
           "samples": [
             {
               "target": "https://www.google.com/generate_204",
               "ok": true,
-              "ms": 2823.73
+              "ms": 546.72
             },
             {
               "target": "https://speed.cloudflare.com/__down?bytes=0",
               "ok": true,
-              "ms": 875.5
+              "ms": 618.08
             },
             {
               "target": "https://www.google.com/generate_204",
               "ok": true,
-              "ms": 390.89
+              "ms": 542.16
             },
             {
               "target": "https://speed.cloudflare.com/__down?bytes=0",
               "ok": true,
-              "ms": 441.05
+              "ms": 577.27
             },
             {
               "target": "https://www.google.com/generate_204",
               "ok": true,
-              "ms": 396.23
+              "ms": 540.42
             },
             {
               "target": "https://speed.cloudflare.com/__down?bytes=0",
               "ok": true,
-              "ms": 443.45
+              "ms": 643.33
             }
           ]
         },
         "quic": {
-          "ok": true,
-          "target": "https://www.google.com/generate_204",
-          "attempts": 1,
-          "errors": {}
+          "ok": false,
+          "required": false,
+          "skipped": "ordinary_vision_intentionally_blocks_udp443"
         }
       },
       {
@@ -1733,40 +1882,40 @@
           "trials": 6,
           "successes": 6,
           "success_rate": 1.0,
-          "median_ms": 1238.75,
-          "jitter_ms": 120.64,
+          "median_ms": 401.02,
+          "jitter_ms": 5.85,
           "certificate_error": false,
           "errors": {},
           "samples": [
             {
               "target": "https://www.google.com/generate_204",
               "ok": true,
-              "ms": 2703.86
+              "ms": 1175.45
             },
             {
               "target": "https://speed.cloudflare.com/__down?bytes=0",
               "ok": true,
-              "ms": 1557.82
+              "ms": 590.82
             },
             {
               "target": "https://www.google.com/generate_204",
               "ok": true,
-              "ms": 1154.06
+              "ms": 351.14
             },
             {
               "target": "https://speed.cloudflare.com/__down?bytes=0",
               "ok": true,
-              "ms": 1319.99
+              "ms": 398.45
             },
             {
               "target": "https://www.google.com/generate_204",
               "ok": true,
-              "ms": 1157.52
+              "ms": 344.59
             },
             {
               "target": "https://speed.cloudflare.com/__down?bytes=0",
               "ok": true,
-              "ms": 1066.59
+              "ms": 403.59
             }
           ]
         },
@@ -1783,97 +1932,42 @@
           "ok": true,
           "attempts": 6,
           "trials": 6,
-          "successes": 5,
-          "success_rate": 0.8333333333333334,
-          "median_ms": 1083.54,
-          "jitter_ms": 123.02,
+          "successes": 6,
+          "success_rate": 1.0,
+          "median_ms": 862.36,
+          "jitter_ms": 336.4,
           "certificate_error": false,
-          "errors": {
-            "TimeoutError": 1
-          },
+          "errors": {},
           "samples": [
             {
               "target": "https://www.google.com/generate_204",
               "ok": true,
-              "ms": 837.49
+              "ms": 2685.71
             },
             {
               "target": "https://speed.cloudflare.com/__down?bytes=0",
               "ok": true,
-              "ms": 1044.81
+              "ms": 1109.16
             },
             {
               "target": "https://www.google.com/generate_204",
               "ok": true,
-              "ms": 1083.54
+              "ms": 1882.65
             },
             {
               "target": "https://speed.cloudflare.com/__down?bytes=0",
               "ok": true,
-              "ms": 3529.92
-            },
-            {
-              "target": "https://www.google.com/generate_204",
-              "ok": false,
-              "error": "TimeoutError"
-            },
-            {
-              "target": "https://speed.cloudflare.com/__down?bytes=0",
-              "ok": true,
-              "ms": 3735.23
-            }
-          ]
-        },
-        "quic": {
-          "ok": false,
-          "required": false,
-          "skipped": "ordinary_vision_intentionally_blocks_udp443"
-        }
-      },
-      {
-        "node_index": 25,
-        "https": {
-          "ok": true,
-          "attempts": 6,
-          "trials": 6,
-          "successes": 5,
-          "success_rate": 0.8333333333333334,
-          "median_ms": 891.75,
-          "jitter_ms": 118.51,
-          "certificate_error": false,
-          "errors": {
-            "TimeoutError": 1
-          },
-          "samples": [
-            {
-              "target": "https://www.google.com/generate_204",
-              "ok": true,
-              "ms": 3876.81
-            },
-            {
-              "target": "https://speed.cloudflare.com/__down?bytes=0",
-              "ok": true,
-              "ms": 891.75
+              "ms": 436.36
             },
             {
               "target": "https://www.google.com/generate_204",
               "ok": true,
-              "ms": 3291.68
-            },
-            {
-              "target": "https://speed.cloudflare.com/__down?bytes=0",
-              "ok": false,
-              "error": "TimeoutError"
-            },
-            {
-              "target": "https://www.google.com/generate_204",
-              "ok": true,
-              "ms": 557.98
+              "ms": 615.55
             },
             {
               "target": "https://speed.cloudflare.com/__down?bytes=0",
               "ok": true,
-              "ms": 654.74
+              "ms": 612.31
             }
           ]
         },
@@ -1885,47 +1979,47 @@
         }
       },
       {
-        "node_index": 26,
+        "node_index": 25,
         "https": {
           "ok": true,
           "attempts": 6,
           "trials": 6,
           "successes": 6,
           "success_rate": 1.0,
-          "median_ms": 413.44,
-          "jitter_ms": 21.55,
+          "median_ms": 1198.52,
+          "jitter_ms": 12.05,
           "certificate_error": false,
           "errors": {},
           "samples": [
             {
               "target": "https://www.google.com/generate_204",
               "ok": true,
-              "ms": 495.37
+              "ms": 1173.9
             },
             {
               "target": "https://speed.cloudflare.com/__down?bytes=0",
               "ok": true,
-              "ms": 428.62
+              "ms": 1243.11
             },
             {
               "target": "https://www.google.com/generate_204",
               "ok": true,
-              "ms": 375.52
+              "ms": 1204.98
             },
             {
               "target": "https://speed.cloudflare.com/__down?bytes=0",
               "ok": true,
-              "ms": 481.97
+              "ms": 1195.83
             },
             {
               "target": "https://www.google.com/generate_204",
               "ok": true,
-              "ms": 362.79
+              "ms": 1201.2
             },
             {
               "target": "https://speed.cloudflare.com/__down?bytes=0",
               "ok": true,
-              "ms": 398.26
+              "ms": 1175.5
             }
           ]
         },
@@ -1936,6 +2030,58 @@
         }
       },
       {
+        "node_index": 26,
+        "https": {
+          "ok": true,
+          "attempts": 6,
+          "trials": 6,
+          "successes": 6,
+          "success_rate": 1.0,
+          "median_ms": 1042.91,
+          "jitter_ms": 117.39,
+          "certificate_error": false,
+          "errors": {},
+          "samples": [
+            {
+              "target": "https://www.google.com/generate_204",
+              "ok": true,
+              "ms": 1076.55
+            },
+            {
+              "target": "https://speed.cloudflare.com/__down?bytes=0",
+              "ok": true,
+              "ms": 854.47
+            },
+            {
+              "target": "https://www.google.com/generate_204",
+              "ok": true,
+              "ms": 1009.26
+            },
+            {
+              "target": "https://speed.cloudflare.com/__down?bytes=0",
+              "ok": true,
+              "ms": 1142.05
+            },
+            {
+              "target": "https://www.google.com/generate_204",
+              "ok": true,
+              "ms": 841.76
+            },
+            {
+              "target": "https://speed.cloudflare.com/__down?bytes=0",
+              "ok": true,
+              "ms": 1521.81
+            }
+          ]
+        },
+        "quic": {
+          "ok": true,
+          "target": "https://www.google.com/generate_204",
+          "attempts": 1,
+          "errors": {}
+        }
+      },
+      {
         "node_index": 27,
         "https": {
           "ok": true,
@@ -1943,40 +2089,40 @@
           "trials": 6,
           "successes": 6,
           "success_rate": 1.0,
-          "median_ms": 455.21,
-          "jitter_ms": 20.87,
+          "median_ms": 1144.91,
+          "jitter_ms": 235.6,
           "certificate_error": false,
           "errors": {},
           "samples": [
             {
               "target": "https://www.google.com/generate_204",
               "ok": true,
-              "ms": 458.24
+              "ms": 2955.16
             },
             {
               "target": "https://speed.cloudflare.com/__down?bytes=0",
               "ok": true,
-              "ms": 442.06
+              "ms": 879.38
             },
             {
               "target": "https://www.google.com/generate_204",
               "ok": true,
-              "ms": 452.19
+              "ms": 1546.29
             },
             {
               "target": "https://speed.cloudflare.com/__down?bytes=0",
               "ok": true,
-              "ms": 477.76
+              "ms": 1189.16
             },
             {
               "target": "https://www.google.com/generate_204",
               "ok": true,
-              "ms": 416.39
+              "ms": 1100.66
             },
             {
               "target": "https://speed.cloudflare.com/__down?bytes=0",
               "ok": true,
-              "ms": 539.39
+              "ms": 717.97
             }
           ]
         },
@@ -1984,6 +2130,684 @@
           "ok": false,
           "required": false,
           "skipped": "ordinary_vision_intentionally_blocks_udp443"
+        }
+      },
+      {
+        "node_index": 28,
+        "https": {
+          "ok": true,
+          "attempts": 6,
+          "trials": 6,
+          "successes": 6,
+          "success_rate": 1.0,
+          "median_ms": 715.5,
+          "jitter_ms": 41.92,
+          "certificate_error": false,
+          "errors": {},
+          "samples": [
+            {
+              "target": "https://www.google.com/generate_204",
+              "ok": true,
+              "ms": 733.52
+            },
+            {
+              "target": "https://speed.cloudflare.com/__down?bytes=0",
+              "ok": true,
+              "ms": 3837.18
+            },
+            {
+              "target": "https://www.google.com/generate_204",
+              "ok": true,
+              "ms": 650.02
+            },
+            {
+              "target": "https://speed.cloudflare.com/__down?bytes=0",
+              "ok": true,
+              "ms": 697.48
+            },
+            {
+              "target": "https://www.google.com/generate_204",
+              "ok": true,
+              "ms": 1680.14
+            },
+            {
+              "target": "https://speed.cloudflare.com/__down?bytes=0",
+              "ok": true,
+              "ms": 697.14
+            }
+          ]
+        },
+        "quic": {
+          "ok": false,
+          "required": false,
+          "skipped": "ordinary_vision_intentionally_blocks_udp443"
+        }
+      },
+      {
+        "node_index": 29,
+        "https": {
+          "ok": true,
+          "attempts": 6,
+          "trials": 6,
+          "successes": 5,
+          "success_rate": 0.8333333333333334,
+          "median_ms": 946.43,
+          "jitter_ms": 825.28,
+          "certificate_error": false,
+          "errors": {
+            "TimeoutError": 1
+          },
+          "samples": [
+            {
+              "target": "https://www.google.com/generate_204",
+              "ok": false,
+              "error": "TimeoutError"
+            },
+            {
+              "target": "https://speed.cloudflare.com/__down?bytes=0",
+              "ok": true,
+              "ms": 946.43
+            },
+            {
+              "target": "https://www.google.com/generate_204",
+              "ok": true,
+              "ms": 2741.78
+            },
+            {
+              "target": "https://speed.cloudflare.com/__down?bytes=0",
+              "ok": true,
+              "ms": 899.09
+            },
+            {
+              "target": "https://www.google.com/generate_204",
+              "ok": true,
+              "ms": 777.6
+            },
+            {
+              "target": "https://speed.cloudflare.com/__down?bytes=0",
+              "ok": true,
+              "ms": 1771.71
+            }
+          ]
+        },
+        "quic": {
+          "ok": false,
+          "required": false,
+          "skipped": "ordinary_vision_intentionally_blocks_udp443"
+        }
+      },
+      {
+        "node_index": 30,
+        "https": {
+          "ok": true,
+          "attempts": 6,
+          "trials": 6,
+          "successes": 6,
+          "success_rate": 1.0,
+          "median_ms": 1076.92,
+          "jitter_ms": 23.29,
+          "certificate_error": false,
+          "errors": {},
+          "samples": [
+            {
+              "target": "https://www.google.com/generate_204",
+              "ok": true,
+              "ms": 1167.12
+            },
+            {
+              "target": "https://speed.cloudflare.com/__down?bytes=0",
+              "ok": true,
+              "ms": 1095.84
+            },
+            {
+              "target": "https://www.google.com/generate_204",
+              "ok": true,
+              "ms": 1014.54
+            },
+            {
+              "target": "https://speed.cloudflare.com/__down?bytes=0",
+              "ok": true,
+              "ms": 1057.99
+            },
+            {
+              "target": "https://www.google.com/generate_204",
+              "ok": true,
+              "ms": 1005.81
+            },
+            {
+              "target": "https://speed.cloudflare.com/__down?bytes=0",
+              "ok": true,
+              "ms": 1147.45
+            }
+          ]
+        },
+        "quic": {
+          "ok": false,
+          "required": false,
+          "skipped": "ordinary_vision_intentionally_blocks_udp443"
+        }
+      },
+      {
+        "node_index": 31,
+        "https": {
+          "ok": true,
+          "attempts": 6,
+          "trials": 6,
+          "successes": 5,
+          "success_rate": 0.8333333333333334,
+          "median_ms": 1086.57,
+          "jitter_ms": 131.09,
+          "certificate_error": false,
+          "errors": {
+            "TimeoutError": 1
+          },
+          "samples": [
+            {
+              "target": "https://www.google.com/generate_204",
+              "ok": false,
+              "error": "TimeoutError"
+            },
+            {
+              "target": "https://speed.cloudflare.com/__down?bytes=0",
+              "ok": true,
+              "ms": 1395.98
+            },
+            {
+              "target": "https://www.google.com/generate_204",
+              "ok": true,
+              "ms": 1134.06
+            },
+            {
+              "target": "https://speed.cloudflare.com/__down?bytes=0",
+              "ok": true,
+              "ms": 1086.57
+            },
+            {
+              "target": "https://www.google.com/generate_204",
+              "ok": true,
+              "ms": 871.87
+            },
+            {
+              "target": "https://speed.cloudflare.com/__down?bytes=0",
+              "ok": true,
+              "ms": 1033.97
+            }
+          ]
+        },
+        "quic": {
+          "ok": true,
+          "target": "https://www.google.com/generate_204",
+          "attempts": 1,
+          "errors": {}
+        }
+      },
+      {
+        "node_index": 32,
+        "https": {
+          "ok": true,
+          "attempts": 6,
+          "trials": 6,
+          "successes": 6,
+          "success_rate": 1.0,
+          "median_ms": 701.15,
+          "jitter_ms": 40.83,
+          "certificate_error": false,
+          "errors": {},
+          "samples": [
+            {
+              "target": "https://www.google.com/generate_204",
+              "ok": true,
+              "ms": 727.61
+            },
+            {
+              "target": "https://speed.cloudflare.com/__down?bytes=0",
+              "ok": true,
+              "ms": 2715.41
+            },
+            {
+              "target": "https://www.google.com/generate_204",
+              "ok": true,
+              "ms": 645.94
+            },
+            {
+              "target": "https://speed.cloudflare.com/__down?bytes=0",
+              "ok": true,
+              "ms": 674.68
+            },
+            {
+              "target": "https://www.google.com/generate_204",
+              "ok": true,
+              "ms": 652.47
+            },
+            {
+              "target": "https://speed.cloudflare.com/__down?bytes=0",
+              "ok": true,
+              "ms": 1779.93
+            }
+          ]
+        },
+        "quic": {
+          "ok": false,
+          "required": false,
+          "skipped": "ordinary_vision_intentionally_blocks_udp443"
+        }
+      },
+      {
+        "node_index": 33,
+        "https": {
+          "ok": true,
+          "attempts": 6,
+          "trials": 6,
+          "successes": 6,
+          "success_rate": 1.0,
+          "median_ms": 1184.61,
+          "jitter_ms": 158.27,
+          "certificate_error": false,
+          "errors": {},
+          "samples": [
+            {
+              "target": "https://www.google.com/generate_204",
+              "ok": true,
+              "ms": 2805.7
+            },
+            {
+              "target": "https://speed.cloudflare.com/__down?bytes=0",
+              "ok": true,
+              "ms": 1131.64
+            },
+            {
+              "target": "https://www.google.com/generate_204",
+              "ok": true,
+              "ms": 1237.57
+            },
+            {
+              "target": "https://speed.cloudflare.com/__down?bytes=0",
+              "ok": true,
+              "ms": 956.45
+            },
+            {
+              "target": "https://www.google.com/generate_204",
+              "ok": true,
+              "ms": 1096.21
+            },
+            {
+              "target": "https://speed.cloudflare.com/__down?bytes=0",
+              "ok": true,
+              "ms": 1443.47
+            }
+          ]
+        },
+        "quic": {
+          "ok": true,
+          "target": "https://www.google.com/generate_204",
+          "attempts": 1,
+          "errors": {}
+        }
+      },
+      {
+        "node_index": 34,
+        "https": {
+          "ok": true,
+          "attempts": 6,
+          "trials": 6,
+          "successes": 6,
+          "success_rate": 1.0,
+          "median_ms": 855.57,
+          "jitter_ms": 11.15,
+          "certificate_error": false,
+          "errors": {},
+          "samples": [
+            {
+              "target": "https://www.google.com/generate_204",
+              "ok": true,
+              "ms": 846.63
+            },
+            {
+              "target": "https://speed.cloudflare.com/__down?bytes=0",
+              "ok": true,
+              "ms": 906.86
+            },
+            {
+              "target": "https://www.google.com/generate_204",
+              "ok": true,
+              "ms": 1328.1
+            },
+            {
+              "target": "https://speed.cloudflare.com/__down?bytes=0",
+              "ok": true,
+              "ms": 833.82
+            },
+            {
+              "target": "https://www.google.com/generate_204",
+              "ok": true,
+              "ms": 864.51
+            },
+            {
+              "target": "https://speed.cloudflare.com/__down?bytes=0",
+              "ok": true,
+              "ms": 838.25
+            }
+          ]
+        },
+        "quic": {
+          "ok": false,
+          "required": false,
+          "skipped": "ordinary_vision_intentionally_blocks_udp443"
+        }
+      },
+      {
+        "node_index": 35,
+        "https": {
+          "ok": true,
+          "attempts": 6,
+          "trials": 6,
+          "successes": 6,
+          "success_rate": 1.0,
+          "median_ms": 687.64,
+          "jitter_ms": 8.3,
+          "certificate_error": false,
+          "errors": {},
+          "samples": [
+            {
+              "target": "https://www.google.com/generate_204",
+              "ok": true,
+              "ms": 705.77
+            },
+            {
+              "target": "https://speed.cloudflare.com/__down?bytes=0",
+              "ok": true,
+              "ms": 721.05
+            },
+            {
+              "target": "https://www.google.com/generate_204",
+              "ok": true,
+              "ms": 686.07
+            },
+            {
+              "target": "https://speed.cloudflare.com/__down?bytes=0",
+              "ok": true,
+              "ms": 672.14
+            },
+            {
+              "target": "https://www.google.com/generate_204",
+              "ok": true,
+              "ms": 689.2
+            },
+            {
+              "target": "https://speed.cloudflare.com/__down?bytes=0",
+              "ok": true,
+              "ms": 658.67
+            }
+          ]
+        },
+        "quic": {
+          "ok": true,
+          "target": "https://www.google.com/generate_204",
+          "attempts": 1,
+          "errors": {}
+        }
+      },
+      {
+        "node_index": 36,
+        "https": {
+          "ok": true,
+          "attempts": 6,
+          "trials": 6,
+          "successes": 5,
+          "success_rate": 0.8333333333333334,
+          "median_ms": 613.13,
+          "jitter_ms": 80.4,
+          "certificate_error": false,
+          "errors": {
+            "TimeoutError": 1
+          },
+          "samples": [
+            {
+              "target": "https://www.google.com/generate_204",
+              "ok": true,
+              "ms": 1938.18
+            },
+            {
+              "target": "https://speed.cloudflare.com/__down?bytes=0",
+              "ok": true,
+              "ms": 613.13
+            },
+            {
+              "target": "https://www.google.com/generate_204",
+              "ok": true,
+              "ms": 2780.62
+            },
+            {
+              "target": "https://speed.cloudflare.com/__down?bytes=0",
+              "ok": true,
+              "ms": 452.32
+            },
+            {
+              "target": "https://www.google.com/generate_204",
+              "ok": true,
+              "ms": 425.84
+            },
+            {
+              "target": "https://speed.cloudflare.com/__down?bytes=0",
+              "ok": false,
+              "error": "TimeoutError"
+            }
+          ]
+        },
+        "quic": {
+          "ok": true,
+          "target": "https://www.google.com/generate_204",
+          "attempts": 1,
+          "errors": {}
+        }
+      },
+      {
+        "node_index": 37,
+        "https": {
+          "ok": true,
+          "attempts": 6,
+          "trials": 6,
+          "successes": 6,
+          "success_rate": 1.0,
+          "median_ms": 1086.23,
+          "jitter_ms": 32.67,
+          "certificate_error": false,
+          "errors": {},
+          "samples": [
+            {
+              "target": "https://www.google.com/generate_204",
+              "ok": true,
+              "ms": 1435.08
+            },
+            {
+              "target": "https://speed.cloudflare.com/__down?bytes=0",
+              "ok": true,
+              "ms": 1081.66
+            },
+            {
+              "target": "https://www.google.com/generate_204",
+              "ok": true,
+              "ms": 1090.8
+            },
+            {
+              "target": "https://speed.cloudflare.com/__down?bytes=0",
+              "ok": true,
+              "ms": 1044.24
+            },
+            {
+              "target": "https://www.google.com/generate_204",
+              "ok": true,
+              "ms": 725.37
+            },
+            {
+              "target": "https://speed.cloudflare.com/__down?bytes=0",
+              "ok": true,
+              "ms": 1109.58
+            }
+          ]
+        },
+        "quic": {
+          "ok": true,
+          "target": "https://www.google.com/generate_204",
+          "attempts": 1,
+          "errors": {}
+        }
+      },
+      {
+        "node_index": 38,
+        "https": {
+          "ok": true,
+          "attempts": 6,
+          "trials": 6,
+          "successes": 5,
+          "success_rate": 0.8333333333333334,
+          "median_ms": 708.1,
+          "jitter_ms": 6.78,
+          "certificate_error": false,
+          "errors": {
+            "TimeoutError": 1
+          },
+          "samples": [
+            {
+              "target": "https://www.google.com/generate_204",
+              "ok": false,
+              "error": "TimeoutError"
+            },
+            {
+              "target": "https://speed.cloudflare.com/__down?bytes=0",
+              "ok": true,
+              "ms": 881.7
+            },
+            {
+              "target": "https://www.google.com/generate_204",
+              "ok": true,
+              "ms": 631.91
+            },
+            {
+              "target": "https://speed.cloudflare.com/__down?bytes=0",
+              "ok": true,
+              "ms": 756.39
+            },
+            {
+              "target": "https://www.google.com/generate_204",
+              "ok": true,
+              "ms": 645.47
+            },
+            {
+              "target": "https://speed.cloudflare.com/__down?bytes=0",
+              "ok": true,
+              "ms": 708.1
+            }
+          ]
+        },
+        "quic": {
+          "ok": false,
+          "required": false,
+          "skipped": "ordinary_vision_intentionally_blocks_udp443"
+        }
+      },
+      {
+        "node_index": 39,
+        "https": {
+          "ok": true,
+          "attempts": 6,
+          "trials": 6,
+          "successes": 6,
+          "success_rate": 1.0,
+          "median_ms": 945.25,
+          "jitter_ms": 328.5,
+          "certificate_error": false,
+          "errors": {},
+          "samples": [
+            {
+              "target": "https://www.google.com/generate_204",
+              "ok": true,
+              "ms": 2249.54
+            },
+            {
+              "target": "https://speed.cloudflare.com/__down?bytes=0",
+              "ok": true,
+              "ms": 1322.15
+            },
+            {
+              "target": "https://www.google.com/generate_204",
+              "ok": true,
+              "ms": 999.55
+            },
+            {
+              "target": "https://speed.cloudflare.com/__down?bytes=0",
+              "ok": true,
+              "ms": 890.95
+            },
+            {
+              "target": "https://www.google.com/generate_204",
+              "ok": true,
+              "ms": 624.41
+            },
+            {
+              "target": "https://speed.cloudflare.com/__down?bytes=0",
+              "ok": true,
+              "ms": 609.08
+            }
+          ]
+        },
+        "quic": {
+          "ok": true,
+          "target": "https://www.google.com/generate_204",
+          "attempts": 1,
+          "errors": {}
+        }
+      },
+      {
+        "node_index": 40,
+        "https": {
+          "ok": true,
+          "attempts": 6,
+          "trials": 6,
+          "successes": 6,
+          "success_rate": 1.0,
+          "median_ms": 685.33,
+          "jitter_ms": 45.13,
+          "certificate_error": false,
+          "errors": {},
+          "samples": [
+            {
+              "target": "https://www.google.com/generate_204",
+              "ok": true,
+              "ms": 2744.18
+            },
+            {
+              "target": "https://speed.cloudflare.com/__down?bytes=0",
+              "ok": true,
+              "ms": 893.44
+            },
+            {
+              "target": "https://www.google.com/generate_204",
+              "ok": true,
+              "ms": 692.02
+            },
+            {
+              "target": "https://speed.cloudflare.com/__down?bytes=0",
+              "ok": true,
+              "ms": 513.86
+            },
+            {
+              "target": "https://www.google.com/generate_204",
+              "ok": true,
+              "ms": 678.64
+            },
+            {
+              "target": "https://speed.cloudflare.com/__down?bytes=0",
+              "ok": true,
+              "ms": 436.98
+            }
+          ]
+        },
+        "quic": {
+          "ok": true,
+          "target": "https://www.google.com/generate_204",
+          "attempts": 1,
+          "errors": {}
         }
       }
     ]
@@ -1994,10 +2818,10 @@
     "auto_max_per_exit": 2
   },
   "allowlist": {
-    "candidate_nodes": 1,
+    "candidate_nodes": 4,
     "explicit_label_nodes": 0,
     "restricted_network_verified": false,
-    "used_for_ordering": true,
+    "used_for_ordering": false,
     "evidence": [
       {
         "node_index": 0,
@@ -2071,11 +2895,11 @@
       },
       {
         "node_index": 7,
-        "priority": 1,
+        "priority": 0,
         "explicit_label": false,
         "cidr_label": false,
         "entry_ip_match": false,
-        "sni_match": true,
+        "sni_match": false,
         "reference_available": true,
         "restricted_network_verified": false
       },
@@ -2251,11 +3075,11 @@
       },
       {
         "node_index": 25,
-        "priority": 0,
+        "priority": 1,
         "explicit_label": false,
         "cidr_label": false,
         "entry_ip_match": false,
-        "sni_match": false,
+        "sni_match": true,
         "reference_available": true,
         "restricted_network_verified": false
       },
@@ -2271,6 +3095,136 @@
       },
       {
         "node_index": 27,
+        "priority": 1,
+        "explicit_label": false,
+        "cidr_label": false,
+        "entry_ip_match": false,
+        "sni_match": true,
+        "reference_available": true,
+        "restricted_network_verified": false
+      },
+      {
+        "node_index": 28,
+        "priority": 0,
+        "explicit_label": false,
+        "cidr_label": false,
+        "entry_ip_match": false,
+        "sni_match": false,
+        "reference_available": true,
+        "restricted_network_verified": false
+      },
+      {
+        "node_index": 29,
+        "priority": 0,
+        "explicit_label": false,
+        "cidr_label": false,
+        "entry_ip_match": false,
+        "sni_match": false,
+        "reference_available": true,
+        "restricted_network_verified": false
+      },
+      {
+        "node_index": 30,
+        "priority": 0,
+        "explicit_label": false,
+        "cidr_label": false,
+        "entry_ip_match": false,
+        "sni_match": false,
+        "reference_available": true,
+        "restricted_network_verified": false
+      },
+      {
+        "node_index": 31,
+        "priority": 0,
+        "explicit_label": false,
+        "cidr_label": false,
+        "entry_ip_match": false,
+        "sni_match": false,
+        "reference_available": true,
+        "restricted_network_verified": false
+      },
+      {
+        "node_index": 32,
+        "priority": 0,
+        "explicit_label": false,
+        "cidr_label": false,
+        "entry_ip_match": false,
+        "sni_match": false,
+        "reference_available": true,
+        "restricted_network_verified": false
+      },
+      {
+        "node_index": 33,
+        "priority": 3,
+        "explicit_label": false,
+        "cidr_label": true,
+        "entry_ip_match": false,
+        "sni_match": false,
+        "reference_available": true,
+        "restricted_network_verified": false
+      },
+      {
+        "node_index": 34,
+        "priority": 0,
+        "explicit_label": false,
+        "cidr_label": false,
+        "entry_ip_match": false,
+        "sni_match": false,
+        "reference_available": true,
+        "restricted_network_verified": false
+      },
+      {
+        "node_index": 35,
+        "priority": 0,
+        "explicit_label": false,
+        "cidr_label": false,
+        "entry_ip_match": false,
+        "sni_match": false,
+        "reference_available": true,
+        "restricted_network_verified": false
+      },
+      {
+        "node_index": 36,
+        "priority": 0,
+        "explicit_label": false,
+        "cidr_label": false,
+        "entry_ip_match": false,
+        "sni_match": false,
+        "reference_available": true,
+        "restricted_network_verified": false
+      },
+      {
+        "node_index": 37,
+        "priority": 1,
+        "explicit_label": false,
+        "cidr_label": false,
+        "entry_ip_match": false,
+        "sni_match": true,
+        "reference_available": true,
+        "restricted_network_verified": false
+      },
+      {
+        "node_index": 38,
+        "priority": 0,
+        "explicit_label": false,
+        "cidr_label": false,
+        "entry_ip_match": false,
+        "sni_match": false,
+        "reference_available": true,
+        "restricted_network_verified": false
+      },
+      {
+        "node_index": 39,
+        "priority": 0,
+        "explicit_label": false,
+        "cidr_label": false,
+        "entry_ip_match": false,
+        "sni_match": false,
+        "reference_available": true,
+        "restricted_network_verified": false
+      },
+      {
+        "node_index": 40,
         "priority": 0,
         "explicit_label": false,
         "cidr_label": false,
@@ -2282,8 +3236,8 @@
     ]
   },
   "build": {
-    "build_id": "4d1d6340-304a-4142-82c5-aaa8fa9d02f9",
-    "revision": "0e58115e78871fa67be7c08cfb1d1c38cf644e56",
+    "build_id": "7bd0422f-d64b-446a-825a-c5d33fde5e61",
+    "revision": "e2bee8fab26c3d40c58148857a416dce2c784e9a",
     "shards": 1,
     "complete": true,
     "runtime": {
@@ -2291,11 +3245,11 @@
       "geoip.dat": "304ac8a1cbcc8166e4f5a4f32955e4d0fb77a1bd713583e371b30ee27f3659d8",
       "geosite.dat": "0a254319dfa52f8ac7ec4475a310657b06fd6e2d7dca69d47a1c443664f6e04f"
     },
-    "candidate_count": 129
+    "candidate_count": 168
   },
-  "unknown_exit_retained": 5,
+  "unknown_exit_retained": 6,
   "exit_discovery_errors": {
-    "URLError": 5
+    "URLError": 6
   },
   "ip_reputation": {
     "provider": "IPsum (stamparm/ipsum)",
@@ -2307,26 +3261,26 @@
     "evidence_source": "cache",
     "unlisted_coverage": "IPv4 only",
     "score_formula": "max(0, 100 - 20 * IPsum blacklist occurrence count)",
-    "selection_priority": "exclude listed addresses; retain unknown coverage; no reputation score ranking; allowlist evidence and current HTTPS quality order admitted nodes within countries, with upstream ties",
+    "selection_priority": "exclude listed addresses; retain unknown coverage; no reputation score ranking; only current HTTPS quality order admitted nodes within countries, with upstream ties",
     "meaning": "No listing in this feed is not a positive whitelist or proof of Gemini access.",
     "candidates": {
-      "not_listed": 32,
-      "unknown": 96
+      "not_listed": 62,
+      "unknown": 104
     },
     "selected": {
-      "not_listed": 17,
-      "unknown": 11
+      "not_listed": 31,
+      "unknown": 10
     },
     "servers": [
       {
         "tag": "Автовыбор",
-        "exit_ip": "129.101.98.60",
+        "exit_ip": "144.31.240.64",
         "status": "not_listed",
         "score": 100,
         "blacklist_count": 0,
         "entry_reputation": [
           {
-            "ip": "129.101.98.60",
+            "ip": "13.143.180.152",
             "status": "not_listed",
             "score": 100,
             "blacklist_count": 0
@@ -2335,13 +3289,13 @@
       },
       {
         "tag": "pool-002",
-        "exit_ip": "146.19.254.171",
+        "exit_ip": "87.199.205.28",
         "status": "not_listed",
         "score": 100,
         "blacklist_count": 0,
         "entry_reputation": [
           {
-            "ip": "146.19.254.171",
+            "ip": "87.199.205.28",
             "status": "not_listed",
             "score": 100,
             "blacklist_count": 0
@@ -2350,6 +3304,51 @@
       },
       {
         "tag": "pool-003",
+        "exit_ip": "217.60.94.175",
+        "status": "not_listed",
+        "score": 100,
+        "blacklist_count": 0,
+        "entry_reputation": [
+          {
+            "ip": "31.58.213.31",
+            "status": "not_listed",
+            "score": 100,
+            "blacklist_count": 0
+          }
+        ]
+      },
+      {
+        "tag": "pool-004",
+        "exit_ip": null,
+        "status": "unknown",
+        "score": null,
+        "blacklist_count": null,
+        "entry_reputation": [
+          {
+            "ip": "78.17.215.138",
+            "status": "not_listed",
+            "score": 100,
+            "blacklist_count": 0
+          }
+        ]
+      },
+      {
+        "tag": "pool-005",
+        "exit_ip": "145.239.69.47",
+        "status": "not_listed",
+        "score": 100,
+        "blacklist_count": 0,
+        "entry_reputation": [
+          {
+            "ip": "89.116.46.150",
+            "status": "not_listed",
+            "score": 100,
+            "blacklist_count": 0
+          }
+        ]
+      },
+      {
+        "tag": "pool-006",
         "exit_ip": "143.246.182.103",
         "status": "not_listed",
         "score": 100,
@@ -2364,157 +3363,7 @@
         ]
       },
       {
-        "tag": "pool-004",
-        "exit_ip": "2a01:4f8:1c18:c470::1",
-        "status": "unknown",
-        "score": null,
-        "blacklist_count": null,
-        "entry_reputation": [
-          {
-            "ip": "178.104.151.84",
-            "status": "not_listed",
-            "score": 100,
-            "blacklist_count": 0
-          }
-        ]
-      },
-      {
-        "tag": "pool-005",
-        "exit_ip": "2a01:4f8:c010:4843::1",
-        "status": "unknown",
-        "score": null,
-        "blacklist_count": null,
-        "entry_reputation": [
-          {
-            "ip": "91.107.188.129",
-            "status": "not_listed",
-            "score": 100,
-            "blacklist_count": 0
-          }
-        ]
-      },
-      {
-        "tag": "pool-006",
-        "exit_ip": "2a14:2f40:0:101::e0",
-        "status": "unknown",
-        "score": null,
-        "blacklist_count": null,
-        "entry_reputation": [
-          {
-            "ip": "212.41.8.76",
-            "status": "not_listed",
-            "score": 100,
-            "blacklist_count": 0
-          }
-        ]
-      },
-      {
         "tag": "pool-007",
-        "exit_ip": "62.133.63.45",
-        "status": "not_listed",
-        "score": 100,
-        "blacklist_count": 0,
-        "entry_reputation": [
-          {
-            "ip": "62.133.63.45",
-            "status": "not_listed",
-            "score": 100,
-            "blacklist_count": 0
-          }
-        ]
-      },
-      {
-        "tag": "pool-008",
-        "exit_ip": "138.124.125.193",
-        "status": "not_listed",
-        "score": 100,
-        "blacklist_count": 0,
-        "entry_reputation": [
-          {
-            "ip": "138.124.125.193",
-            "status": "not_listed",
-            "score": 100,
-            "blacklist_count": 0
-          }
-        ]
-      },
-      {
-        "tag": "pool-009",
-        "exit_ip": null,
-        "status": "unknown",
-        "score": null,
-        "blacklist_count": null,
-        "entry_reputation": [
-          {
-            "ip": "34.39.80.57",
-            "status": "not_listed",
-            "score": 100,
-            "blacklist_count": 0
-          }
-        ]
-      },
-      {
-        "tag": "pool-010",
-        "exit_ip": "204.152.198.135",
-        "status": "not_listed",
-        "score": 100,
-        "blacklist_count": 0,
-        "entry_reputation": [
-          {
-            "ip": "192.129.221.38",
-            "status": "not_listed",
-            "score": 100,
-            "blacklist_count": 0
-          }
-        ]
-      },
-      {
-        "tag": "pool-011",
-        "exit_ip": null,
-        "status": "unknown",
-        "score": null,
-        "blacklist_count": null,
-        "entry_reputation": [
-          {
-            "ip": "18.181.246.163",
-            "status": "not_listed",
-            "score": 100,
-            "blacklist_count": 0
-          }
-        ]
-      },
-      {
-        "tag": "pool-012",
-        "exit_ip": "2400:8901::2000:eeff:fee5:9c5f",
-        "status": "unknown",
-        "score": null,
-        "blacklist_count": null,
-        "entry_reputation": [
-          {
-            "ip": "185.130.224.105",
-            "status": "not_listed",
-            "score": 100,
-            "blacklist_count": 0
-          }
-        ]
-      },
-      {
-        "tag": "pool-013",
-        "exit_ip": null,
-        "status": "unknown",
-        "score": null,
-        "blacklist_count": null,
-        "entry_reputation": [
-          {
-            "ip": "101.108.49.121",
-            "status": "not_listed",
-            "score": 100,
-            "blacklist_count": 0
-          }
-        ]
-      },
-      {
-        "tag": "pool-014",
         "exit_ip": null,
         "status": "unknown",
         "score": null,
@@ -2529,14 +3378,119 @@
         ]
       },
       {
-        "tag": "pool-015",
-        "exit_ip": "143.246.182.103",
+        "tag": "pool-008",
+        "exit_ip": "84.32.248.124",
         "status": "not_listed",
         "score": 100,
         "blacklist_count": 0,
         "entry_reputation": [
           {
-            "ip": "212.69.135.26",
+            "ip": "84.32.248.124",
+            "status": "not_listed",
+            "score": 100,
+            "blacklist_count": 0
+          }
+        ]
+      },
+      {
+        "tag": "pool-009",
+        "exit_ip": "143.246.182.199",
+        "status": "not_listed",
+        "score": 100,
+        "blacklist_count": 0,
+        "entry_reputation": [
+          {
+            "ip": "5.104.74.25",
+            "status": "not_listed",
+            "score": 100,
+            "blacklist_count": 0
+          }
+        ]
+      },
+      {
+        "tag": "pool-010",
+        "exit_ip": "144.31.140.125",
+        "status": "not_listed",
+        "score": 100,
+        "blacklist_count": 0,
+        "entry_reputation": [
+          {
+            "ip": "144.31.140.125",
+            "status": "not_listed",
+            "score": 100,
+            "blacklist_count": 0
+          }
+        ]
+      },
+      {
+        "tag": "pool-011",
+        "exit_ip": "81.90.25.206",
+        "status": "not_listed",
+        "score": 100,
+        "blacklist_count": 0,
+        "entry_reputation": [
+          {
+            "ip": "171.22.133.101",
+            "status": "not_listed",
+            "score": 100,
+            "blacklist_count": 0
+          }
+        ]
+      },
+      {
+        "tag": "pool-012",
+        "exit_ip": "91.226.221.177",
+        "status": "not_listed",
+        "score": 100,
+        "blacklist_count": 0,
+        "entry_reputation": [
+          {
+            "ip": "136.148.213.211",
+            "status": "not_listed",
+            "score": 100,
+            "blacklist_count": 0
+          }
+        ]
+      },
+      {
+        "tag": "pool-013",
+        "exit_ip": "62.133.63.45",
+        "status": "not_listed",
+        "score": 100,
+        "blacklist_count": 0,
+        "entry_reputation": [
+          {
+            "ip": "62.133.63.45",
+            "status": "not_listed",
+            "score": 100,
+            "blacklist_count": 0
+          }
+        ]
+      },
+      {
+        "tag": "pool-014",
+        "exit_ip": null,
+        "status": "unknown",
+        "score": null,
+        "blacklist_count": null,
+        "entry_reputation": [
+          {
+            "ip": "201.24.121.243",
+            "status": "not_listed",
+            "score": 100,
+            "blacklist_count": 0
+          }
+        ]
+      },
+      {
+        "tag": "pool-015",
+        "exit_ip": null,
+        "status": "unknown",
+        "score": null,
+        "blacklist_count": null,
+        "entry_reputation": [
+          {
+            "ip": "143.246.41.230",
             "status": "not_listed",
             "score": 100,
             "blacklist_count": 0
@@ -2545,36 +3499,6 @@
       },
       {
         "tag": "pool-016",
-        "exit_ip": "143.246.182.103",
-        "status": "not_listed",
-        "score": 100,
-        "blacklist_count": 0,
-        "entry_reputation": [
-          {
-            "ip": "212.69.135.27",
-            "status": "not_listed",
-            "score": 100,
-            "blacklist_count": 0
-          }
-        ]
-      },
-      {
-        "tag": "pool-017",
-        "exit_ip": "2400:8901::2000:eeff:fee5:9c5f",
-        "status": "unknown",
-        "score": null,
-        "blacklist_count": null,
-        "entry_reputation": [
-          {
-            "ip": "13.231.172.130",
-            "status": "not_listed",
-            "score": 100,
-            "blacklist_count": 0
-          }
-        ]
-      },
-      {
-        "tag": "pool-018",
         "exit_ip": "67.220.73.204",
         "status": "not_listed",
         "score": 100,
@@ -2589,14 +3513,44 @@
         ]
       },
       {
-        "tag": "pool-019",
-        "exit_ip": "69.10.52.92",
+        "tag": "pool-017",
+        "exit_ip": "143.246.182.103",
         "status": "not_listed",
         "score": 100,
         "blacklist_count": 0,
         "entry_reputation": [
           {
-            "ip": "13.141.51.2",
+            "ip": "212.69.135.27",
+            "status": "not_listed",
+            "score": 100,
+            "blacklist_count": 0
+          }
+        ]
+      },
+      {
+        "tag": "pool-018",
+        "exit_ip": "185.240.84.206",
+        "status": "not_listed",
+        "score": 100,
+        "blacklist_count": 0,
+        "entry_reputation": [
+          {
+            "ip": "89.125.175.107",
+            "status": "not_listed",
+            "score": 100,
+            "blacklist_count": 0
+          }
+        ]
+      },
+      {
+        "tag": "pool-019",
+        "exit_ip": "185.23.19.182",
+        "status": "not_listed",
+        "score": 100,
+        "blacklist_count": 0,
+        "entry_reputation": [
+          {
+            "ip": "171.22.133.101",
             "status": "not_listed",
             "score": 100,
             "blacklist_count": 0
@@ -2605,13 +3559,13 @@
       },
       {
         "tag": "pool-020",
-        "exit_ip": "69.10.52.92",
+        "exit_ip": "185.240.84.198",
         "status": "not_listed",
         "score": 100,
         "blacklist_count": 0,
         "entry_reputation": [
           {
-            "ip": "13.141.51.2",
+            "ip": "89.125.175.116",
             "status": "not_listed",
             "score": 100,
             "blacklist_count": 0
@@ -2620,13 +3574,13 @@
       },
       {
         "tag": "pool-021",
-        "exit_ip": "196.245.52.156",
+        "exit_ip": "146.19.254.171",
         "status": "not_listed",
         "score": 100,
         "blacklist_count": 0,
         "entry_reputation": [
           {
-            "ip": "196.199.122.3",
+            "ip": "146.19.254.171",
             "status": "not_listed",
             "score": 100,
             "blacklist_count": 0
@@ -2635,13 +3589,13 @@
       },
       {
         "tag": "pool-022",
-        "exit_ip": "69.10.52.92",
+        "exit_ip": "179.253.101.162",
         "status": "not_listed",
         "score": 100,
         "blacklist_count": 0,
         "entry_reputation": [
           {
-            "ip": "132.243.163.90",
+            "ip": "179.253.101.162",
             "status": "not_listed",
             "score": 100,
             "blacklist_count": 0
@@ -2650,13 +3604,13 @@
       },
       {
         "tag": "pool-023",
-        "exit_ip": "93.123.85.230",
+        "exit_ip": "143.246.182.103",
         "status": "not_listed",
         "score": 100,
         "blacklist_count": 0,
         "entry_reputation": [
           {
-            "ip": "48.103.231.8",
+            "ip": "212.69.135.26",
             "status": "not_listed",
             "score": 100,
             "blacklist_count": 0
@@ -2665,13 +3619,13 @@
       },
       {
         "tag": "pool-024",
-        "exit_ip": "158.101.158.101",
+        "exit_ip": "91.226.221.177",
         "status": "not_listed",
         "score": 100,
         "blacklist_count": 0,
         "entry_reputation": [
           {
-            "ip": "62.106.70.68",
+            "ip": "136.148.213.211",
             "status": "not_listed",
             "score": 100,
             "blacklist_count": 0
@@ -2680,13 +3634,13 @@
       },
       {
         "tag": "pool-025",
-        "exit_ip": null,
-        "status": "unknown",
-        "score": null,
-        "blacklist_count": null,
+        "exit_ip": "196.196.204.151",
+        "status": "not_listed",
+        "score": 100,
+        "blacklist_count": 0,
         "entry_reputation": [
           {
-            "ip": "144.48.11.146",
+            "ip": "196.196.204.150",
             "status": "not_listed",
             "score": 100,
             "blacklist_count": 0
@@ -2695,13 +3649,13 @@
       },
       {
         "tag": "pool-026",
-        "exit_ip": "93.123.85.230",
-        "status": "not_listed",
-        "score": 100,
-        "blacklist_count": 0,
+        "exit_ip": "2407:3640:2359:7498::1",
+        "status": "unknown",
+        "score": null,
+        "blacklist_count": null,
         "entry_reputation": [
           {
-            "ip": "48.103.231.8",
+            "ip": "147.93.173.45",
             "status": "not_listed",
             "score": 100,
             "blacklist_count": 0
@@ -2710,13 +3664,13 @@
       },
       {
         "tag": "pool-027",
-        "exit_ip": "2a03:6f02::1:68c8",
+        "exit_ip": "2a09:bac5:526a:505::80:185",
         "status": "unknown",
         "score": null,
         "blacklist_count": null,
         "entry_reputation": [
           {
-            "ip": "177.177.215.45",
+            "ip": "92.223.84.254",
             "status": "not_listed",
             "score": 100,
             "blacklist_count": 0
@@ -2725,13 +3679,208 @@
       },
       {
         "tag": "pool-028",
-        "exit_ip": "130.78.30.147",
+        "exit_ip": "138.124.125.193",
         "status": "not_listed",
         "score": 100,
         "blacklist_count": 0,
         "entry_reputation": [
           {
-            "ip": "130.78.30.147",
+            "ip": "138.124.125.193",
+            "status": "not_listed",
+            "score": 100,
+            "blacklist_count": 0
+          }
+        ]
+      },
+      {
+        "tag": "pool-029",
+        "exit_ip": "78.17.215.117",
+        "status": "not_listed",
+        "score": 100,
+        "blacklist_count": 0,
+        "entry_reputation": [
+          {
+            "ip": "78.17.215.133",
+            "status": "not_listed",
+            "score": 100,
+            "blacklist_count": 0
+          }
+        ]
+      },
+      {
+        "tag": "pool-030",
+        "exit_ip": null,
+        "status": "unknown",
+        "score": null,
+        "blacklist_count": null,
+        "entry_reputation": [
+          {
+            "ip": "48.103.231.2",
+            "status": "not_listed",
+            "score": 100,
+            "blacklist_count": 0
+          }
+        ]
+      },
+      {
+        "tag": "pool-031",
+        "exit_ip": "62.133.63.45",
+        "status": "not_listed",
+        "score": 100,
+        "blacklist_count": 0,
+        "entry_reputation": [
+          {
+            "ip": "77.83.245.79",
+            "status": "not_listed",
+            "score": 100,
+            "blacklist_count": 0
+          }
+        ]
+      },
+      {
+        "tag": "pool-032",
+        "exit_ip": "164.37.224.246",
+        "status": "not_listed",
+        "score": 100,
+        "blacklist_count": 0,
+        "entry_reputation": [
+          {
+            "ip": "195.206.235.110",
+            "status": "not_listed",
+            "score": 100,
+            "blacklist_count": 0
+          }
+        ]
+      },
+      {
+        "tag": "pool-033",
+        "exit_ip": "93.123.101.170",
+        "status": "not_listed",
+        "score": 100,
+        "blacklist_count": 0,
+        "entry_reputation": [
+          {
+            "ip": "78.17.215.141",
+            "status": "not_listed",
+            "score": 100,
+            "blacklist_count": 0
+          }
+        ]
+      },
+      {
+        "tag": "pool-034",
+        "exit_ip": "2a14:a087:3:83::2",
+        "status": "unknown",
+        "score": null,
+        "blacklist_count": null,
+        "entry_reputation": [
+          {
+            "ip": "104.171.139.81",
+            "status": "not_listed",
+            "score": 100,
+            "blacklist_count": 0
+          }
+        ]
+      },
+      {
+        "tag": "pool-035",
+        "exit_ip": "31.56.214.56",
+        "status": "not_listed",
+        "score": 100,
+        "blacklist_count": 0,
+        "entry_reputation": [
+          {
+            "ip": "31.58.213.235",
+            "status": "not_listed",
+            "score": 100,
+            "blacklist_count": 0
+          }
+        ]
+      },
+      {
+        "tag": "pool-036",
+        "exit_ip": "2a14:4900:2207:5fc::303",
+        "status": "unknown",
+        "score": null,
+        "blacklist_count": null,
+        "entry_reputation": [
+          {
+            "ip": "209.33.161.60",
+            "status": "not_listed",
+            "score": 100,
+            "blacklist_count": 0
+          }
+        ]
+      },
+      {
+        "tag": "pool-037",
+        "exit_ip": "93.123.85.230",
+        "status": "not_listed",
+        "score": 100,
+        "blacklist_count": 0,
+        "entry_reputation": [
+          {
+            "ip": "79.182.70.199",
+            "status": "not_listed",
+            "score": 100,
+            "blacklist_count": 0
+          }
+        ]
+      },
+      {
+        "tag": "pool-038",
+        "exit_ip": null,
+        "status": "unknown",
+        "score": null,
+        "blacklist_count": null,
+        "entry_reputation": [
+          {
+            "ip": "109.71.245.99",
+            "status": "not_listed",
+            "score": 100,
+            "blacklist_count": 0
+          }
+        ]
+      },
+      {
+        "tag": "pool-039",
+        "exit_ip": "78.17.215.123",
+        "status": "not_listed",
+        "score": 100,
+        "blacklist_count": 0,
+        "entry_reputation": [
+          {
+            "ip": "78.17.215.137",
+            "status": "not_listed",
+            "score": 100,
+            "blacklist_count": 0
+          }
+        ]
+      },
+      {
+        "tag": "pool-040",
+        "exit_ip": "196.245.52.156",
+        "status": "not_listed",
+        "score": 100,
+        "blacklist_count": 0,
+        "entry_reputation": [
+          {
+            "ip": "196.196.149.22",
+            "status": "not_listed",
+            "score": 100,
+            "blacklist_count": 0
+          }
+        ]
+      },
+      {
+        "tag": "pool-041",
+        "exit_ip": "196.245.52.156",
+        "status": "not_listed",
+        "score": 100,
+        "blacklist_count": 0,
+        "entry_reputation": [
+          {
+            "ip": "196.199.122.3",
             "status": "not_listed",
             "score": 100,
             "blacklist_count": 0
@@ -2878,6 +4027,26 @@
               "match": "^proxy-9$",
               "regexp": true,
               "value": 2
+            },
+            {
+              "match": "^proxy-10$",
+              "regexp": true,
+              "value": 2
+            },
+            {
+              "match": "^proxy-11$",
+              "regexp": true,
+              "value": 2
+            },
+            {
+              "match": "^proxy-12$",
+              "regexp": true,
+              "value": 2
+            },
+            {
+              "match": "^proxy-13$",
+              "regexp": true,
+              "value": 2
             }
           ]
         }
@@ -2887,7 +4056,7 @@
     "reference_adaptations": [
       "own upstream connection credentials, endpoints and transport paths",
       "GitHub category, subdomains and download hosts go direct before other rules",
-      "mixed-technology country pools; allowlist and current quality priority; upstream ties; global auto from the best server of each completed country",
+      "mixed-technology country pools; current quality priority; upstream ties; global auto from the best server of each completed country",
       "global auto expected 1 and costs 1/2; grouped pools expected 4 with reference baselines and equal costs; first ranked node fallback",
       "preserve each upstream XHTTP mode instead of forcing stream-up"
     ],
@@ -2897,7 +4066,7 @@
     },
     "client_geodata_verified": false
   },
-  "config_utf8_bytes": 8340,
-  "config_utf16_bytes": 16658,
-  "subscription_utf8_bytes": 44847
+  "config_utf8_bytes": 10953,
+  "config_utf16_bytes": 21884,
+  "subscription_utf8_bytes": 64384
 }
