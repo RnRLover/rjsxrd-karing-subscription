@@ -81,6 +81,7 @@ class PipelineTests(unittest.TestCase):
                     self.assertLessEqual(len(configs[0]['outbounds']) - 2, 64)
                     self.assertTrue(report['build']['complete'])
                     self.assertFalse(report['history_used'])
+                    self.assertFalse(report['allowlist']['used_for_ordering'])
                     self.assertEqual(report['catalog']['catalog_nodes_omitted'], 0)
                     if count == 10_000:
                         self.assertGreater((root / 'subscription.json').stat().st_size, 800_000)

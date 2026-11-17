@@ -1,4 +1,4 @@
-"""Group admitted nodes by country with allowlist and current-quality priority."""
+"""Group admitted nodes by country, ranked only by current quality and upstream ties."""
 from collections import Counter
 import re
 
@@ -58,8 +58,7 @@ def positive_limit(options, name):
 def rank(node, source_position):
     quality = node.get('quality', {}).get('https', {})
     delay = quality.get('median_ms')
-    return (-node.get('allowlist', {}).get('priority', 0),
-            -quality.get('success_rate', 1), delay if delay is not None else float('inf'),
+    return (-quality.get('success_rate', 1), delay if delay is not None else float('inf'),
             quality.get('jitter_ms') or 0, source_position)
 
 
@@ -103,7 +102,7 @@ def country_profiles(nodes, indices, country, probe):
 def build_catalog(nodes, options, probe=None):
     """Every admitted node appears once in a country pool with mixed transports.
 
-    Rank nodes by allowlist evidence and current quality, with upstream ties.
+    Rank nodes by current quality, with upstream ties. Allowlist evidence is ignored.
     Countries follow their best node; auto takes that first representative.
     """
     if not nodes:
@@ -169,7 +168,7 @@ def build_catalog(nodes, options, probe=None):
         'max_config_utf16_bytes': incy.MAX_CONFIG_UTF16,
         'country_partitioning': 'only when the full country exceeds the configuration byte budget',
         'representatives_from_completed_pools': True,
-        'ordering': 'allowlist candidates, current success rate, median response time, jitter, upstream tie; '
+        'ordering': 'current success rate, median response time, jitter, upstream tie; '
                     'countries by their best node',
         'auto_selection': 'one best representative per country in country priority order, with shared-exit safeguards',
         'catalog_nodes_omitted': 0, 'profiles': profiles,

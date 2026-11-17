@@ -1,4 +1,4 @@
-"""Quality thresholds, allowlist precedence and normalized node identity."""
+"""Quality thresholds, diagnostic-only allowlist evidence and normalized identity."""
 from collections import Counter
 import copy
 import itertools
@@ -42,7 +42,7 @@ class AdmissionTests(unittest.TestCase):
         self.assertLessEqual(max(sizes), 128)
         self.assertLess(len(sizes), 30)
 
-    def test_allowlist_leader_precedes_faster_ordinary_node_in_pool_and_auto(self):
+    def test_faster_ordinary_node_precedes_allowlist_candidate_in_pool_and_auto(self):
         nodes = [node(i) for i in range(7)]
         for i, n in enumerate(nodes):
             n['source_order'] = i
@@ -51,9 +51,8 @@ class AdmissionTests(unittest.TestCase):
         nodes[4]['quality']['https']['median_ms'] = 300
         annotate(nodes, {'available': False})
         configs, report = build_catalog(nodes, OPTIONS)
-        self.assertEqual(report['profiles'][1]['node_indices'][0], 4)
-        self.assertEqual(report['profiles'][0]['node_indices'][0], 4)
-        self.assertEqual(report['profiles'][0]['node_indices'], [4])
+        self.assertEqual(report['profiles'][1]['node_indices'], [0, 1, 2, 3, 5, 6, 4])
+        self.assertEqual(report['profiles'][0]['node_indices'], [0])
         self.assertEqual(len(configs), 2)
         self.assertEqual(set(report['profiles'][1]['node_indices']), set(range(7)))
         self.assertEqual(configs[1]['routing']['balancers'][0]['fallbackTag'], 'proxy-0')
