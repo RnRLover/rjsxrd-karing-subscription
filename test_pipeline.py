@@ -82,6 +82,8 @@ class PipelineTests(unittest.TestCase):
                     self.assertTrue(report['build']['complete'])
                     self.assertFalse(report['history_used'])
                     self.assertFalse(report['allowlist']['used_for_ordering'])
+                    self.assertFalse(report['github_latency_ranking'])
+                    self.assertFalse(report['quality_checks']['latency_ranking'])
                     self.assertEqual(report['catalog']['catalog_nodes_omitted'], 0)
                     if count == 10_000:
                         self.assertGreater((root / 'subscription.json').stat().st_size, 800_000)

@@ -91,8 +91,8 @@ def reputation_report(nodes, selected, feed, source):
         'evidence_source': source, 'unlisted_coverage': 'IPv4 only',
         'score_formula': 'max(0, 100 - 20 * IPsum blacklist occurrence count)',
         'selection_priority': 'exclude listed addresses; retain unknown coverage; '
-                              'no reputation score ranking; only current HTTPS quality '
-                              'order admitted nodes within countries, with upstream ties',
+                              'no reputation score ranking; rank admitted nodes within countries '
+                              'by current HTTPS success rate, with upstream ties; no latency/jitter ranking',
         'meaning': 'No listing in this feed is not a positive whitelist or proof of Gemini access.',
         'candidates': dict(Counter(n['reputation']['status'] for n in nodes)),
         'selected': dict(Counter(n['reputation']['status'] for n in selected)),

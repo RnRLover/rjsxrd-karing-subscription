@@ -42,16 +42,17 @@ class AdmissionTests(unittest.TestCase):
         self.assertLessEqual(max(sizes), 128)
         self.assertLess(len(sizes), 30)
 
-    def test_faster_ordinary_node_precedes_allowlist_candidate_in_pool_and_auto(self):
+    def test_equal_success_uses_upstream_order_without_allowlist_or_latency_priority(self):
         nodes = [node(i) for i in range(7)]
         for i, n in enumerate(nodes):
             n['source_order'] = i
             n['quality'] = {'https': {'success_rate': 1, 'median_ms': 10 + i, 'jitter_ms': 1}}
         nodes[4]['label'] = 'OUT: DE White List'
         nodes[4]['quality']['https']['median_ms'] = 300
+        nodes[0]['quality']['https'].update(median_ms=1200, jitter_ms=99)
         annotate(nodes, {'available': False})
         configs, report = build_catalog(nodes, OPTIONS)
-        self.assertEqual(report['profiles'][1]['node_indices'], [0, 1, 2, 3, 5, 6, 4])
+        self.assertEqual(report['profiles'][1]['node_indices'], list(range(7)))
         self.assertEqual(report['profiles'][0]['node_indices'], [0])
         self.assertEqual(len(configs), 2)
         self.assertEqual(set(report['profiles'][1]['node_indices']), set(range(7)))

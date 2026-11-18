@@ -1,4 +1,4 @@
-"""Publish a country catalog ranked by current quality and upstream ties."""
+"""Publish a country catalog ranked by current HTTPS success rate and upstream ties."""
 import argparse
 from collections import Counter
 import concurrent.futures
@@ -238,10 +238,10 @@ def publish_checked(checked, rated, settings, counts, source_sha, feed, feed_sou
         'counts': dict(counts), 'selected': len(selected), 'xray_validated': True,
         'selected_protocols': dict(Counter(node['outbound']['protocol'] for node in selected)),
         'pool_selection': 'all admitted unique connections grouped by country; '
-                          'current HTTPS quality first, upstream order for ties; '
+                          'current HTTPS success rate first, upstream order for ties; '
                           'countries follow their best node; auto takes one country leader with exit diversity',
         'catalog': catalog,
-        'history_used': False, 'github_latency_ranking': True, 'country_filter': False,
+        'history_used': False, 'github_latency_ranking': False, 'country_filter': False,
         'tcp_udp_quality_gate': False, 'https_quality_gate': True,
         'quic_quality_gate': 'required except ordinary Vision intentionally blocks UDP/443',
         'file_transfer_check': False,
@@ -254,7 +254,7 @@ def publish_checked(checked, rated, settings, counts, source_sha, feed, feed_sou
             'candidates_checked': len(checked), 'passed_policy': len(eligible),
             'passed_both': sum(node['quality']['https']['ok'] and node['quality']['quic']['ok']
                                for node in checked),
-            'history_used': False, 'latency_ranking': True,
+            'history_used': False, 'latency_ranking': False,
             'selected': [{'node_index': index, **node['quality']}
                          for index, node in enumerate(selected)],
         },
@@ -292,7 +292,7 @@ def publish_checked(checked, rated, settings, counts, source_sha, feed, feed_sou
             'vision_udp443': 'ordinary Vision intercepts UDP/443 as in the reference',
             'reference_adaptations': ['own upstream connection credentials, endpoints and transport paths',
                                      'GitHub category, subdomains and download hosts go direct before other rules',
-                                     'mixed-technology country pools; current quality priority; '
+                                     'mixed-technology country pools; current HTTPS success rate priority; '
                                      'upstream ties; global auto from the best server of each completed country',
                                      'global auto expected 1 and costs 1/2; grouped pools expected 4 '
                                      'with reference baselines and equal costs; first ranked node fallback',

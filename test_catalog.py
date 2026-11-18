@@ -88,7 +88,7 @@ class CatalogTests(unittest.TestCase):
         self.assertEqual(len(configs), 1 + len(COUNTRIES))
         self.assert_coverage(nodes + [hy, grpc], configs, report)
 
-    def test_quality_ranks_nodes_and_countries_without_allowlist_priority(self):
+    def test_success_and_upstream_order_rank_nodes_and_countries(self):
         nodes = [node(0, 'US'), node(1, 'DE', 'ws'), node(2, 'US', 'grpc'),
                  node(3, 'FR'), node(4, 'DE')]
         for index, n in enumerate(nodes):
@@ -97,22 +97,27 @@ class CatalogTests(unittest.TestCase):
                                     'jitter_ms': 1}}
             n['allowlist'] = {'priority': 4 if index in (1, 2, 4) else 0}
         configs, report = build_catalog(nodes, OPTIONS)
-        self.assertEqual(report['countries'], ['FR', 'DE', 'US'])
-        self.assertEqual([p['node_indices'] for p in report['profiles']], [[3, 4, 2], [3], [4, 1], [2, 0]])
-        self.assertEqual([p['country_leader_source_position'] for p in report['profiles'][1:]], [31, 41, 21])
+        self.assertEqual(report['countries'], ['US', 'DE', 'FR'])
+        self.assertEqual([p['node_indices'] for p in report['profiles']], [[0, 1, 3], [0, 2], [1, 4], [3]])
+        self.assertEqual([p['country_leader_source_position'] for p in report['profiles'][1:]], [1, 11, 31])
         self.assert_coverage(nodes, configs, report)
-        # Removing or changing every allowlist score must leave all pools,
+        # Removing or changing allowlist, latency or jitter must leave all pools,
         # country ordering, fallback nodes and global-auto weights identical.
-        for mutation in ('removed', 'reversed'):
+        for mutation in ('allowlist_removed', 'allowlist_reversed', 'measurements_removed', 'measurements_reversed'):
             changed = copy.deepcopy(nodes)
             for index, n in enumerate(changed):
-                if mutation == 'removed':
+                if mutation == 'allowlist_removed':
                     n.pop('allowlist')
-                else:
+                elif mutation == 'allowlist_reversed':
                     n['allowlist']['priority'] = 1000 - index
+                elif mutation == 'measurements_removed':
+                    n['quality']['https'].pop('median_ms')
+                    n['quality']['https'].pop('jitter_ms')
+                else:
+                    n['quality']['https'].update(median_ms=1500 - index * 100, jitter_ms=500 - index * 5)
             self.assertEqual(build_catalog(changed, OPTIONS), (configs, report))
 
-    def test_success_latency_jitter_then_upstream_order_determine_quality_rank(self):
+    def test_success_then_upstream_order_ignore_latency_and_jitter(self):
         nodes = [node(i) for i in range(5)]
         measurements = [(5 / 6, 10, 0), (1, 100, 3), (1, 50, 10), (1, 50, 1), (1, 50, 1)]
         for n, order, (success, delay, jitter) in zip(nodes, (0, 1, 2, 10, 5), measurements):
@@ -120,8 +125,8 @@ class CatalogTests(unittest.TestCase):
             n['quality'] = {'https': {'success_rate': success, 'median_ms': delay, 'jitter_ms': jitter}}
         nodes[0]['allowlist'] = {'priority': 5}
         configs, report = build_catalog(nodes, OPTIONS)
-        self.assertEqual(report['profiles'][1]['node_indices'], [4, 3, 2, 1, 0])
-        self.assertEqual(report['profiles'][0]['node_indices'], [4])
+        self.assertEqual(report['profiles'][1]['node_indices'], [1, 2, 4, 3, 0])
+        self.assertEqual(report['profiles'][0]['node_indices'], [1])
         self.assert_coverage(nodes, configs, report)
 
     def test_equal_priority_uses_original_source_positions_even_if_input_is_shuffled(self):
